@@ -148,6 +148,7 @@ input[type=search]{min-width:220px;flex:1;max-width:400px}
 .strip b.red{color:var(--red)} .strip b.green{color:var(--green)}
 .notice{background:var(--amber-l);border:1px solid color-mix(in srgb,var(--amber) 28%,transparent);color:var(--amber);border-radius:6px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .notice a{color:var(--accent);font-weight:700;cursor:pointer}
+.more,.notice a,td a{display:inline-flex;align-items:center;min-height:24px}
 /* ---- cards ---- */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px}
 .kpi{background:var(--card);border-radius:var(--r);padding:16px 18px;border:1px solid var(--line);text-align:left;cursor:default;font:inherit;color:inherit;box-shadow:var(--shadow);display:flex;gap:14px;align-items:flex-start;transition:border-color .15s,transform .15s}
@@ -1375,8 +1376,8 @@ function planDay(date,f,last,body,kpi){
   const tag=s=>s?`<span class="tag ${s==='done'?'paid':s==='postpone'?'partial':'unpaid'}">${ST_NAME[s]}</span>`:'';
   body.innerHTML=`<div class="row head"><div><button class="btn sm" onclick="pickRoute('')">← ທຸກແຜນ</button> <b style="margin-left:6px">${esc(z)}</b><div class="hint">${esc(vehTxt(z))}</div></div>
     <div class="row" style="margin:0"><button class="btn sm" onclick="copyPlan()">ຄັດລອກແຜນ</button><button class="btn sm desk-only" onclick="printPlanSheet()"><svg class=i aria-hidden=true><use href=#i-printer /></svg> ພິມໃບງານ</button><button class="btn sm" onclick="markAll()">✓ ສົ່ງແລ້ວທັງໝົດທີ່ຍັງບໍ່ສົ່ງ</button></div></div>
-    <div class="tbl-wrap"><table class="stops"><thead><tr>${infoTh()}<th>ສະຖານະ</th><th></th></tr></thead><tbody>`+
-    (rows.slice(0,300).map(c=>{const s=stat(c);return `<tr>${infoTd(c)}<td>${tag(s)}${isExtra(date,c)?' <span class="tag org">ເພີ່ມພິເສດ</span>':''}${(RX()[date]||{})[c.id]?` <span class="hint">ບິນຂາຍ ${(RX()[date]||{})[c.id]}</span>`:''}</td>
+    <div class="tbl-wrap"><table class="stops"><thead><tr>${infoTh(INFO.slice(0,3))}<th>ສະຖານະ</th>${infoTh(INFO.slice(3))}<th></th></tr></thead><tbody>`+
+    (rows.slice(0,300).map(c=>{const s=stat(c);return `<tr>${infoTd(c,0,INFO.slice(0,3))}<td>${tag(s)}${isExtra(date,c)?' <span class="tag org">ເພີ່ມພິເສດ</span>':''}${(RX()[date]||{})[c.id]?` <span class="hint">ບິນຂາຍ ${(RX()[date]||{})[c.id]}</span>`:''}</td>${infoTd(c,0,INFO.slice(3))}
       <td><div class="actions stopacts"><button class="tick ${s==='done'?'on':''}" aria-pressed="${s==='done'}" onclick="setSt(${js(c.id)},'done')">✓ ${s==='done'?'ສົ່ງແລ້ວ':'ໝາຍສົ່ງແລ້ວ'}</button>${c.phone?`<a class="icon-btn phone-only" href="tel:${esc(telNo(c.phone))}">ໂທ</a>`:''}${c.lat?`<a class="icon-btn phone-only" href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}" target="_blank" rel="noopener noreferrer">ນຳທາງ</a>`:''}<button class="icon-btn" aria-label="ຕົວເລືອກເພີ່ມເຕີມ" onclick="rowMenu(event,${js(c.id)})">⋯</button></div></td></tr>`;}).join('')||`<tr><td colspan="20" class="empty">ບໍ່ມີລາຍການໃນຕົວເລືອກນີ້</td></tr>`)+
     `</tbody></table></div>`+(rows.length>300?`<div class="hint">ສະແດງ 300 ຈາກ ${rows.length}</div>`:'')+extra;
 }
@@ -1443,8 +1444,8 @@ const INFO=[['#',c=>c.seq||''],['ລະຫັດ',c=>c.id],['ຊື່ລູກ�
   ['ບ້ານ',c=>c.village],['ເມືອງ',c=>c.district],['ເບີ',c=>c.phone],['ຖັງ/ຮອບ',c=>c.tank||''],['ຊື້ລ່າສຸດ',c=>c.lastBuy],['ໜີ້ລະບົບຂາຍ',c=>c.debt||0],
   ['ຕຸກຢູ່ລູກຄ້າ',c=>c.bottles||0],['ເວລາສະດວກ',c=>c.timeWin],['ພິກັດ',c=>c.lat?c.lat+','+c.lng:''],['ໝາຍເຫດ',c=>c.note]];
 const ESS=['#','ຊື່ລູກຄ້າ','ບ້ານ','ເບີ','ຖັງ/ຮອບ']; // columns kept on phones; the rest get class "opt" (hidden < 768px)
-function infoTh(){return INFO.map(i=>`<th${ESS.includes(i[0])?'':' class="opt"'}>${i[0]}</th>`).join('');}
-function infoTd(c,edit){return INFO.map(([h,f])=>{const v=f(c),k=ESS.includes(h)?'':'opt';
+function infoTh(cols=INFO){return cols.map(i=>`<th${ESS.includes(i[0])?'':' class="opt"'}>${i[0]}</th>`).join('');}
+function infoTd(c,edit,cols=INFO){return cols.map(([h,f])=>{const v=f(c),k=ESS.includes(h)?'':'opt';
   if(h==='#'&&edit)return `<td><input type="number" aria-label="ລຳດັບຈຸດສົ່ງ" value="${c.seq||''}" style="width:56px;height:30px" onchange="setSeq(${js(c.id)},this.value)"></td>`;
   if(h==='ເບີ'&&v)return `<td class="${k}"><a href="tel:${esc(telNo(v))}">${esc(String(v))}</a></td>`;
   if(h==='ພິກັດ')return `<td class="${k}">${c.lat?`<a href="https://www.google.com/maps?q=${c.lat},${c.lng}" target="_blank" rel="noopener noreferrer" aria-label="ເປີດແຜນທີ່"><svg class=i aria-hidden=true><use href=#i-pin /></svg> ແຜນທີ່</a>`:''}</td>`;
