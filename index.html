@@ -363,6 +363,11 @@ table.stops tr:hover td:last-child{background:var(--card2)}
   .fpanel.open{position:fixed;left:0;right:0;bottom:0;z-index:90;max-height:78vh;overflow:auto;border-radius:8px 8px 0 0;margin:0;padding:20px 16px 26px;box-shadow:var(--pop)}
   .qty-grid{grid-template-columns:repeat(2,1fr)}
   #toast{bottom:72px}
+  input,select,textarea{font-size:16px} /* below 16px iPhone zooms in on every tap */
+  td select{min-height:44px}
+  .more,.notice a,td.ttl a,td a[role=button]{display:inline-flex;align-items:center;min-height:44px;padding:0 6px}
+  #rxHint{white-space:normal}
+  #toast button{min-height:40px}
   .desk-only{display:none!important}
   #planStatChips{display:flex!important;gap:6px;overflow-x:auto;width:100%;scrollbar-width:none}
   #planChips{justify-content:space-between} #planChips .spacer{display:none}
