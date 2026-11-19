@@ -670,7 +670,7 @@ function normDB(d){ // returns usable data, or null when the data cannot be trus
   d.rates={...DEFAULT_RATES,...(d.rates&&typeof d.rates==='object'?d.rates:{})};
   for(const k of ['plan','rxb','rxUnk','routeVeh','routeOwner','routeMeta','routeBranch','cfg'])if(d[k]!==undefined&&(d[k]===null||typeof d[k]!=='object'||Array.isArray(d[k])))delete d[k];
   if(d.rxb)Object.keys(d.rxb).forEach(k=>{if(!Array.isArray(d.rxb[k]))delete d.rxb[k];});
-  if(d.cfg)['work','prods','branches'].forEach(k=>{if(d.cfg[k]!==undefined&&!Array.isArray(d.cfg[k]))delete d.cfg[k];});if(d.cfg&&d.cfg.work&&!d.cfg.work.length)delete d.cfg.work;
+  if(d.cfg)['work','prods','branches','req'].forEach(k=>{if(d.cfg[k]!==undefined&&!Array.isArray(d.cfg[k]))delete d.cfg[k];});if(d.cfg&&d.cfg.work&&!d.cfg.work.length)delete d.cfg.work;
   return d;}
 function load(){let s=null;try{s=localStorage.getItem(KEY);if(s){const d=normDB(JSON.parse(s));if(d)return d;}}catch(e){}
   if(s)try{localStorage.setItem(KEY+'_unreadable',s);}catch(e){} // damaged data is set aside, never silently destroyed
@@ -950,7 +950,7 @@ function renderCustomers(){
   const free=base.filter(c=>!hasDay(c)&&!c.mode),withDebt=base.filter(c=>(debtMap[c.id]||0)>0),bad=base.filter(c=>custIssues(c).length),fresh=free.filter(isNewCust);
   document.getElementById('custChips').innerHTML=chipHtml([['all','ທັງໝົດ',base.length],['free','ຍັງບໍ່ເຂົ້າແຜນ',free.length],['new','ລູກຄ້າໃໝ່ ຍັງບໍ່ເຂົ້າແຜນ',fresh.length],['bad','ຂໍ້ມູນບໍ່ຄົບ',bad.length],['debt','ມີໜີ້ຄ້າງ',withDebt.length]],CQ,'setCq');
   const all=CQ==='free'?free:CQ==='debt'?withDebt:CQ==='bad'?bad:CQ==='new'?fresh.sort((a,b)=>regDateOf(b).localeCompare(regDateOf(a))):base,showIss=CQ==='bad'||!!fm,showNew=CQ==='new';window.__custRows=all;
-  document.getElementById('custNote').innerHTML=CQ==='bad'?`<div class="notice">ມາດຕະຖານ: ລູກຄ້າທຸກລາຍຕ້ອງມີ ${REQ_FIELDS.filter(x=>CF().req.includes(x[0])).map(x=>x[1]).join(' · ')} — ປ່ຽນໄດ້ທີ່ <a onclick="go('settings','setGeneral')">ຕັ້ງຄ່າ → ທົ່ວໄປ</a></div>`:CQ==='new'?`<div class="notice">ລູກຄ້າທີ່ລົງທະບຽນ ຫຼື ເພີ່ມເຂົ້າລະບົບບໍ່ເກີນ ${CF().newDays} ມື້ ແລະ ຍັງບໍ່ມີວັນສົ່ງ — ກົດ "ຈັດເຂົ້າແຜນ" ເພື່ອກຳນົດແຜນ ແລະ ວັນ</div>`:'';rows=all.slice(0,300); // shortcut: 300-row cap keeps 6k customers fast, use search to narrow
+  document.getElementById('custNote').innerHTML=CQ==='bad'?`<div class="notice">ມາດຕະຖານ: ລູກຄ້າທຸກລາຍຕ້ອງມີ ${REQ_FIELDS.filter(x=>CF().req.includes(x[0])).map(x=>x[1]).join(' · ')} — ປ່ຽນໄດ້ທີ່ <a onclick="go('settings','setGeneral')">ຕັ້ງຄ່າ → ທົ່ວໄປ</a></div>`:CQ==='new'?`<div class="notice">ລູກຄ້າທີ່ລົງທະບຽນ ຫຼື ເພີ່ມເຂົ້າລະບົບບໍ່ເກີນ ${esc(CF().newDays)} ມື້ ແລະ ຍັງບໍ່ມີວັນສົ່ງ — ກົດ "ຈັດເຂົ້າແຜນ" ເພື່ອກຳນົດແຜນ ແລະ ວັນ</div>`:'';const rows=all.slice(0,300); // shortcut: 300-row cap keeps 6k customers fast, use search to narrow
   const t=document.getElementById('custTable');
   if(!rows.length){
     t.innerHTML=`<tbody><tr><td class="empty" style="display:block">${DB.customers.length?'ບໍ່ພົບລູກຄ້າທີ່ຕົງກັບການຄົ້ນຫາ/ຕົວກອງ':'ຍັງບໍ່ມີລູກຄ້າ — ເລີ່ມຈາກນຳເຂົ້າລາຍຊື່ ຫຼື ເພີ່ມລູກຄ້າຄົນທຳອິດ'}<br>`+
@@ -978,6 +978,10 @@ function custIssues(c){const out=[];for(const f of CF().req){
   else if(f==='tank'){if(!(c.tank>0))out.push([f,'ບໍ່ມີຈຳນວນຖັງ']);}
   else if(!c[f]){const l=(REQ_FIELDS.find(x=>x[0]===f)||[f,f])[1];out.push([f,'ບໍ່ມີ'+l]);}}
   return out;}
+function isoDate(v){v=String(v??'').trim();let d='';const m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(m)d=m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');else if(/^\d{4}-\d{2}-\d{2}/.test(v))d=v.slice(0,10);
+  else if(/^\d{5}(\.\d+)?$/.test(v))d=new Date(Math.round((+v-25569)*864e5)).toISOString().slice(0,10); // Excel date cell
+  const t=Date.parse(d+'T00:00:00Z');return d&&!isNaN(t)&&new Date(t).toISOString().slice(0,10)===d?d:'';}
 function regDateOf(c){return c.regDate||c.newAt||'';}
 function isNewCust(c){const d=regDateOf(c);return !!d&&dDiff(today(),d)<=CF().newDays;}
 function custDebtMap(){const m={};DB.deliveries.forEach(d=>{const o=d.amount-(d.paid||0);if(o>0)m[d.customerId]=(m[d.customerId]||0)+o;});return m;}
@@ -1455,7 +1459,7 @@ function infoTd(c,edit,cols=INFO){return cols.map(([h,f])=>{const v=f(c),k=ESS.i
   return `<td class="${k}">${h==='ຊື່ລູກຄ້າ'?'<b>'+esc(String(v))+'</b>':esc(String(v??''))}</td>`;}).join('');}
 function RBr(){return DB.routeBranch||(DB.routeBranch={});}
 function csvDownload(rows,name,extra=[]){
-  const q=s=>{s=String(s??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
+  const q=s=>{s=String(s??'');if(/^[=+\-@\t\r]/.test(s)&&!/^[+\-]?[\d.,\s]*$/.test(s))s="'"+s;return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   const lines=[[...extra.map(e=>e[0]),'ແຜນ/ໂຊນ','ລົດ','ຜູ້ຮັບຜິດຊອບ','ສາຂາ','ວັນ','ຄວາມຖີ່/ອາທິດ',...INFO.map(i=>i[0])].map(q).join(',')];
   rows.forEach(c=>lines.push([...extra.map(e=>e[1](c)),c.zone,RV()[c.zone]||'',empName(RO()[c.zone]),c.branch,c.day,c.freq||'',...INFO.map(i=>i[1](c))].map(q).join(',')));
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+lines.join('\n')],{type:'text/csv'}));a.download=String(name).replace(/[\\/:*?"<>|]/g,'-')+'.csv';a.click();toast('ສົ່ງອອກ CSV ແລ້ວ ✓');}
@@ -1621,7 +1625,7 @@ function parsePlanItems(rows){
     if(rawZone||day)o.mode=rawZone.includes('ນັດສົ່ງພິເສດ')?'special':rawZone.includes('ຮັບເອງ')?'pickup':'';
     const put=(k,v)=>{if(v!==''&&v!==undefined)o[k]=v;},num=(k,key)=>{const v=pg(r,key);if(v!=='')o[k]=+String(v).replace(/,/g,'')||0;};
     put('name',pg(r,'name'));put('branch',pg(r,'branch'));put('phone',pg(r,'phone'));put('village',pg(r,'village'));put('district',pg(r,'district'));
-    put('tier',pg(r,'tier').replace('ທົ່ວໄປ ',''));put('note',pg(r,'behavior')||pg(r,'note'));put('prod',pg(r,'prod'));put('lastBuy',pg(r,'lastBuy'));{const rd=pg(r,'regDate'),m2=String(rd).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);put('regDate',m2?m2[3]+'-'+m2[2].padStart(2,'0')+'-'+m2[1].padStart(2,'0'):(/^\d{4}-\d{2}-\d{2}/.test(rd)?rd.slice(0,10):''));}
+    put('tier',pg(r,'tier').replace('ທົ່ວໄປ ',''));put('note',pg(r,'behavior')||pg(r,'note'));put('prod',pg(r,'prod'));put('lastBuy',pg(r,'lastBuy'));put('regDate',isoDate(pg(r,'regDate')));
     const tv=pg(r,'type');if(typeOf(tv))o.type=typeOf(tv);
     put('seg',pg(r,'seg')||(/[฀-๿]/.test(tv)?tv:''));
     num('freq','freq');num('tank','tank');num('seq','seq');num('debt','debt');num('bottles','bottles');
@@ -1799,7 +1803,7 @@ function saveGeneral(){const e=document.getElementById('sgErr'),fail=(m,id)=>{e.
   const work=[...document.querySelectorAll('.cf_day:checked')].map(x=>+x.value);if(!work.length)return fail('ເລືອກວັນເຮັດວຽກຢ່າງນ້ອຍ 1 ວັນ');
   const grace=n('cf_grace',0,30,'ເກີນກຳນົດ');if(grace===null)return;const lead=n('cf_lead',0,14,'ຮອບຍາວ');if(lead===null)return;const sev1=n('cf_sev1',1,10,'ຫາຍນານ');if(sev1===null)return;const sev2=n('cf_sev2',1,20,'ຫາຍ');if(sev2===null)return;
   if(sev2<=sev1)return fail('ລະດັບ "ຫາຍ" ຕ້ອງຫຼາຍກວ່າ "ຫາຍນານ"','cf_sev2');
-  const newDays=n('cf_newdays',1,365,'ລູກຄ້າໃໝ່');if(newDays===null)return;const req=[...document.querySelectorAll('.cf_req:checked')].map(x=>x.value);
+  const newDays=n('cf_newdays',1,365,'ລູກຄ້າໃໝ່');if(newDays===null)return;const req=[...document.querySelectorAll('.cf_req:checked')].map(x=>x.value);if(!req.length){document.getElementById('sgErr').textContent='ມາດຕະຖານຂໍ້ມູນ: ຕິກຢ່າງໜ້ອຍ 1 ຊ່ອງ';return;}
   const carry=n('cf_carry',0,100,'ຍົກງານຄ້າງ');if(carry===null)return;const keep=n('cf_keep',7,365,'ເກັບຍອດຂາຍ');if(keep===null)return;if(!val('cf_start'))return fail('ເລືອກວັນທີເລີ່ມນັບແຜນ','cf_start');
   const off=DB.customers.filter(c=>DOW[c.day]!==undefined&&CF().work.includes(DOW[c.day])&&!work.includes(DOW[c.day])).length;
   if(off&&!confirm(`ລູກຄ້າ ${off} ລາຍຢູ່ໃນວັນທີ່ຈະປິດ ແລະ ຈະຂຶ້ນເປັນ "ຍັງບໍ່ເຂົ້າແຜນ" ຕ້ອງການບັນທຶກບໍ?`))return;
