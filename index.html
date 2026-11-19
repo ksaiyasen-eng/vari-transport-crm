@@ -466,7 +466,7 @@ table.stops tr:hover td:last-child{background:var(--card2)}
         <button class="btn sm" onclick="planShift(1)" aria-label="ວັນຕໍ່ໄປ">▶</button>
         <button class="btn sm" onclick="planShift(0)">ມື້ນີ້</button>
       </div>
-      <div class="row" style="margin:0"><button class="btn sm" onclick="exportDayCSV()"><svg class=i aria-hidden=true><use href=#i-download /></svg> ສົ່ງອອກແຜນ</button><button class="btn desk-only" onclick="document.getElementById('salesFile').click()"><svg class=i aria-hidden=true><use href=#i-upload /></svg> ນຳເຂົ້າຍອດຂາຍ</button></div>
+      <div class="row" style="margin:0"><button class="btn sm" onclick="exportDayCSV()"><svg class=i aria-hidden=true><use href=#i-download /></svg> <span id="planExpTxt">ສົ່ງອອກແຜນ</span></button><button class="btn desk-only" onclick="document.getElementById('salesFile').click()"><svg class=i aria-hidden=true><use href=#i-upload /></svg> ນຳເຂົ້າຍອດຂາຍ</button></div>
       <input type="file" id="salesFile" accept=".xlsx,.xls,.csv" multiple style="display:none" onchange="importSalesFiles(event)">
     </div>
     <div class="row" id="planChips">
@@ -1348,6 +1348,7 @@ function renderPlan(){
   if(DB.customers.some(c=>!c.zone&&(hasDay(c)||isExtra(dEl.value,c))))rs.push(NOZ);
   rEl.innerHTML='<option value="">ທຸກແຜນ</option>'+rs.map(x=>`<option value="${esc(x)}" ${x===rc?'selected':''}>${esc(x)}</option>`).join('');
   const date=dEl.value,mode=val('planMode')||'day',f=planFilter(),last=lastDone();
+  document.getElementById('planExpTxt').textContent=mode==='week'?'ສົ່ງອອກແຜນທັງອາທິດ':mode==='month'?'ສົ່ງອອກແຜນທັງເດືອນ':'ສົ່ງອອກແຜນ';
   document.querySelectorAll('#plan .seg button').forEach(x=>x.classList.toggle('on',x.dataset.m===mode));
   setFbtn('planFbtn',activeChips('planActive',[['ສາຂາ','planBranch'],['ແຜນ','planRoute'],['ຜະລິດຕະພັນ','planProd']]));
   const rd=Object.keys(RX()).sort(),mx=rd[rd.length-1];
@@ -1493,10 +1494,19 @@ function pnMoveDayGo(){const d=val('pnMoveDay'),ids=[...document.querySelectorAl
   if(!d||!ids.length){toast('ຕິກເລືອກລູກຄ້າ ແລະ ເລືອກວັນປາຍທາງ');return;}
   const undo=snapCust(ids);ids.forEach(id=>{const c=custById(id);if(c){c.day=d;if(!(c.freq>0))c.freq=1;}});
   save();renderAll();toast(`ຍ້າຍ ${ids.length} ລາຍ ໄປວັນ${d} ✓`,undo);}
-function exportDayCSV(){const date=val('planDate')||ymd(new Date()),f=planFilter(),last=lastDone(),ds=deliverySet(date),rx=RX()[date]||{};
-  const rows=DB.customers.filter(c=>f(c)&&dueOn(c,date,last)).sort((a,b)=>(a.zone||'').localeCompare(b.zone||'')||(a.seq||0)-(b.seq||0));
-  if(!rows.length){toast('ວັນທີ '+date+' ບໍ່ມີລູກຄ້າໃນແຜນໃຫ້ສົ່ງອອກ');return;}
-  csvDownload(rows,'plan-'+date+(val('planRoute')?'-'+val('planRoute'):''),[['ວັນທີ',()=>date],['ສະຖານະ',c=>{const st=stOf(date,c,ds);return st?ST_NAME[st]:'ຍັງບໍ່ສົ່ງ';}],['ຍອດຂາຍ (ບິນ)',c=>rx[c.id]||'']]);}
+/* export follows the view: one day, every work day of the week, or of the month */
+function exportDates(date,mode){const d0=new Date(date+'T00:00:00Z');let a=[date];
+  if(mode==='week'){d0.setUTCDate(d0.getUTCDate()-((d0.getUTCDay()+6)%7));a=[...Array(7)].map((_,i)=>{const d=new Date(d0);d.setUTCDate(d.getUTCDate()+i);return d.toISOString().slice(0,10);});}
+  else if(mode==='month'){const dim=new Date(Date.UTC(d0.getUTCFullYear(),d0.getUTCMonth()+1,0)).getUTCDate();a=[...Array(dim)].map((_,i)=>date.slice(0,8)+String(i+1).padStart(2,'0'));}
+  return mode==='day'?a:a.filter(d=>CF().work.includes(new Date(d+'T00:00:00Z').getUTCDay()));}
+function exportDayCSV(){const date=val('planDate')||ymd(new Date()),mode=val('planMode')||'day',f=planFilter(),last=lastDone(),dates=exportDates(date,mode),rows=[];
+  for(const d of dates){const ds=deliverySet(d),rx=RX()[d]||{};
+    DB.customers.filter(c=>f(c)&&dueOn(c,d,last)).sort((a,b)=>(a.zone||'').localeCompare(b.zone||'')||(a.seq||0)-(b.seq||0))
+      .forEach(c=>{const st=stOf(d,c,ds);rows.push({...c,_d:d,_st:st?ST_NAME[st]:'ຍັງບໍ່ສົ່ງ',_rx:rx[c.id]||''});});}
+  const span=mode==='day'?date:mode==='week'?dates[0]+'_'+dates[dates.length-1]:date.slice(0,7);
+  if(!rows.length){toast((mode==='day'?'ວັນທີ ':'ຊ່ວງ ')+span+' ບໍ່ມີລູກຄ້າໃນແຜນໃຫ້ສົ່ງອອກ');return;}
+  csvDownload(rows,'plan-'+span+(val('planRoute')?'-'+val('planRoute'):''),[['ວັນທີ',c=>c._d],['ສະຖານະ',c=>c._st],['ຍອດຂາຍ (ບິນ)',c=>c._rx]]);
+  toast('ສົ່ງອອກ '+money(rows.length)+' ແຖວ'+(mode==='day'?'':' ('+dates.length+' ວັນ)'));}
 /* ============ PLANNER: build the plan of each day Mon–Sat, bind vehicle + owner, add customers ============ */
 const PL={day:'ຈັນ',open:''};
 function RO(){return DB.routeOwner||(DB.routeOwner={});}
