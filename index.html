@@ -337,6 +337,12 @@ table.stops tr:hover td:last-child{background:var(--card2)}
   #home .grid2{gap:0}#home .panel{padding:16px;margin-bottom:14px;border-radius:14px}#home .panel h3{font-size:16px;margin-bottom:14px}
   #home .bar-row{gap:10px;margin-bottom:10px}#home .bar-row .name{width:104px;font-size:12.5px}#home .bar-track{height:26px}#home .bar-fill{font-size:13px;padding-right:8px;min-width:40px}
 }
+/* icon above label on every button that has an icon (owner's choice 2026-11-23) */
+.btn:has(>svg.i),.fbtn:has(>svg.i),.icon-btn:has(>svg.i){flex-direction:column;justify-content:center;height:auto;gap:3px;line-height:1.25;text-align:center}
+.btn:has(>svg.i){min-height:56px;padding:7px 14px}
+.btn.sm:has(>svg.i),.btn.ghost:has(>svg.i),.fbtn:has(>svg.i){min-height:52px;padding:6px 12px}
+.icon-btn:has(>svg.i){min-height:44px;padding:4px 8px;font-size:11.5px}
+.btn:has(>svg.i)>.i,.fbtn:has(>svg.i)>.i{width:18px;height:18px}
 /* ---- phone ---- */
 #bottomnav{display:none}
 @media(max-width:767px){
@@ -358,6 +364,7 @@ table.stops tr:hover td:last-child{background:var(--card2)}
   .kpi{flex-direction:column;gap:8px;padding:14px}
   .kpi .val{font-size:22px}
   input[type=search]{min-width:0;max-width:none}
+  .row.head>input[type=search]{flex:1 1 100%} /* own line, so stacked buttons don't squeeze it */
   .icon-btn,.fbtn,.chip,.seg button{min-height:44px}
   .chip{height:38px}
   .btn,.btn.sm,.btn.ghost{min-height:44px}
