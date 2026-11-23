@@ -1152,8 +1152,8 @@ function renderTeam(){
     (DB.employees.length?'':`<tr><td colspan="7" class="empty">ຍັງບໍ່ມີພະນັກງານ<br><button class="btn sm" onclick="document.getElementById('importFile').click()">ນຳເຂົ້າທີມງານ</button> <button class="btn sm" onclick="openEmp()">+ ເພີ່ມພະນັກງານ</button></td></tr>`)+DB.employees.map(e=>`<tr><td>${esc(e.id)}</td><td><b>${esc(e.name)}</b></td><td>${esc(e.nick||'')}</td><td>${esc(e.role||'')}</td><td>${esc(e.vehicle||'')}</td><td>${esc(e.status||'')}</td>
       <td><div class="actions"><button class="icon-btn" onclick="openEmp(${js(e.id)})"><svg class=i aria-hidden=true><use href=#i-pencil /></svg> ແກ້ໄຂ</button><button class="icon-btn del" onclick="delEmp(${js(e.id)})"><svg class=i aria-hidden=true><use href=#i-trash /></svg> ລຶບ</button></div></td></tr>`).join('')+`</tbody>`;
   document.getElementById('vehCount').textContent=DB.vehicles.length+' ຄັນ';
-  document.getElementById('vehTable').innerHTML=`<thead><tr><th>ທະບຽນ</th><th>ປະເພດ</th><th>ໂຊເຟີ</th><th>ຜູ້ຊ່ວຍ</th><th></th></tr></thead><tbody>`+
-    (DB.vehicles.length?'':`<tr><td colspan="5" class="empty">ຍັງບໍ່ມີລົດ<br><button class="btn sm" onclick="document.getElementById('importFile').click()">ນຳເຂົ້າທີມງານ</button> <button class="btn sm" onclick="openVeh()">+ ເພີ່ມລົດ</button></td></tr>`)+DB.vehicles.map(v=>`<tr><td><b>${esc(v.id)}</b></td><td>${esc(v.type||'')}</td><td>${esc(v.driver||'')}</td><td>${esc(v.helper||'')}</td>
+  document.getElementById('vehTable').innerHTML=`<thead><tr><th>ທະບຽນ</th><th>ປະເພດ</th><th>ໂຊເຟີ</th><th>ຜູ້ຊ່ວຍ</th><th>ຄວາມຈຸ / ຮອບ</th><th></th></tr></thead><tbody>`+
+    (DB.vehicles.length?'':`<tr><td colspan="6" class="empty">ຍັງບໍ່ມີລົດ<br><button class="btn sm" onclick="document.getElementById('importFile').click()">ນຳເຂົ້າທີມງານ</button> <button class="btn sm" onclick="openVeh()">+ ເພີ່ມລົດ</button></td></tr>`)+DB.vehicles.map(v=>`<tr><td><b>${esc(v.id)}</b></td><td>${esc(v.type||'')}</td><td>${esc(v.driver||'')}</td><td>${esc(v.helper||'')}</td><td>${esc(capTxt(v))}</td>
       <td><div class="actions"><button class="icon-btn" onclick="openVeh(${js(v.id)})"><svg class=i aria-hidden=true><use href=#i-pencil /></svg> ແກ້ໄຂ</button><button class="icon-btn del" onclick="delVeh(${js(v.id)})"><svg class=i aria-hidden=true><use href=#i-trash /></svg> ລຶບ</button></div></td></tr>`).join('')+`</tbody>`;
   document.getElementById('rateEditor').innerHTML=PRODUCTS.map(p=>`<div class="frow"><div class="field"><label for="rn_${p.id}">ຊື່ສິນຄ້າ</label><input id="rn_${p.id}" value="${esc(p.name)}"></div><div class="field"><label for="r_${p.id}">ລາຄາ (ກີບ)</label><input type="number" min="0" id="r_${p.id}" value="${DB.rates[p.id]}"></div></div>`).join('');
 }
@@ -1173,10 +1173,15 @@ function openVeh(id){const v=id?DB.vehicles.find(x=>x.id===id):{id:'',type:'',dr
    <div class="field"><label>ທະບຽນລົດ *</label><input id="f_id" value="${esc(v.id)}"></div>
    <div class="field"><label>ປະເພດ</label><input id="f_type" value="${esc(v.type)}"></div>
    <div class="frow"><div class="field"><label>ໂຊເຟີ</label><input id="f_driver" value="${esc(v.driver)}"></div>
-   <div class="field"><label>ຜູ້ຊ່ວຍ</label><input id="f_helper" value="${esc(v.helper)}"></div></div>`,
+   <div class="field"><label>ຜູ້ຊ່ວຍ</label><input id="f_helper" value="${esc(v.helper)}"></div></div>
+   <div class="frow"><div class="field"><label for="f_ct">ຖັງ 18L / ຮອບ</label><input id="f_ct" type="number" min="0" inputmode="numeric" value="${v.capTank||''}"></div>
+   <div class="field"><label for="f_cc">ລັງຂວດແກ້ວ / ຮອບ</label><input id="f_cc" type="number" min="0" inputmode="numeric" value="${v.capCrate||''}"></div></div>
+   <div class="frow"><div class="field"><label for="f_cp">ແພັກ / ຮອບ</label><input id="f_cp" type="number" min="0" inputmode="numeric" value="${v.capPack||''}"></div>
+   <div class="field"><label for="f_tr">ຮອບ / ວັນ</label><input id="f_tr" type="number" min="0" max="20" inputmode="numeric" value="${v.trips||''}"><div class="hint">ໃຊ້ຄິດໄລ່ວ່າແຜນມື້ນັ້ນເກີນຄວາມຈຸລົດບໍ່</div></div></div>`,
    ()=>{const vid=val('f_id').trim();if(!vid){toast('ປ້ອນທະບຽນ');return false;}
      if(vid!==id&&DB.vehicles.some(x=>x.id===vid)){toast('ທະບຽນ '+vid+' ມີຢູ່ແລ້ວ');return false;}
-     const o={id:vid,type:val('f_type'),driver:val('f_driver'),helper:val('f_helper')};
+     const cap={};for(const [k,el,mx] of [['capTank','f_ct',99999],['capCrate','f_cc',99999],['capPack','f_cp',99999],['trips','f_tr',20]]){const t=val(el).trim(),n=+t;if(t&&(!Number.isFinite(n)||n<0||n>mx)){toast('ຄວາມຈຸລົດ: ໃສ່ຕົວເລກ 0 ຫາ '+mx);return false;}cap[k]=t?n:0;}
+     const o={id:vid,type:val('f_type'),driver:val('f_driver'),helper:val('f_helper'),...cap};
      if(id&&vid!==id){Object.keys(RV()).forEach(z=>{if(RV()[z]===id)RV()[z]=vid;});DB.customers.forEach(c=>{if(c.vehicle===id)c.vehicle=vid;});DB.deliveries.forEach(d=>{if(d.vehicle===id)d.vehicle=vid;});}
      if(id)Object.assign(DB.vehicles.find(x=>x.id===id),o);else DB.vehicles.push(o);save();renderAll();toast('ບັນທຶກແລ້ວ ✓');});}
 function delVeh(id){const n=Object.values(RV()).filter(v=>v===id).length;if(!confirm(`ລຶບລົດ ${id}?`+(n?` ມີ ${n} ແຜນໃຊ້ລົດຄັນນີ້ ແຜນເຫຼົ່ານັ້ນຈະບໍ່ມີລົດ`:'')))return;Object.keys(RV()).forEach(z=>{if(RV()[z]===id)delete RV()[z];});DB.vehicles=DB.vehicles.filter(x=>x.id!==id);save();renderAll();}
@@ -1324,6 +1329,14 @@ function RV(){return DB.routeVeh||(DB.routeVeh={});}
 function setRouteVeh(z,v){if(v)RV()[z]=v;else delete RV()[z];save();renderAll();}
 function vehDriver(p){const v=DB.vehicles.find(x=>x.id===p);return v?[v.driver,v.helper].filter(x=>x&&x!=='-').join(' / '):'';}
 function vehSel(z){const cur=RV()[z]||'';return `<select aria-label="ເລືອກລົດ" data-z="${esc(z)}" onclick="event.stopPropagation()" onchange="setRouteVeh(this.dataset.z,this.value)"><option value="">- ເລືອກລົດ -</option>${DB.vehicles.map(v=>`<option ${v.id===cur?'selected':''}>${esc(v.id)}</option>`).join('')}</select> <span class="hint">${esc(vehDriver(cur))}</span>`;}
+function capTxt(v){const a=[v.capTank&&'ຖັງ '+v.capTank,v.capCrate&&'ລັງ '+v.capCrate,v.capPack&&'ແພັກ '+v.capPack].filter(Boolean);return a.length?a.join(' · ')+(v.trips?' · '+v.trips+' ຮອບ/ວັນ':''):'-';}
+/* tanks a truck carries on a date, over every plan bound to it (cancelled / postponed stops left out) */
+function vehLoad(vid,date){const last=lastDone(),ds=deliverySet(date);let n=0;
+  DB.customers.forEach(c=>{if(c.zone&&RV()[c.zone]===vid&&dueOn(c,date,last)&&!['cancel','postpone'].includes(stOf(date,c,ds)))n+=+c.tank||0;});return n;}
+function capLine(z,date){const vid=RV()[z],v=vid&&DB.vehicles.find(x=>x.id===vid);if(!v)return '';
+  if(!v.capTank)return `<div class="hint">ລົດ ${esc(vid)} ຍັງບໍ່ໄດ້ໃສ່ຄວາມຈຸ — <a onclick="openVeh(${js(vid)})">ໃສ່ຄວາມຈຸ</a></div>`;
+  const cap=v.capTank*(v.trips||1),n=vehLoad(vid,date),over=n-cap;
+  return `<div class="hint">ລົດ ${esc(vid)} ມື້ນີ້ (ທຸກແຜນຂອງລົດຄັນນີ້): ຖັງ <b>${money(n)}</b> / ${money(cap)}${v.trips>1?` (${v.trips} ຮອບ)`:''}${over>0?` · <b style="color:var(--red)">ເກີນ ${money(over)} ຖັງ</b>`:''}</div>`;}
 function vehTxt(z){const v=RV()[z],o=empName(RO()[z]);return (v?'ລົດ '+v+(vehDriver(v)?' ('+vehDriver(v)+')':''):'ຍັງບໍ່ມີລົດ')+(o?' · ຜູ້ຮັບຜິດຊອບ: '+o:'');}
 function pickRoute(r){document.getElementById('planRoute').value=r;renderPlan();}
 function restoreP(keys,before){return ()=>{keys.forEach((k,i)=>{if(before[i]===undefined)delete P()[k];else P()[k]=before[i];});save();renderAll();};}
@@ -1381,7 +1394,7 @@ function planDay(date,f,last,body,kpi){
   rows.sort((a,b)=>(a.seq||0)-(b.seq||0));
   const z=val('planRoute');
   const tag=s=>s?`<span class="tag ${s==='done'?'paid':s==='postpone'?'partial':'unpaid'}">${ST_NAME[s]}</span>`:'';
-  body.innerHTML=`<div class="row head"><div><button class="btn sm" onclick="pickRoute('')">← ທຸກແຜນ</button> <b style="margin-left:6px">${esc(z)}</b><div class="hint">${esc(vehTxt(z))}</div></div>
+  body.innerHTML=`<div class="row head"><div><button class="btn sm" onclick="pickRoute('')">← ທຸກແຜນ</button> <b style="margin-left:6px">${esc(z)}</b><div class="hint">${esc(vehTxt(z))}</div>${capLine(z,date)}</div>
     <div class="row" style="margin:0"><button class="btn sm" onclick="copyPlan()">ຄັດລອກແຜນ</button><button class="btn sm desk-only" onclick="printPlanSheet()"><svg class=i aria-hidden=true><use href=#i-printer /></svg> ພິມໃບງານ</button><button class="btn sm" onclick="markAll()">✓ ສົ່ງແລ້ວທັງໝົດທີ່ຍັງບໍ່ສົ່ງ</button></div></div>
     <div class="tbl-wrap"><table class="stops"><thead><tr>${infoTh(INFO.slice(0,3))}<th>ສະຖານະ</th>${infoTh(INFO.slice(3))}<th></th></tr></thead><tbody>`+
     (rows.slice(0,300).map(c=>{const s=stat(c);return `<tr>${infoTd(c,0,INFO.slice(0,3))}<td>${tag(s)}${isExtra(date,c)?' <span class="tag org">ເພີ່ມພິເສດ</span>':''}${(RX()[date]||{})[c.id]?` <span class="hint">ບິນຂາຍ ${(RX()[date]||{})[c.id]}</span>`:''}</td>${infoTd(c,0,INFO.slice(3))}
