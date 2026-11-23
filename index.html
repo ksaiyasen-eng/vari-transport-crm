@@ -148,6 +148,7 @@ input[type=search]{min-width:220px;flex:1;max-width:400px}
 .strip b.red{color:var(--red)} .strip b.green{color:var(--green)}
 .notice{background:var(--amber-l);border:1px solid color-mix(in srgb,var(--amber) 28%,transparent);color:var(--amber);border-radius:6px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .notice a{color:var(--accent);font-weight:700;cursor:pointer}
+#home .panel{min-width:0} #home td{white-space:normal;overflow-wrap:anywhere} /* branch names have no space (ສາຂາX): let them wrap */
 .more,.notice a,td a{display:inline-flex;align-items:center;min-height:24px}
 /* ---- cards ---- */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px}
@@ -369,6 +370,12 @@ table.stops tr:hover td:last-child{background:var(--card2)}
   .more,.notice a,td.ttl a,td a[role=button]{display:inline-flex;align-items:center;min-height:44px;padding:0 6px}
   #rxHint{white-space:normal}
   #toast button{min-height:40px}
+  header>div:not(.logo):not(.spacer):not(.menuwrap){min-width:0;flex:0 1 auto} /* title gives way first */
+  #pageTitle{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header .searchbtn,header .menuwrap{flex:0 0 auto}
+  header .chipbtn{min-width:0;flex:0 1 auto}
+  header .chipbtn .dot{flex:0 0 auto}
+  #cloudDot{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px;display:inline-block;vertical-align:middle}
   .desk-only{display:none!important}
   #planStatChips{display:flex!important;gap:6px;overflow-x:auto;width:100%;scrollbar-width:none}
   #planChips{justify-content:space-between} #planChips .spacer{display:none}
@@ -661,6 +668,7 @@ function CF(){const c=DB.cfg||(DB.cfg={});for(const k in CFG_DEF)if(c[k]===undef
 let DB=load();
 
 function seed(){return {customers:[],deliveries:[],employees:[],vehicles:[],rates:{...DEFAULT_RATES}};} // no real names in the public source: the team is imported from the admin's private file
+function normBranch(b){return String(b??'').trim().replace(/^ສາຂາ\s+/,'ສາຂາ').replace(/ນໍ້າ/g,'ນ້ຳ');} // owner rule 2026-11-23: "ສາຂາX", no space
 function normDB(d){ // returns usable data, or null when the data cannot be trusted
   if(!d||typeof d!=='object'||Array.isArray(d))return null;
   for(const k of ['customers','deliveries','employees','vehicles']){if(d[k]===undefined||d[k]===null)d[k]=[];if(!Array.isArray(d[k])||!d[k].every(x=>x&&typeof x==='object'))return null;}
@@ -670,12 +678,18 @@ function normDB(d){ // returns usable data, or null when the data cannot be trus
   d.rates={...DEFAULT_RATES,...(d.rates&&typeof d.rates==='object'?d.rates:{})};
   for(const k of ['plan','rxb','rxUnk','routeVeh','routeOwner','routeMeta','routeBranch','cfg'])if(d[k]!==undefined&&(d[k]===null||typeof d[k]!=='object'||Array.isArray(d[k])))delete d[k];
   if(d.rxb)Object.keys(d.rxb).forEach(k=>{if(!Array.isArray(d.rxb[k]))delete d.rxb[k];});
+  d.customers.forEach(c=>{if(c.branch)c.branch=normBranch(c.branch);});
+  if(d.routeBranch)Object.keys(d.routeBranch).forEach(k=>{d.routeBranch[k]=normBranch(d.routeBranch[k]);});
+  if(d.routeMeta)Object.values(d.routeMeta).forEach(x=>{if(x&&x.branch)x.branch=normBranch(x.branch);});
+  if(d.rxUnk)Object.values(d.rxUnk).forEach(x=>{if(x&&x.b)x.b=normBranch(x.b);});
   if(d.cfg)['work','prods','branches','req'].forEach(k=>{if(d.cfg[k]!==undefined&&!Array.isArray(d.cfg[k]))delete d.cfg[k];});if(d.cfg&&d.cfg.work&&!d.cfg.work.length)delete d.cfg.work;
+  if(d.cfg){if(Array.isArray(d.cfg.branches))d.cfg.branches=[...new Set(d.cfg.branches.map(normBranch))];if(d.cfg.hq)d.cfg.hq=normBranch(d.cfg.hq);}
   return d;}
 function load(){let s=null;try{s=localStorage.getItem(KEY);if(s){const d=normDB(JSON.parse(s));if(d)return d;}}catch(e){}
   if(s)try{localStorage.setItem(KEY+'_unreadable',s);}catch(e){} // damaged data is set aside, never silently destroyed
   const d=seed();try{localStorage.setItem(KEY,JSON.stringify(d));}catch(e){}return d;}
-function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){toast('⚠ ພື້ນທີ່ເກັບໃນເຄື່ອງເຕັມ — ກົດ ⬇ ສຳຮອງ ແລ້ວລຶບຂໍ້ມູນເກົ່າ');}}
+let _spaceWarned=false;
+function saveLocal(){try{const j=JSON.stringify(DB);localStorage.setItem(KEY,j);if(j.length>4400000&&!_spaceWarned){_spaceWarned=true;toast('⚠ ພື້ນທີ່ເກັບໃນເຄື່ອງໃກ້ເຕັມ ('+Math.round(j.length/52000)+'%) — ລຶບຍອດຂາຍວັນເກົ່າທີ່ ຕັ້ງຄ່າ → ຂໍ້ມູນ');}}catch(e){toast('⚠ ພື້ນທີ່ເກັບໃນເຄື່ອງເຕັມ — ກົດ ⬇ ສຳຮອງ ແລ້ວລຶບຂໍ້ມູນເກົ່າ');}}
 function save(){saveLocal();pushCloud();}
 
 /* ============ CLOUD SYNC (Firebase): every record is saved and merged on its own, so a tap sends a few bytes and two people never overwrite each other ============ */
@@ -949,6 +963,7 @@ function renderCustomers(){
   const base=DB.customers.filter(c=>((c.name||'')+(c.phone||'')+(c.zone||'')+(c.village||'')+(c.id||'')).toLowerCase().includes(q)&&(!ft||c.type===ft)&&(!fv||c.vehicle===fv)&&(!fb||c.branch===fb)&&(!fp||c.prod===fp)&&(!fm||custIssues(c).some(i=>i[0]===fm)));
   const free=base.filter(c=>!hasDay(c)&&!c.mode),withDebt=base.filter(c=>(debtMap[c.id]||0)>0),bad=base.filter(c=>custIssues(c).length),fresh=free.filter(isNewCust);
   document.getElementById('custChips').innerHTML=chipHtml([['all','ທັງໝົດ',base.length],['free','ຍັງບໍ່ເຂົ້າແຜນ',free.length],['new','ລູກຄ້າໃໝ່ ຍັງບໍ່ເຂົ້າແຜນ',fresh.length],['bad','ຂໍ້ມູນບໍ່ຄົບ',bad.length],['debt','ມີໜີ້ຄ້າງ',withDebt.length]],CQ,'setCq');
+  const rxl=recentBuys();if(CQ==='free'||CQ==='new')free.sort((a,b)=>((rxl[b.id]||{}).last||'').localeCompare((rxl[a.id]||{}).last||''));
   const all=CQ==='free'?free:CQ==='debt'?withDebt:CQ==='bad'?bad:CQ==='new'?fresh.sort((a,b)=>regDateOf(b).localeCompare(regDateOf(a))):base,showIss=CQ==='bad'||!!fm,showNew=CQ==='new';window.__custRows=all;
   document.getElementById('custNote').innerHTML=CQ==='bad'?`<div class="notice">ມາດຕະຖານ: ລູກຄ້າທຸກລາຍຕ້ອງມີ ${REQ_FIELDS.filter(x=>CF().req.includes(x[0])).map(x=>x[1]).join(' · ')} — ປ່ຽນໄດ້ທີ່ <a onclick="go('settings','setGeneral')">ຕັ້ງຄ່າ → ທົ່ວໄປ</a></div>`:CQ==='new'?`<div class="notice">ລູກຄ້າທີ່ລົງທະບຽນ ຫຼື ເພີ່ມເຂົ້າລະບົບບໍ່ເກີນ ${esc(CF().newDays)} ມື້ ແລະ ຍັງບໍ່ມີວັນສົ່ງ — ກົດ "ຈັດເຂົ້າແຜນ" ເພື່ອກຳນົດແຜນ ແລະ ວັນ</div>`:'';const rows=all.slice(0,300); // shortcut: 300-row cap keeps 6k customers fast, use search to narrow
   const t=document.getElementById('custTable');
@@ -958,7 +973,7 @@ function renderCustomers(){
   t.innerHTML=`<thead><tr><th>ຊື່ລູກຄ້າ</th><th>ປະເພດ</th><th>ແຜນ / ວັນ</th><th>ເບີ</th><th class="opt">ຜະລິດຕະພັນ</th><th class="opt">ລົດ</th><th class="num opt">ຖ້ຽວ</th><th class="num">ໜີ້ຄ້າງ</th><th></th></tr></thead><tbody>`+
    rows.map(c=>{
      const dn=DB.deliveries.filter(d=>d.customerId===c.id).length,owe=debtMap[c.id]||0;
-     return `<tr><td><b>${esc(c.name)}</b><div class="hint">${esc(c.branch||'')}${showNew?' · ລົງທະບຽນ '+esc(regDateOf(c)):''}</div>${showIss?`<div style="margin-top:3px">${custIssues(c).map(i=>`<span class="tag partial" style="margin:1px 3px 1px 0">${i[1]}</span>`).join('')}</div>`:''}</td><td><span class="tag ${typeCls(c.type)}">${typeName(c.type)}</span></td>
+     const rb=(CQ==='free'||CQ==='new')&&rxl[c.id];return `<tr><td><b>${esc(c.name)}</b>${rb?` <span class="tag partial">ຊື້ ${rb.n} ຄັ້ງ · ລ່າສຸດ ${rb.last.slice(8)}/${rb.last.slice(5,7)}</span>`:''}<div class="hint">${esc(c.branch||'')}${showNew?' · ລົງທະບຽນ '+esc(regDateOf(c)):''}</div>${showIss?`<div style="margin-top:3px">${custIssues(c).map(i=>`<span class="tag partial" style="margin:1px 3px 1px 0">${i[1]}</span>`).join('')}</div>`:''}</td><td><span class="tag ${typeCls(c.type)}">${typeName(c.type)}</span></td>
        <td>${offDay(c)?'<span class="tag partial">ວັນພັກ — ຕ້ອງຍ້າຍວັນ</span>':hasDay(c)?esc(c.zone||'-')+' · '+c.day:c.mode?(c.mode==='special'?'ນັດພິເສດ':'ຮັບເອງ'):'<span class="tag unpaid">ຍັງບໍ່ເຂົ້າແຜນ</span>'}</td><td>${esc(c.phone)||'-'}</td><td class="opt">${esc(c.prod||'-')}</td><td class="opt">${esc(c.vehicle||RV()[c.zone]||'-')}</td>
        <td class="num opt">${dn}</td><td class="num" style="color:${owe>0?'var(--red)':'var(--muted)'};font-weight:${owe>0?700:400}">${money(owe)}</td>
        <td><div class="actions"><button class="icon-btn" onclick="openCustomer(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-pencil /></svg> ${showNew?'ຈັດເຂົ້າແຜນ':showIss?'ເຕີມຂໍ້ມູນ':'ແກ້ໄຂ'}</button>
@@ -982,6 +997,7 @@ function isoDate(v){v=String(v??'').trim();let d='';const m=v.match(/^(\d{1,2})\
   if(m)d=m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');else if(/^\d{4}-\d{2}-\d{2}/.test(v))d=v.slice(0,10);
   else if(/^\d{5}(\.\d+)?$/.test(v))d=new Date(Math.round((+v-25569)*864e5)).toISOString().slice(0,10); // Excel date cell
   const t=Date.parse(d+'T00:00:00Z');return d&&!isNaN(t)&&new Date(t).toISOString().slice(0,10)===d?d:'';}
+function recentBuys(){const m={};Object.values(RXB()).forEach(([d,c])=>{const o=m[c]||(m[c]={n:0,last:'',ds:new Set()});if(!o.ds.has(d)){o.ds.add(d);o.n++;}if(d>o.last)o.last=d;});return m;} // sale-days per customer within the kept sales window
 function regDateOf(c){return c.regDate||c.newAt||'';}
 function isNewCust(c){const d=regDateOf(c);return !!d&&dDiff(today(),d)<=CF().newDays;}
 function custDebtMap(){const m={};DB.deliveries.forEach(d=>{const o=d.amount-(d.paid||0);if(o>0)m[d.customerId]=(m[d.customerId]||0)+o;});return m;}
@@ -1282,7 +1298,7 @@ function ingestSales(rows){
     const key=pick(o,'ເລກທີບິນ')+'|'+pick(o,'ຜະລິດຕະພັນ')+'|'+q;
     if(!B[key])add++;B[key]=[d,code,q];
     if(d<minD)minD=d;if(d>maxD)maxD=d;
-    if(!ids.has(code)&&!U[code])U[code]={n:String(pick(o,'ຊື່ລູກຄ້າ')),p:String(pick(o,'ເບີໂທ')),t:String(pick(o,'ປະເພດລູກຄ້າ')),v:String(pick(o,'ບ້ານ')),b:String(pick(o,'ສາຂາ'))};});
+    if(!ids.has(code)&&!U[code])U[code]={n:String(pick(o,'ຊື່ລູກຄ້າ')),p:String(pick(o,'ເບີໂທ')),t:String(pick(o,'ປະເພດລູກຄ້າ')),v:String(pick(o,'ບ້ານ')),b:normBranch(pick(o,'ສາຂາ'))};});
   if(maxD){const cut=new Date(maxD);cut.setUTCDate(cut.getUTCDate()-CF().keep);const cs=cut.toISOString().slice(0,10); // shortcut: keep 60 days so localStorage stays small
     Object.keys(B).forEach(k=>{if(B[k][0]<cs)delete B[k];});}
   _rxC=null;return {add,minD,maxD,n:rows.length};}
@@ -1337,7 +1353,10 @@ function capLine(z,date){const vid=RV()[z],v=vid&&DB.vehicles.find(x=>x.id===vid
   if(!v.capTank)return `<div class="hint">ລົດ ${esc(vid)} ຍັງບໍ່ໄດ້ໃສ່ຄວາມຈຸ — <a onclick="openVeh(${js(vid)})">ໃສ່ຄວາມຈຸ</a></div>`;
   const cap=v.capTank*(v.trips||1),n=vehLoad(vid,date),over=n-cap;
   return `<div class="hint">ລົດ ${esc(vid)} ມື້ນີ້ (ທຸກແຜນຂອງລົດຄັນນີ້): ຖັງ <b>${money(n)}</b> / ${money(cap)}${v.trips>1?` (${v.trips} ຮອບ)`:''}${over>0?` · <b style="color:var(--red)">ເກີນ ${money(over)} ຖັງ</b>`:''}</div>`;}
-function vehTxt(z){const v=RV()[z],o=empName(RO()[z]);return (v?'ລົດ '+v+(vehDriver(v)?' ('+vehDriver(v)+')':''):'ຍັງບໍ່ມີລົດ')+(o?' · ຜູ້ຮັບຜິດຊອບ: '+o:'');}
+/* plan's branch: set in plan settings, else the branch most of its customers belong to */
+function planBranch(z){if(RBr()[z])return RBr()[z];const n={};DB.customers.forEach(c=>{if(c.zone===z&&c.branch)n[c.branch]=(n[c.branch]||0)+1;});let b='',m=0;for(const k in n)if(n[k]>m){m=n[k];b=k;}return b;}
+function selfDelivered(z){const b=planBranch(z);return !!b&&b!==CF().hq;}
+function vehTxt(z){const v=RV()[z],o=empName(RO()[z]);return (v?'ລົດ '+v+(vehDriver(v)?' ('+vehDriver(v)+')':''):selfDelivered(z)?planBranch(z)+' ສົ່ງເອງ':'ຍັງບໍ່ມີລົດ')+(o?' · ຜູ້ຮັບຜິດຊອບ: '+o:'');}
 function pickRoute(r){document.getElementById('planRoute').value=r;renderPlan();}
 function restoreP(keys,before){return ()=>{keys.forEach((k,i)=>{if(before[i]===undefined)delete P()[k];else P()[k]=before[i];});save();renderAll();};}
 function setSt(id,s){const key=val('planDate')+'|'+id,old=P()[key],x=old&&(old.x||old.s==='extra')?1:0,undo=restoreP([key],[old?{...old}:undefined]);
@@ -1383,8 +1402,10 @@ function planDay(date,f,last,body,kpi){
     (val('planBranch')||val('planRoute')||val('planProd')?`<button class="btn sm" onclick="['planBranch','planRoute','planProd'].forEach(i=>document.getElementById(i).value='');renderPlan()">ລ້າງຕົວກອງ</button> `:'')+(DB.customers.length?`<button class="btn sm" onclick="go('plan','planner')">ໄປຈັດແຜນ</button>`:`<button class="btn sm" onclick="go('customers')">ໄປນຳເຂົ້າແຜນ CSV</button>`)+`</div></div>`+extra;return;}
   const g={};rows.forEach(c=>{const z=c.zone||NOZ,o=g[z]||(g[z]={n:0,d:0,s:0,t:0});o.n++;o.t+=c.tank||0;const st=stat(c);if(st==='done')o.d++;else if(st)o.s++;});
   const use={};Object.keys(g).forEach(z=>{const p=RV()[z];if(p)use[p]=(use[p]||0)+1;}); // same plate on 2+ plans the same day = double-booked
-  const noVeh=Object.keys(g).filter(z=>!RV()[z]).length,dup=Object.values(use).filter(x=>x>1).length;
-  const warn=!val('planRoute')&&(noVeh||dup)?`<div class="notice"><svg class=i aria-hidden=true><use href=#i-alert /></svg> ${noVeh?noVeh+' ແຜນຍັງບໍ່ມີລົດ':''}${noVeh&&dup?' · ':''}${dup?dup+' ຄັນຖືກຈັດຊ້ຳໃນວັນດຽວກັນ':''} <a onclick="go('plan','planner')">ໄປຈັດແຜນ</a></div>`:'';
+  const noVeh=Object.keys(g).filter(z=>!RV()[z]&&z!==NOZ&&!selfDelivered(z)).length;
+  // one truck often covers several zones a day: flag it only when its tanks exceed capacity × trips (no capacity entered: more plans than trips)
+  let over=0,dup=0;Object.keys(use).forEach(p=>{const v=DB.vehicles.find(x=>x.id===p);if(v&&v.capTank){if(vehLoad(p,date)>v.capTank*(v.trips||1))over++;}else if(use[p]>((v&&v.trips)||1))dup++;});
+  const warn=!val('planRoute')&&(noVeh||dup||over)?`<div class="notice"><svg class=i aria-hidden=true><use href=#i-alert /></svg> ${[noVeh&&noVeh+' ແຜນຍັງບໍ່ມີລົດ',over&&over+' ຄັນເກີນຄວາມຈຸ',dup&&dup+' ຄັນຖືກຈັດຫຼາຍແຜນກວ່າຈຳນວນຮອບ'].filter(Boolean).join(' · ')} <a onclick="go('plan','planner')">ໄປຈັດແຜນ</a></div>`:'';
   const carry=date===ymd(new Date())&&!val('planRoute')?carryRows(f):[];
   const carryNote=carry.length?`<div class="notice">ມື້ກ່ອນສົ່ງບໍ່ຄົບ ${money(carry.length)} ລາຍ <a onclick="carryOver()">ຍົກມາແຜນມື້ນີ້</a></div>`:'';
   if(!val('planRoute')){
@@ -1647,7 +1668,7 @@ function parsePlanItems(rows){
     if(zone)o.zone=zone;
     if(rawZone||day)o.mode=rawZone.includes('ນັດສົ່ງພິເສດ')?'special':rawZone.includes('ຮັບເອງ')?'pickup':'';
     const put=(k,v)=>{if(v!==''&&v!==undefined)o[k]=v;},num=(k,key)=>{const v=pg(r,key);if(v!=='')o[k]=+String(v).replace(/,/g,'')||0;};
-    put('name',pg(r,'name'));put('branch',pg(r,'branch'));put('phone',pg(r,'phone'));put('village',pg(r,'village'));put('district',pg(r,'district'));
+    put('name',pg(r,'name'));put('branch',normBranch(pg(r,'branch')));put('phone',pg(r,'phone'));put('village',pg(r,'village'));put('district',pg(r,'district'));
     put('tier',pg(r,'tier').replace('ທົ່ວໄປ ',''));put('note',pg(r,'behavior')||pg(r,'note'));put('prod',pg(r,'prod'));put('lastBuy',pg(r,'lastBuy'));put('regDate',isoDate(pg(r,'regDate')));
     const tv=pg(r,'type');if(typeOf(tv))o.type=typeOf(tv);
     put('seg',pg(r,'seg')||(/[฀-๿]/.test(tv)?tv:''));
@@ -1693,7 +1714,7 @@ function showImportPreview(P,name){const s=P.st,W=(t)=>`<div class="notice" styl
     <label style="font-weight:400;color:var(--ink)"><input type="radio" name="imode" value="merge" checked style="width:auto"> ເພີ່ມ / ອັບເດດ — ລູກຄ້າທີ່ບໍ່ຢູ່ໃນໄຟລ໌ ຍັງຢູ່ແຜນເດີມ (ແນະນຳ)</label>
     <label style="font-weight:400;color:var(--ink)"><input type="radio" name="imode" value="replace" style="width:auto"> ແທນແຜນເກົ່າທັງໝົດ — ລູກຄ້າທີ່ບໍ່ຢູ່ໃນໄຟລ໌ ຈະເປັນ "ຍັງບໍ່ເຂົ້າແຜນ" ແລະ ລົດ/ຜູ້ຮັບຜິດຊອບເກົ່າຖືກລ້າງ</label></div>
    <div class="hint">ນຳເຂົ້າແລ້ວ ກົດ "ຍ້ອນກັບ" ໄດ້ ໃນ 7 ວິນາທີ</div>`,
-  ()=>{const r=applyPlanItems(P,{replace:document.querySelector('input[name=imode]:checked').value==='replace'});
+  ()=>{const r=applyPlanItems(P,{replace:document.querySelector('input[name=imode]:checked').value==='replace'});CF().lastImport={file:String(name).slice(0,120),at:today()+' '+new Date().toTimeString().slice(0,5),n:P.st.rows};save();
     toast(`ນຳເຂົ້າແລ້ວ: ໃໝ່ ${r.add} · ອັບເດດ ${r.upd} · ${r.plans} ແຜນ`,r.undo);});
   const b=document.querySelector('#modal .modal-foot .btn:last-child');if(b)b.textContent='ນຳເຂົ້າ';}
 function sheetToObjs(ws){const a=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
@@ -1839,7 +1860,7 @@ function renderSetBranch(){const rows=branches().map(b=>({b,n:DB.customers.filte
   document.getElementById('sbTable').innerHTML=`<thead><tr><th>ສາຂາ</th><th class="num">ລູກຄ້າ</th><th class="num">ແຜນ</th><th></th></tr></thead><tbody>`+rows.map(r=>`<tr><td><b>${esc(r.b)}</b>${r.b===CF().hq?' <span class="tag house">ສາຂາຫຼັກ</span>':''}</td><td class="num">${money(r.n)}</td><td class="num">${r.p}</td><td><div class="actions"><button class="icon-btn" data-b="${esc(r.b)}" onclick="branchEdit(this.dataset.b)">ແກ້ໄຂ</button></div></td></tr>`).join('')+'</tbody>';}
 function branchEdit(b){const n=b?DB.customers.filter(c=>c.branch===b).length:0;
   showModal(b?'ແກ້ໄຂສາຂາ':'ເພີ່ມສາຂາ',`<div class="field"><label for="bf_name">ຊື່ສາຂາ *</label><input id="bf_name" list="bfList" autocomplete="off" value="${esc(b||'')}"><datalist id="bfList">${branches().filter(x=>x!==b).map(x=>`<option value="${esc(x)}">`).join('')}</datalist>${b?`<div class="hint">ລູກຄ້າ ${money(n)} ລາຍຈະຍ້າຍຕາມ · ເລືອກຊື່ສາຂາທີ່ມີຢູ່ ເພື່ອລວມສອງສາຂາ</div>`:''}<div class="hint" id="bf_err" role="alert"></div></div>`,
-  ()=>{const v=val('bf_name').trim(),m=t=>{document.getElementById('bf_err').textContent=t;return false;};if(!v)return m('ໃສ່ຊື່ສາຂາກ່ອນບັນທຶກ');
+  ()=>{const v=normBranch(val('bf_name')),m=t=>{document.getElementById('bf_err').textContent=t;return false;};if(!v)return m('ໃສ່ຊື່ສາຂາກ່ອນບັນທຶກ');
     if(!b){if(branches().includes(v))return m('ມີສາຂານີ້ຢູ່ແລ້ວ');CF().branches.push(v);save();renderAll();toast('ເພີ່ມສາຂາແລ້ວ ✓');return;}
     if(v===b)return;if(branches().includes(v)&&!confirm(`ລວມ "${b}" ເຂົ້າກັບ "${v}"?`))return false;
     const undo=snapAll();DB.customers.forEach(c=>{if(c.branch===b)c.branch=v;});[DB.routeBranch||{}].forEach(m2=>Object.keys(m2).forEach(k=>{if(m2[k]===b)m2[k]=v;}));Object.values(DB.routeMeta||{}).forEach(x=>{if(x.branch===b)x.branch=v;});Object.values(DB.rxUnk||{}).forEach(x=>{if(x.b===b)x.b=v;});
@@ -1863,7 +1884,11 @@ function prodEdit(p){const n=p?DB.customers.filter(c=>c.prod===p).length:0;
 /* data */
 function renderSetData(){const used=(localStorage.getItem(KEY)||'').length,pct=Math.min(100,Math.round(used/5200000*100)),by={};Object.values(RXB()).forEach(([d,c])=>{const o=by[d]||(by[d]={n:0,c:new Set()});o.n++;o.c.add(c);});
   const days=Object.entries(by).sort((a,b)=>b[0].localeCompare(a[0]));
-  document.getElementById('sdBody').innerHTML=`<div class="panel"><h3>ພື້ນທີ່ເກັບຂໍ້ມູນໃນເຄື່ອງ</h3><div class="prog" style="max-width:420px"><div class="t"><i style="width:${pct}%;${pct>85?'background:var(--red)':''}"></i></div><span>${pct}%</span></div>
+  const li=CF().lastImport,synced=typeof cloud!=='undefined'&&cloud.ready;
+  document.getElementById('sdBody').innerHTML=`<div class="panel"><h3>ຂໍ້ມູນໃນເຄື່ອງນີ້</h3>
+     <div class="strip" style="margin:0 0 10px;flex-wrap:wrap"><span>ແຜນທີ່ນຳເຂົ້າລ່າສຸດ <b>${li?esc(li.file):'—'}</b></span>${li?`<span>ເມື່ອ <b>${esc(li.at)}</b></span><span>${money(li.n)} ແຖວ</span>`:''}<span>ລູກຄ້າໃນເຄື່ອງ <b>${money(DB.customers.length)}</b></span></div>
+     <div class="notice" style="margin:0;${synced?'background:var(--green-l,transparent);color:var(--green)':''}">${synced?'ເຊື່ອມຖານຂໍ້ມູນກາງແລ້ວ — ທຸກເຄື່ອງທີ່ເຊື່ອມເຫັນຂໍ້ມູນດຽວກັນ':'ຍັງບໍ່ເຊື່ອມຖານຂໍ້ມູນກາງ — ແຕ່ລະເຄື່ອງເຫັນຂໍ້ມູນຂອງຕົນເອງ. ກວດໃຫ້ທຸກເຄື່ອງນຳເຂົ້າແຜນໄຟລ໌ດຽວກັນ (ເບິ່ງຊື່ໄຟລ໌ຂ້າງເທິງ) ຫຼື <a onclick="openCloud()">ເຊື່ອມຖານຂໍ້ມູນກາງ</a>'}</div></div>
+   <div class="panel"><h3>ພື້ນທີ່ເກັບຂໍ້ມູນໃນເຄື່ອງ</h3><div class="prog" style="max-width:420px"><div class="t"><i style="width:${pct}%;${pct>85?'background:var(--red)':''}"></i></div><span>${pct}%</span></div>
      <div class="strip" style="margin:12px 0 0"><span>ລູກຄ້າ <b>${money(DB.customers.length)}</b></span><span>ລາຍການຈັດສົ່ງ <b>${money(DB.deliveries.length)}</b></span><span>ແຖວຍອດຂາຍ <b>${money(Object.keys(RXB()).length)}</b></span><span>ບັນທຶກສະຖານະ <b>${money(Object.keys(P()).length)}</b></span></div></div>
    <div class="panel"><h3>ສຳຮອງ ແລະ ນຳເຂົ້າ</h3><div class="row" style="margin:0"><button class="btn sm" onclick="exportJSON()">ສຳຮອງຂໍ້ມູນ</button><button class="btn sm" onclick="document.getElementById('importFile').click()">ກູ້ຈາກໄຟລ໌ສຳຮອງ</button><button class="btn sm" onclick="document.getElementById('planFile').click()">ນຳເຂົ້າແຜນສົ່ງ</button><button class="btn sm" onclick="exportAllPlans()">ສົ່ງອອກແຜນທັງໝົດ</button><button class="btn sm" onclick="document.getElementById('salesFile').click()">ນຳເຂົ້າຍອດຂາຍ</button><button class="btn sm" onclick="openCloud()">ຖານຂໍ້ມູນກາງ</button></div></div>
    <div class="panel"><h3>ຍອດຂາຍທີ່ນຳເຂົ້າ <span class="count">${days.length?days.length+' ວັນ':''}</span></h3>${days.length?`<div class="tbl-wrap"><table><thead><tr><th>ວັນທີ</th><th class="num">ແຖວ</th><th class="num">ລູກຄ້າ</th><th></th></tr></thead><tbody>${days.slice(0,31).map(([d,o])=>`<tr><td><b>${d}</b></td><td class="num">${money(o.n)}</td><td class="num">${money(o.c.size)}</td><td><div class="actions"><button class="icon-btn del" onclick="delSalesDay('${d}')">ລຶບວັນນີ້</button></div></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty">ຍັງບໍ່ໄດ້ນຳເຂົ້າຍອດຂາຍ<br><button class="btn sm" onclick="document.getElementById('salesFile').click()">ນຳເຂົ້າຍອດຂາຍ</button></div>`}</div>
