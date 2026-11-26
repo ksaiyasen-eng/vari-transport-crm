@@ -334,20 +334,30 @@ table.stops tr:hover td:last-child{background:var(--card2)}
   #home .grid2{gap:0}#home .panel{padding:16px;margin-bottom:14px;border-radius:14px}#home .panel h3{font-size:17px;margin-bottom:14px}
   #home .bar-row{gap:10px;margin-bottom:10px}#home .bar-row .name{width:104px;font-size:14px}#home .bar-track{height:26px}#home .bar-fill{font-size:14.5px;padding-right:8px;min-width:40px}
 }
-/* home cover: calm card, today's number, progress bar, one primary button */
-.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:26px 30px;margin-bottom:22px}
+/* home cover: glowing progress dial on a deep-blue panel (owner's reference picture 2026-11-26) */
+.hero{position:relative;overflow:hidden;display:flex;align-items:center;gap:36px;background:radial-gradient(circle at 18% 50%,#0f3a66 0,#0a213d 45%,#071528 100%);color:#e4f1fb;border:1px solid #16365a;border-radius:16px;padding:28px 36px;margin-bottom:22px}
+.dial{position:relative;width:200px;height:200px;flex:0 0 auto}
+.dial svg{width:100%;height:100%;overflow:visible}
+.dial .tk{stroke:#3b6a96;stroke-width:2;stroke-linecap:round}
+.dial .tk.on{stroke:#7dd3fc}
+.dial .tr{fill:none;stroke:#143457;stroke-width:10}
+.dial .pv{fill:none;stroke:#38bdf8;stroke-width:10;stroke-linecap:round;filter:drop-shadow(0 0 6px #38bdf8) drop-shadow(0 0 14px rgba(56,189,248,.55));transition:stroke-dasharray .6s ease-out}
+.dial .ct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.2}
+.dial .ct small{font-size:13.5px;color:#9cc3e4}
+.dial .ct b{font-size:44px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 0 18px rgba(56,189,248,.45)}
+.dial .ct span{font-size:14.5px;color:#4ade80;font-weight:700}
+.dial .ct span.warn{color:#fbbf24}
 .hero-txt{flex:1;min-width:0}
-.hero-k{font-size:15.5px;color:var(--muted)}
-.hero h2{font-size:30px;line-height:1.4;margin:2px 0 14px;color:var(--ink)}
-.hero h2 b{color:var(--accent);font-size:40px;font-variant-numeric:tabular-nums}
-.hbar{display:flex;align-items:center;gap:12px;max-width:560px}
-.hbar .t{flex:1;height:10px;border-radius:5px;background:var(--line);overflow:hidden}
-.hbar .t i{display:block;height:100%;background:var(--green);border-radius:5px}
-.hbar b{font-size:17px;font-variant-numeric:tabular-nums;min-width:48px;text-align:right}
-.hero p{font-size:16px;color:var(--ink2);margin-top:10px}
-.hero p b{color:var(--ink)}
-.btn.hero-btn{height:52px;padding:0 24px;font-size:17px;flex:0 0 auto}
-@media(max-width:767px){.hero{flex-direction:column;align-items:stretch;padding:18px;gap:14px;margin-bottom:14px}.hero h2{font-size:22px;margin-bottom:10px}.hero h2 b{font-size:30px}.hero p{font-size:15px}.btn.hero-btn{width:100%;justify-content:center}}
+.hero-k{font-size:15.5px;color:#9cc3e4}
+.hero h2{font-size:30px;line-height:1.4;margin:2px 0 8px;color:#fff}
+.hero h2 b{color:#7dd3fc;font-size:40px;font-variant-numeric:tabular-nums}
+.hero p{font-size:16px;color:#c7dcef;margin-bottom:18px}
+.hero p b{color:#fff}
+.btn.hero-btn{height:50px;padding:0 24px;font-size:17px;background:#38bdf8;border-color:#38bdf8;color:#03243a}
+.btn.hero-btn:hover{background:#7dd3fc;border-color:#7dd3fc}
+.kpi .spark{display:block;width:100%;height:34px;margin-top:8px;color:var(--accent)}
+.kpi .spark.red{color:var(--red)}
+@media(max-width:767px){.hero{flex-direction:column;align-items:stretch;text-align:center;padding:22px 18px;gap:12px;margin-bottom:14px}.dial{width:160px;height:160px;align-self:center}.dial .ct b{font-size:36px}.hero h2{font-size:22px}.hero h2 b{font-size:30px}.hero p{font-size:15px;margin-bottom:14px}.btn.hero-btn{width:100%;justify-content:center}}
 /* icon above label on every button that has an icon (owner's choice 2026-11-23) */
 .btn:has(>svg.i),.fbtn:has(>svg.i),.icon-btn:has(>svg.i){flex-direction:column;justify-content:center;height:auto;gap:3px;line-height:1.25;text-align:center}
 .btn:has(>svg.i){min-height:56px;padding:7px 14px}
@@ -465,13 +475,13 @@ table.stops tr:hover td:last-child{background:var(--card2)}
   <section class="view" id="home">
     <div id="homeNote"></div>
     <div class="hero">
+      <div class="dial" id="homeRing"></div>
       <div class="hero-txt">
         <div class="hero-k" id="homeDay"></div>
         <h2 id="homeTitle"></h2>
-        <div class="hbar" id="homeRing"></div>
         <p id="homeSub"></p>
+        <button class="btn hero-btn" id="homeCta"></button>
       </div>
-      <button class="btn hero-btn" id="homeCta"></button>
     </div>
     <div class="kpis" id="homeKpi"></div>
     <div class="grid2">
@@ -717,7 +727,8 @@ function load(){let s=null;try{s=localStorage.getItem(KEY);if(s){const d=normDB(
   if(s)try{localStorage.setItem(KEY+'_unreadable',s);}catch(e){} // damaged data is set aside, never silently destroyed
   const d=seed();try{localStorage.setItem(KEY,JSON.stringify(d));}catch(e){}return d;}
 let _spaceWarned=false;
-function saveLocal(){try{const j=JSON.stringify(DB);localStorage.setItem(KEY,j);if(j.length>4400000&&!_spaceWarned){_spaceWarned=true;toast('⚠ ພື້ນທີ່ເກັບໃນເຄື່ອງໃກ້ເຕັມ ('+Math.round(j.length/52000)+'%) — ລຶບຍອດຂາຍວັນເກົ່າທີ່ ຕັ້ງຄ່າ → ຂໍ້ມູນ');}}catch(e){toast('⚠ ພື້ນທີ່ເກັບໃນເຄື່ອງເຕັມ — ກົດ ⬇ ສຳຮອງ ແລ້ວລຶບຂໍ້ມູນເກົ່າ');}}
+let _sv=0; // bumps on every save, so cached home numbers refresh after any edit
+function saveLocal(){_sv++;try{const j=JSON.stringify(DB);localStorage.setItem(KEY,j);if(j.length>4400000&&!_spaceWarned){_spaceWarned=true;toast('⚠ ພື້ນທີ່ເກັບໃນເຄື່ອງໃກ້ເຕັມ ('+Math.round(j.length/52000)+'%) — ລຶບຍອດຂາຍວັນເກົ່າທີ່ ຕັ້ງຄ່າ → ຂໍ້ມູນ');}}catch(e){toast('⚠ ພື້ນທີ່ເກັບໃນເຄື່ອງເຕັມ — ກົດ ⬇ ສຳຮອງ ແລ້ວລຶບຂໍ້ມູນເກົ່າ');}}
 function save(){saveLocal();pushCloud();}
 
 /* ============ CLOUD SYNC (Firebase): every record is saved and merged on its own, so a tap sends a few bytes and two people never overwrite each other ============ */
@@ -938,6 +949,12 @@ function cleanSeed(){const n=DB.deliveries.filter(isSeedDel).length;if(!n){toast
   if(!confirm(`ລຶບລາຍການຈັດສົ່ງຕົວຢ່າງ ${n} ລາຍການ? ເປັນຕົວເລກທີ່ລະບົບສ້າງໄວ້ຕອນເລີ່ມ ບໍ່ແມ່ນຂໍ້ມູນຈິງ (ຍ້ອນກັບໄດ້)`))return;
   const before=DB.deliveries.slice();DB.deliveries=DB.deliveries.filter(d=>!isSeedDel(d));save();renderAll();
   toast(`ລຶບລາຍການຕົວຢ່າງແລ້ວ ${n} ລາຍການ`,()=>{DB.deliveries=before;save();renderAll();});}
+// 7-day history is heavy (per-day last-service scan) — reuse it until the data changes
+let _ht={k:'',v:[]};
+function homeTrend(){const k=_sv+'|'+ymd(new Date());
+  if(_ht.k!==k)_ht={k,v:naniSummary().byDate};return _ht.v;}
+function spark(a,cls){if(a.length<2)return '';const mx=Math.max(1,...a),w=120,h=30,pt=a.map((v,i)=>[(i/(a.length-1)*w).toFixed(1),(h-2-v/mx*(h-6)).toFixed(1)]);
+  return `<svg class="spark ${cls||''}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,${h} ${pt.map(p=>p.join(',')).join(' ')} ${w},${h}" fill="currentColor" opacity=".14"/><polyline points="${pt.map(p=>p.join(',')).join(' ')}" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;}
 function renderHome(){
   if(!document.getElementById('home').classList.contains('active'))return;
   const t=ymd(new Date()),dow=new Date(t).getUTCDay(),last=lastDone(),ds=deliverySet(t);
@@ -948,15 +965,17 @@ function renderHome(){
   // hero: today's plan at a glance
   document.getElementById('homeDay').textContent='ວັນ'+DOWN[(dow+6)%7]+' · '+t;
   document.getElementById('homeTitle').innerHTML=off?'ມື້ນີ້ເປັນວັນພັກ':rows.length?`ມື້ນີ້ຕ້ອງສົ່ງ <b>${money(rows.length)}</b> ລາຍ`:'ມື້ນີ້ຍັງບໍ່ມີແຜນ';
-  document.getElementById('homeSub').innerHTML=off?'ມື້ນີ້ບໍ່ມີແຜນສົ່ງ':rows.length?`ສົ່ງແລ້ວ <b>${money(done)}</b> · ຍັງບໍ່ສົ່ງ <b>${money(todo)}</b> · ຖັງ <b>${money(rows.reduce((x,c)=>x+(c.tank||0),0))}</b>`:'ໄປຈັດແຜນ ຫຼື ນຳເຂົ້າແຜນເພື່ອເລີ່ມຕົ້ນ';
+  document.getElementById('homeSub').innerHTML=off?'ມື້ນີ້ບໍ່ມີແຜນສົ່ງ':rows.length?`ສົ່ງແລ້ວ <b>${money(done)}</b> · ຖັງ <b>${money(rows.reduce((x,c)=>x+(c.tank||0),0))}</b>`:'ໄປຈັດແຜນ ຫຼື ນຳເຂົ້າແຜນເພື່ອເລີ່ມຕົ້ນ';
   const cta=document.getElementById('homeCta'),noPlan=!DB.customers.some(hasDay);
   cta.textContent=noPlan?'ນຳເຂົ້າແຜນສົ່ງ':'ເບິ່ງແຜນມື້ນີ້ →';cta.onclick=noPlan?()=>document.getElementById('planFile').click():()=>goToday();
-  document.getElementById('homeRing').innerHTML=rows.length&&!off?`<div class="t" role="progressbar" aria-label="ສົ່ງແລ້ວ" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div><b>${pct}%</b>`:'';
-  const K=(k,ic,cls,l,v,foot)=>`<button class="kpi" data-ui="content" onclick="kgo('${k}')"><div class="kic ${cls}">${ico(ic)}</div><div><div class="lbl">${l}</div><div class="val ${v&&cls==='red'?'red':''}">${v}</div><div class="foot">${foot}</div></div></button>`;
+  const R=78,C=2*Math.PI*R,tk=[];for(let i=0;i<60;i++){const a=i/60*2*Math.PI-Math.PI/2,c=Math.cos(a),n=Math.sin(a),l=i%5?6:11;tk.push(`<line class="tk${i/60*100<pct?' on':''}" x1="${(100+c*92).toFixed(1)}" y1="${(100+n*92).toFixed(1)}" x2="${(100+c*(92-l)).toFixed(1)}" y2="${(100+n*(92-l)).toFixed(1)}"/>`);}
+  document.getElementById('homeRing').innerHTML=`<svg viewBox="0 0 200 200" aria-hidden="true">${tk.join('')}<circle class="tr" cx="100" cy="100" r="${R}"/>${pct&&rows.length&&!off?`<circle class="pv" cx="100" cy="100" r="${R}" transform="rotate(-90 100 100)" stroke-dasharray="${(pct/100*C).toFixed(1)} ${C.toFixed(1)}"/>`:''}</svg><div class="ct" role="img" aria-label="ສົ່ງແລ້ວ ${pct}%"><small>ສົ່ງແລ້ວມື້ນີ້</small><b>${off||!rows.length?'—':pct+'%'}</b>${off||!rows.length?'':todo?`<span class="warn">ຍັງເຫຼືອ ${money(todo)} ລາຍ</span>`:'<span>ສົ່ງຄົບແລ້ວ</span>'}</div>`;
+  const K=(k,ic,cls,l,v,foot,sp='')=>`<button class="kpi" data-ui="content" onclick="kgo('${k}')"><div class="kic ${cls}">${ico(ic)}</div><div style="flex:1;min-width:0"><div class="lbl">${l}</div><div class="val ${v&&cls==='red'?'red':''}">${v}</div><div class="foot">${foot}</div>${sp}</div></button>`;
+  const hs=homeTrend(),miss=hs.map(x=>x.due-x.done);
   document.getElementById('homeKpi').innerHTML=
-    K('todo','truck',todo?'red':'green','ຍັງບໍ່ສົ່ງມື້ນີ້',money(todo),'ລາຍ')+
+    K('todo','truck',todo?'red':'green','ຍັງບໍ່ສົ່ງມື້ນີ້',money(todo),miss.length>1?'ລາຍ · ເສັ້ນ = ພາດສົ່ງຕໍ່ວັນ ຮອດ '+hs[hs.length-1].d.slice(8)+'/'+hs[hs.length-1].d.slice(5,7):'ລາຍ',spark(miss,'red'))+
     K('noDay','hole',u.noDay.length?'red':'green','ຍັງບໍ່ເຂົ້າແຜນ',money(u.noDay.length),u.offd.length?'ລາຍ · ວັນພັກ ຕ້ອງຍ້າຍ '+money(u.offd.length):'ລາຍ')+
-    K('over','clock',u.over.length?'amber':'green','ເກີນກຳນົດຮອບ',money(u.over.length),'ລາຍ')+
+    K('over','clock',u.over.length?'amber':'green','ເກີນກຳນົດ',money(u.over.length),'ລາຍ')+
     K('debt','wallet',debt?'red':'green','ໜີ້ຄ້າງຊຳລະ',money(debt),'ກີບ');
   const by={};rows.forEach(c=>{if(!st(c)){const b=c.branch||'-';by[b]=(by[b]||0)+1;}});
   document.getElementById('homeBars').innerHTML=rows.length?(Object.keys(by).length?barChart(Object.fromEntries(Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,8))):`<div class="empty">${ico('check-circle')}ສົ່ງຄົບທຸກລາຍໃນແຜນມື້ນີ້ແລ້ວ</div>`):'<div class="empty">ມື້ນີ້ບໍ່ມີລູກຄ້າໃນແຜນ</div>';
