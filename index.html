@@ -780,17 +780,22 @@ function flatDB(){const out={},put=(p,v)=>{const c=fbClean(v);if(c!==undefined)o
   FB_LISTS.forEach(l=>(DB[l]||[]).forEach(x=>put(l+'/'+fbEnc(x.id),x)));
   FB_MAPS.forEach(m=>Object.entries(DB[m]||{}).forEach(([k,v])=>put(m+'/'+fbEnc(k),v)));
   if(DB.planStart)put('misc/planStart',DB.planStart);return out;}
-function savePend(){try{localStorage.setItem(PEND_KEY,JSON.stringify(Object.keys(cloud.pending)));}catch(e){}}
+function savePend(){try{localStorage.setItem(PEND_KEY,JSON.stringify(Object.keys(cloud.pending)));}catch(e){if(!cloud.pendWarn){cloud.pendWarn=1;toast('⚠ ພື້ນທີ່ໃນເຄື່ອງເຕັມ — ລາຍການທີ່ຍັງບໍ່ຂຶ້ນຖານກາງອາດເສຍຖ້າປິດແອັບ. ກົດ ⬇ ສຳຮອງ ແລ້ວລຶບຍອດຂາຍເກົ່າ');}}}
 function trackLocal(){const now=flatDB(),ops={},last=cloud.last;let n=0;const g=++cloud.gen;
   for(const p in now){const s=JSON.stringify(now[p]);if(last[p]!==s){ops[p]=now[p];last[p]=s;cloud.pending[p]=g;n++;}}
   for(const p in last)if(!(p in now)){ops[p]=null;delete last[p];cloud.pending[p]=g;n++;}
   if(n)savePend();return n?{ops,g}:null;}
-function sendOps(ops,g){const ks=Object.keys(ops);if(!ks.length||!cloud.ref)return;setCloudStatus('syncing','ກຳລັງບັນທຶກ…');
+function markLinked(){if(cloud.link&&!cloud.link.linked&&cloud.ready&&!Object.keys(cloud.pending).length){cloud.link.linked=true;delete cloud.link.pushLocal;try{localStorage.setItem(CLOUD_KEY,JSON.stringify(cloud.link));}catch(e){}}}
+function forgetSent(keys){keys.forEach(k=>{cloud.last[k]='"retry"';});} // the next flush sends these keys again
+function sendOps(ops,g){const ks=Object.keys(ops);if(!ks.length||!cloud.ref)return Promise.resolve(!ks.length);setCloudStatus('syncing','ກຳລັງບັນທຶກ…');const jobs=[],ref=cloud.ref;
   for(let i=0;i<ks.length;i+=2000){const part={},keys=ks.slice(i,i+2000);keys.forEach(k=>{part[k]=ops[k];});
-    try{cloud.ref.update(part).then(()=>{keys.forEach(k=>{if(cloud.pending[k]===g)delete cloud.pending[k];});savePend();if(cloud.online)setCloudStatus('on','ອອນໄລນ໌');})
-      .catch(e=>{setCloudStatus('','ບັນທຶກບໍ່ສຳເລັດ');toast('ບັນທຶກຂຶ້ນຖານກາງບໍ່ສຳເລັດ — ຂໍ້ມູນຍັງຢູ່ໃນເຄື່ອງ ຈະລອງໃໝ່ເມື່ອແກ້ໄຂ');});}
-    catch(e){setCloudStatus('','ບັນທຶກບໍ່ສຳເລັດ');toast('ບັນທຶກຂຶ້ນຖານກາງບໍ່ສຳເລັດ — ຂໍ້ມູນຍັງຢູ່ໃນເຄື່ອງ');}}}
-function flushCloud(){if(!cloud.on)return;const t=trackLocal();if(t&&cloud.ready)sendOps(t.ops,t.g);}
+    jobs.push(Promise.resolve().then(()=>ref.update(part)).then(()=>{if(cloud.ref!==ref)return false;keys.forEach(k=>{if(cloud.pending[k]===g)delete cloud.pending[k];});cloud.bo=0;cloud.failMsg=0;savePend();markLinked();if(cloud.online)setCloudStatus('on','ອອນໄລນ໌');return true;})
+      .catch(e=>{if(cloud.ref!==ref)return false;forgetSent(keys,ops);
+        // hold: no resend on every edit or snapshot; only the timer retries, waiting longer each time (30 s, 60 s … 5 min)
+        if(!cloud.hold){cloud.hold=true;cloud.bo=Math.min((cloud.bo||15)*2,300);clearTimeout(cloud.rt);cloud.rt=setTimeout(()=>{cloud.hold=false;flushCloud();},cloud.bo*1000);}
+        setCloudStatus('','ບັນທຶກບໍ່ສຳເລັດ');if(!cloud.failMsg){cloud.failMsg=1;toast('ບັນທຶກຂຶ້ນຖານກາງບໍ່ສຳເລັດ — ຂໍ້ມູນຍັງຢູ່ໃນເຄື່ອງ ຈະລອງໃໝ່ອັດຕະໂນມັດ');}return false;}));}
+  return Promise.all(jobs).then(r=>r.every(Boolean));}
+function flushCloud(){if(!cloud.on)return;const t=trackLocal();if(!t||!cloud.ready)return;if(cloud.hold){forgetSent(Object.keys(t.ops),t.ops);return;}sendOps(t.ops,t.g);} // during hold the edits stay pending and go with the next timed retry
 function pushCloud(){if(!cloud.on)return;clearTimeout(cloud.timer);cloud.timer=setTimeout(flushCloud,250);}
 function readSnap(snap){const r={};FB_LISTS.concat(FB_MAPS,'misc').forEach(c=>{snap.child(c).forEach(ch=>{r[c+'/'+ch.key]=ch.val();});});return r;}
 function mergeRemote(remote){const local=flatDB(),idx={};FB_LISTS.forEach(l=>{idx[l]=new Map((DB[l]||[]).map((x,i)=>[x.id,i]));});let changed=0;
@@ -804,15 +809,22 @@ function mergeRemote(remote){const local=flatDB(),idx={};FB_LISTS.forEach(l=>{id
 function finishFirstSync(remote){const now=flatDB();
   if(!Object.keys(remote).length){const g=++cloud.gen;Object.keys(now).forEach(p=>{cloud.pending[p]=g;});}
   else mergeRemote(remote);
-  cloud.ready=true;cloud.link.linked=true;try{localStorage.setItem(CLOUD_KEY,JSON.stringify(cloud.link));}catch(e){}
+  cloud.ready=true; // linked is set by markLinked() only after every pending record reached the cloud: a reload mid-push asks again instead of deleting local rows
   const cur=flatDB(),ops={},g=++cloud.gen;Object.keys(cloud.pending).forEach(p=>{ops[p]=cur[p]===undefined?null:cur[p];cloud.pending[p]=g;if(cur[p]!==undefined)cloud.last[p]=JSON.stringify(cur[p]);});savePend();
-  if(Object.keys(ops).length)sendOps(ops,g);else if(cloud.online)setCloudStatus('on','ອອນໄລນ໌');}
-function askCloudChoice(remote){cloud.choosing=true;setCloudStatus('syncing','ລໍຖ້າເລືອກຂໍ້ມູນ');const nR=Object.keys(remote).filter(p=>p.startsWith('customers/')).length;
-  showModal('ເລືອກຂໍ້ມູນທີ່ຈະໃຊ້',`<div class="notice">ຖານກາງມີລູກຄ້າ ${money(nR)} ລາຍ · ເຄື່ອງນີ້ມີ ${money(DB.customers.length)} ລາຍ</div>
-    <div class="field"><label style="font-weight:400;color:var(--ink)"><input type="radio" name="cl_pick" value="cloud" checked style="width:auto"> ໃຊ້ຂໍ້ມູນຈາກຖານກາງ — ຂໍ້ມູນໃນເຄື່ອງນີ້ຈະຖືກແທນທີ່ (ແນະນຳ)</label>
-    <label style="font-weight:400;color:var(--ink)"><input type="radio" name="cl_pick" value="local" style="width:auto"> ສົ່ງຂໍ້ມູນເຄື່ອງນີ້ແທນຖານກາງ — ທຸກເຄື່ອງຈະເຫັນຂໍ້ມູນຊຸດນີ້</label></div>`,
-  ()=>{cloud.choosing=false;if(document.querySelector('input[name=cl_pick]:checked').value==='local'){const g=++cloud.gen;Object.keys(flatDB()).concat(Object.keys(remote)).forEach(p=>{cloud.pending[p]=g;});}else{cloud.pending={};cloud.last={};}finishFirstSync(remote);},
-  {extra:'ຍົກເລີກການເຊື່ອມຕໍ່',extraFn:()=>{cloud.choosing=false;disconnectCloud();closeModal();}});}
+  if(Object.keys(ops).length)sendOps(ops,g);else{markLinked();if(cloud.online)setCloudStatus('on','ອອນໄລນ໌');}}
+function downloadJSON(obj,name){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(obj)],{type:'application/json'}));a.download=name+'-'+today()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);}
+function askCloudChoice(remote){cloud.choosing=true;setCloudStatus('syncing','ລໍຖ້າເລືອກຂໍ້ມູນ');const nR=Object.keys(remote).filter(p=>p.startsWith('customers/')).length,nL=DB.customers.length;
+  const nP=k=>Object.keys(k).length,pinR=nP(fbPlain((remote['cfg/bpos'])||{})),pinL=nP(CF().bpos||{}),plR=Object.entries(remote).filter(([p,v])=>p.startsWith('customers/')&&v&&v.zone&&v.day).length,plL=DB.customers.filter(c=>c.zone&&c.day).length;
+  const locWins=nL>=nR&&plL>=plR&&pinL>=pinR,cloudWins=nR>=nL&&plR>=plL&&pinR>=pinL,pick=cloud.hadPend?'local':locWins&&!cloudWins?'local':cloudWins?'cloud':''; // hadPend = the owner explicitly chose 'send this device' and the push was cut off // unfinished push from this device, or every number higher here -> this device; mixed numbers -> the owner must pick
+  showModal('ເລືອກຂໍ້ມູນທີ່ຈະໃຊ້',`<div class="notice">ຖານກາງ: ລູກຄ້າ ${money(nR)} · ຢູ່ໃນແຜນ ${money(plR)} · ພິກັດຮ້ານ ${pinR}<br>ເຄື່ອງນີ້: ລູກຄ້າ ${money(nL)} · ຢູ່ໃນແຜນ ${money(plL)} · ພິກັດຮ້ານ ${pinL}</div>
+    <div class="field"><label style="font-weight:400;color:var(--ink)"><input type="radio" name="cl_pick" value="cloud" ${pick==='cloud'?'checked':''} style="width:auto"> ໃຊ້ຂໍ້ມູນຈາກຖານກາງ — ຂໍ້ມູນໃນເຄື່ອງນີ້ຈະຖືກແທນທີ່${pick==='cloud'?' (ແນະນຳ)':''}</label>
+    <label style="font-weight:400;color:var(--ink)"><input type="radio" name="cl_pick" value="local" ${pick==='local'?'checked':''} style="width:auto"> ສົ່ງຂໍ້ມູນເຄື່ອງນີ້ແທນຖານກາງ — ທຸກເຄື່ອງຈະເຫັນຂໍ້ມູນຊຸດນີ້${pick==='local'?(cloud.hadPend?' (ແນະນຳ: ເຄື່ອງນີ້ສົ່ງຄ້າງໄວ້)':' (ແນະນຳ)'):''}</label></div>
+    ${pick?'':'<div class="notice">ຕົວເລກສອງຝັ່ງຂັດກັນ — ກວດໃຫ້ແນ່ໃຈວ່າຝັ່ງໃດມີແຜນ ແລະ ພິກັດຮ້ານຄົບ ແລ້ວເລືອກເອງ</div>'}
+    <div class="hint">ລະບົບຈະດາວໂຫຼດໄຟລ໌ສຳຮອງຂອງຝັ່ງທີ່ຈະຖືກແທນທີ່ໃຫ້ກ່ອນ</div><div class="hint" id="cl_perr" role="alert"></div>`,
+  ()=>{const sel=document.querySelector('input[name=cl_pick]:checked');if(!sel){document.getElementById('cl_perr').textContent='ເລືອກຢ່າງໃດຢ່າງໜຶ່ງກ່ອນບັນທຶກ';return false;}
+    cloud.choosing=false;if(sel.value==='local'){cloud.link.pushLocal=true;try{localStorage.setItem(CLOUD_KEY,JSON.stringify(cloud.link));}catch(e){}if(nR)downloadJSON(fbPlain(remote),'vari-crm-cloud-backup');const g=++cloud.gen;Object.keys(flatDB()).concat(Object.keys(remote)).forEach(p=>{cloud.pending[p]=g;});}else{if(DB.customers.length)exportJSON();cloud.pending={};cloud.last={};}finishFirstSync(remote);},
+  {extra:'ຍົກເລີກການເຊື່ອມຕໍ່',extraFn:cancelChoice});
+  document.querySelectorAll('#modal .modal-head .x, #modal .modal-foot .btn.ghost').forEach(b=>b.setAttribute('onclick','cancelChoice()'));}
 function applySnap(snap){if(cloud.choosing||!cloud.on)return;flushCloud();const remote=readSnap(snap);
   if(cloud.ready){if(mergeRemote(remote))toast('ອັບເດດຂໍ້ມູນຈາກທີມແລ້ວ');return;}
   if(Object.keys(remote).length&&DB.customers.length&&!cloud.link.linked)return askCloudChoice(remote);
@@ -829,24 +841,23 @@ function parseCfg(raw){ // Firebase config pasted as JSON or as a JS object lite
   try{return JSON.parse(raw);}catch(e){}
   const t=raw.replace(/(^|\s)\/\/[^\n]*/g,'$1').replace(/'([^']*)'/g,(m,v)=>JSON.stringify(v)).replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g,'$1"$2":').replace(/,\s*}/g,'}');
   return JSON.parse(t);}
-function stopCloud(){clearTimeout(cloud.timer);clearTimeout(cloud.snapT);clearTimeout(cloud.retry);cloud.snapT=0;if(cloud.ref){try{cloud.ref.off();}catch(e){}}cloud.ref=null;cloud.ready=false;cloud.on=false;cloud.choosing=false;}
+function stopCloud(){clearTimeout(cloud.timer);clearTimeout(cloud.rt);cloud.hold=false;cloud.bo=0;cloud.failMsg=0;clearTimeout(cloud.snapT);clearTimeout(cloud.retry);cloud.snapT=0;if(cloud.ref){try{cloud.ref.off();}catch(e){}}cloud.ref=null;cloud.ready=false;cloud.on=false;cloud.choosing=false;}
 function connectCloud(link,silent,_t){
-  if(typeof firebase==='undefined'||!firebase.database){
-    if(_t){setCloudStatus('','ອອບໄລນ໌');toast('ໂຫຼດ Firebase ບໍ່ໄດ້ (ກວດອິນເຕີເນັດ)');return;}
-    setCloudStatus('syncing','ກຳລັງໂຫຼດ…');needFirebase().then(()=>connectCloud(link,silent,1)).catch(()=>connectCloud(link,silent,1));return;}
-  stopCloud();setCloudStatus('syncing','ກຳລັງເຊື່ອມຕໍ່…');
-  cloud.link=link;cloud.on=true;cloud.last={};const base=flatDB();for(const p in base)cloud.last[p]=JSON.stringify(base[p]);
-  cloud.pending={};try{JSON.parse(localStorage.getItem(PEND_KEY)||'[]').forEach(p=>{cloud.pending[p]=-1;});}catch(e){}
-  try{localStorage.setItem(CLOUD_KEY,JSON.stringify(link));}catch(e){}
-  const start=()=>{let db;
+  if(!_t){stopCloud();cloud.link=link;cloud.on=true;cloud.last={};const base=flatDB();for(const p in base)cloud.last[p]=JSON.stringify(base[p]);
+    cloud.pending={};try{JSON.parse(localStorage.getItem(PEND_KEY)||'[]').forEach(p=>{cloud.pending[p]=-1;});}catch(e){}cloud.hadPend=!!link.pushLocal;
+    try{localStorage.setItem(CLOUD_KEY,JSON.stringify(link));}catch(e){}} // from here every edit is kept as pending, even while Firebase loads or the net is down
+  if(typeof firebase==='undefined'||!firebase.database){setCloudStatus('syncing','ກຳລັງໂຫຼດ…');
+    needFirebase().then(()=>connectCloud(link,silent,1)).catch(()=>{if(cloud.link!==link)return;setCloudStatus('syncing','ອອບໄລນ໌ — ບັນທຶກໄວ້ໃນເຄື່ອງ');clearTimeout(cloud.retry);cloud.retry=setTimeout(()=>{if(cloud.link===link)connectCloud(link,silent,1);},30000);});return;}
+  if(cloud.link!==link)return;clearTimeout(cloud.retry);if(cloud.ref){try{cloud.ref.off();}catch(e){}cloud.ref=null;}cloud.ready=false;setCloudStatus('syncing','ກຳລັງເຊື່ອມຕໍ່…');
+  const start=()=>{if(cloud.link!==link)return;let db;
     try{db=firebase.database();cloud.ref=db.ref('spaces/'+link.s);}catch(e){setCloudStatus('','ຕັ້ງຄ່າບໍ່ຖືກຕ້ອງ');toast('databaseURL ບໍ່ຖືກຕ້ອງ — ກ໊ອບ config ຈາກ Firebase ມາໃໝ່');return;}
     cloud.ref.on('value',onCloudSnap,err=>{cloud.ready=false;setCloudStatus('','ບໍ່ມີສິດເຂົ້າຖານກາງ');toast('ເຂົ້າຖານກາງບໍ່ໄດ້ — ກວດວ່າວາງ Rules ຕາມຄູ່ມືແລ້ວ');});
     db.ref('.info/connected').on('value',s=>{cloud.online=s.val()===true;if(cloud.online){if(cloud.ready)setCloudStatus('on','ອອນໄລນ໌');}else setCloudStatus('syncing','ອອບໄລນ໌ — ບັນທຶກໄວ້ໃນເຄື່ອງ');});
     if(!silent)toast('ເຊື່ອມຕໍ່ຖານຂໍ້ມູນກາງແລ້ວ ✓');};
-  const signIn=()=>firebase.auth().signInAnonymously().then(start).catch(e=>{
+  const signIn=()=>{if(cloud.link!==link)return;return firebase.auth().signInAnonymously().then(start).catch(e=>{if(cloud.link!==link)return;
     if(e&&e.code==='auth/network-request-failed'){setCloudStatus('syncing','ອອບໄລນ໌ — ບັນທຶກໄວ້ໃນເຄື່ອງ');cloud.retry=setTimeout(signIn,30000);return;}
-    setCloudStatus('','ເຊື່ອມຕໍ່ບໍ່ໄດ້');toast('ເຊື່ອມຕໍ່ບໍ່ໄດ້ — ເປີດ Anonymous ໃນ Firebase Authentication ກ່ອນ');});
-  const init=()=>{try{firebase.initializeApp(link.c);}catch(e){setCloudStatus('','ຕັ້ງຄ່າບໍ່ຖືກຕ້ອງ');toast('Config ບໍ່ຖືກຕ້ອງ — ກ໊ອບຈາກ Firebase ມາໃໝ່');return;}signIn();};
+    setCloudStatus('','ເຊື່ອມຕໍ່ບໍ່ໄດ້');toast('ເຊື່ອມຕໍ່ບໍ່ໄດ້ — ເປີດ Anonymous ໃນ Firebase Authentication ກ່ອນ');});};
+  const init=()=>{if(cloud.link!==link)return;try{firebase.initializeApp(link.c);}catch(e){setCloudStatus('','ຕັ້ງຄ່າບໍ່ຖືກຕ້ອງ');toast('Config ບໍ່ຖືກຕ້ອງ — ກ໊ອບຈາກ Firebase ມາໃໝ່');return;}signIn();};
   if(firebase.apps.length){Promise.all(firebase.apps.map(a=>a.delete())).then(init).catch(init);}else init();
 }
 function disconnectCloud(){stopCloud();cloud.link=null;cloud.pending={};localStorage.removeItem(CLOUD_KEY);localStorage.removeItem(PEND_KEY);setCloudStatus('','ອອບໄລນ໌');toast('ຕັດການເຊື່ອມຕໍ່ແລ້ວ ຂໍ້ມູນຍັງຢູ່ໃນເຄື່ອງນີ້');}
@@ -1313,14 +1324,15 @@ function saveRates(){CF().prodNames=CF().prodNames||{};PRODUCTS.forEach(p=>{DB.r
 
 /* ============ MODAL / UTIL ============ */
 let saveCb=null,extraCb=null;
-function showModal(title,body,cb,extra){modalDirty=false;saveCb=cb;extraCb=extra?extra.extraFn:null;
+function showModal(title,body,cb,extra){if(cloud.choosing&&title!=='ເລືອກຂໍ້ມູນທີ່ຈະໃຊ້'){toast('ເລືອກຂໍ້ມູນຖານກາງໃຫ້ແລ້ວກ່ອນ');return;}modalDirty=false;saveCb=cb;extraCb=extra?extra.extraFn:null;
   const extraBtn=extra?`<button class="btn danger" onclick="doExtra()">${extra.extra}</button><div style="flex:1"></div>`:'';
   document.getElementById('modal').innerHTML=`<div class="modal-head"><h3>${title}</h3><button class="x" onclick="closeModal()">×</button></div>
    <div class="modal-body">${body}</div>
    <div class="modal-foot">${extraBtn}<button class="btn ghost" onclick="closeModal()">ຍົກເລີກ</button><button class="btn" onclick="doSave()"><svg class=i aria-hidden=true><use href=#i-save /></svg> ບັນທຶກ</button></div>`;
   document.getElementById('overlay').classList.add('show');}
 function doExtra(){if(extraCb)extraCb();}
-function closeModal(){document.getElementById('overlay').classList.remove('show');saveCb=null;}
+function closeModal(){if(cloud.choosing)return;document.getElementById('overlay').classList.remove('show');saveCb=null;}
+function cancelChoice(){cloud.choosing=false;disconnectCloud();closeModal();}
 function doSave(){if(saveCb&&saveCb()===false)return;closeModal();}
 let modalDirty=false;document.getElementById('modal').addEventListener('input',()=>{modalDirty=true;});
 function tryCloseModal(){if(modalDirty){toast('ຂໍ້ມູນທີ່ພິມຍັງບໍ່ໄດ້ບັນທຶກ — ກົດ "ບັນທຶກ" ຫຼື "ຍົກເລີກ"');return;}closeModal();}
@@ -1862,19 +1874,19 @@ function parsePlanItems(rows){
     const geo=String(pg(r,'geo')).split(','),lat=+(+(pg(r,'lat')||geo[0])).toFixed(5)||0,lng=+(+(pg(r,'lng')||geo[1])).toFixed(5)||0;if(lat){o.lat=lat;o.lng=lng;}
     const tw=pg(r,'timeWin');if(tw&&!/narmal|normal/.test(tw))o.timeWin=tw;
     const e=byId.get(id);
-    if(erpDay&&e){if(e.day)delete o.day;if(e.freq>0)delete o.freq;if(e.note)delete o.note;if(e.day||(e.mode&&o.mode!=='pickup'))delete o.mode;} // owner rule 2026-11-26: the ERP file only fills a known customer's empty day / frequency / note
+    if(erpDay&&e){if(e.zone)delete o.zone;if(e.seq)delete o.seq;if(e.day)delete o.day;if(e.freq>0)delete o.freq;if(e.note)delete o.note;if(e.day||(e.mode&&o.mode!=='pickup'))delete o.mode;} // owner rule 2026-11-26: the ERP file only fills a known customer's empty day / frequency / note
     const pick=erpDay&&(o.mode==='pickup'||(o.mode===undefined&&e&&e.mode==='pickup')),pickNote=pick&&o.day?'ວັນໃນ ERP: '+dl.join(', '):''; // owner rule 2026-11-26: pickup customers never become delivery stops
     if(pick)delete o.day;
     if(seen.has(id)){ // same code on several rows: keep the first, remember other days in the note (multi-day customers are rare)
       st.dup++;const f=seen.get(id);if(o.prod==='18L'&&f.o.prod!=='18L')f.o.prod='18L'; // one row per product in the ERP: 18L wins so the 18L plan filter finds the customer
       if(erpDay){if(day&&f.o.day===undefined&&!(e&&e.day)&&!pick){f.o.day=day;if(dl.length>1)f.dayNote='ມີວັນອື່ນ: '+dl.slice(1).join(', ');}return;} // ERP product rows repeat the same days: only fill a day the first row left empty
       if(day&&day!==f.o.day&&!(f.dayNote||'').includes(day))f.dayNote=(f.dayNote?f.dayNote+' · ':'')+'ມີວັນອື່ນ: '+day+(zone?' ('+zone+')':'');return;}
-    const it={o,existing:!!e,vehicle:pg(r,'vehicle'),owner:pg(r,'owner'),dayNote:pickNote||(dl.length>1&&o.day?'ມີວັນອື່ນ: '+dl.slice(1).join(', '):'')};
+    const it={o,existing:!!e,vehicle:erpDay?'':pg(r,'vehicle'),owner:erpDay?'':pg(r,'owner'),dayNote:pickNote||(dl.length>1&&o.day?'ມີວັນອື່ນ: '+dl.slice(1).join(', '):'')};
     seen.set(id,it);items.push(it);
     if(e)st.upd++;else st.add++;
     const kd=o.day!==undefined?o.day:(e?e.day:''),km=o.mode!==undefined?o.mode:(e?e.mode:''); // counts use the day that will really be kept
     if(DOW[kd]!==undefined&&!isWork(kd))st.sun++;else if(DOW[kd]===undefined&&!km)st.noDay++;
-    if(zone){zones.add(zone);if(it.vehicle){zoneVeh.add(zone);if(!DB.vehicles.some(v=>v.id===it.vehicle))newVeh.add(it.vehicle);}
+    if(o.zone){zones.add(o.zone);if(it.vehicle){zoneVeh.add(zone);if(!DB.vehicles.some(v=>v.id===it.vehicle))newVeh.add(it.vehicle);}
       if(it.owner)(empByName(it.owner)?okOwn:badOwn).add(it.owner);}
   });
   Object.assign(st,{erp:erpDay,plans:zones.size,withVeh:zoneVeh.size,ownersOk:[...okOwn],ownersBad:[...badOwn],newVeh:[...newVeh]});
@@ -1904,7 +1916,7 @@ function showImportPreview(P,name){const s=P.st,W=(t)=>`<div class="notice" styl
    ${s.dup?W(`ລະຫັດລູກຄ້າຊ້ຳ ${money(s.dup)} ແຖວ — ໃຊ້ແຖວທຳອິດ ວັນອື່ນຈະຈົດໃນໝາຍເຫດ`):''}
    <div class="field"><label>ວິທີນຳເຂົ້າ</label>
     <label style="font-weight:400;color:var(--ink)"><input type="radio" name="imode" value="merge" checked style="width:auto"> ເພີ່ມ / ອັບເດດ — ລູກຄ້າທີ່ບໍ່ຢູ່ໃນໄຟລ໌ ຍັງຢູ່ແຜນເດີມ (ແນະນຳ)</label>
-    ${s.erp?'<div class="hint">ໄຟລ໌ລູກຄ້າຈາກ ERP: ລູກຄ້າທີ່ມີຢູ່ແລ້ວ ວັນສົ່ງ / ຄວາມຖີ່ / ໝາຍເຫດ ຈະເຕີມສະເພາະທີ່ຍັງວ່າງ · ຊື່ ເບີ ສາຂາ ພິກັດ ອັບເດດຕາມ ERP</div>':`<label style="font-weight:400;color:var(--ink)"><input type="radio" name="imode" value="replace" style="width:auto"> ແທນແຜນເກົ່າທັງໝົດ — ລູກຄ້າທີ່ບໍ່ຢູ່ໃນໄຟລ໌ ຈະເປັນ "ຍັງບໍ່ເຂົ້າແຜນ" ແລະ ລົດ/ຜູ້ຮັບຜິດຊອບເກົ່າຖືກລ້າງ</label>`}</div>
+    ${s.erp?'<div class="hint">ໄຟລ໌ລູກຄ້າຈາກ ERP: ລູກຄ້າທີ່ມີຢູ່ແລ້ວ ວັນສົ່ງ / ຄວາມຖີ່ / ໝາຍເຫດ / ແຜນ / ລຳດັບຈຸດ ຈະເຕີມສະເພາະທີ່ຍັງວ່າງ · ຊື່ ເບີ ສາຂາ ພິກັດ ອັບເດດຕາມ ERP</div>':`<label style="font-weight:400;color:var(--ink)"><input type="radio" name="imode" value="replace" style="width:auto"> ແທນແຜນເກົ່າທັງໝົດ — ລູກຄ້າທີ່ບໍ່ຢູ່ໃນໄຟລ໌ ຈະເປັນ "ຍັງບໍ່ເຂົ້າແຜນ" ແລະ ລົດ/ຜູ້ຮັບຜິດຊອບເກົ່າຖືກລ້າງ</label>`}</div>
    <div class="hint">ນຳເຂົ້າແລ້ວ ກົດ "ຍ້ອນກັບ" ໄດ້ ໃນ 7 ວິນາທີ</div>`,
   ()=>{const r=applyPlanItems(P,{replace:document.querySelector('input[name=imode]:checked').value==='replace'});CF().lastImport={file:String(name).slice(0,120),at:today()+' '+new Date().toTimeString().slice(0,5),n:P.st.rows};save();
     toast(`ນຳເຂົ້າແລ້ວ: ໃໝ່ ${r.add} · ອັບເດດ ${r.upd} · ${r.plans} ແຜນ`,r.undo);});
