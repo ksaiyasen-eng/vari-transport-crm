@@ -961,7 +961,7 @@ function renderHome(){
   const K=(k,ic,cls,l,v,foot)=>`<button class="kpi" data-ui="content" onclick="kgo('${k}')"><div class="kic ${cls}">${ico(ic)}</div><div><div class="lbl">${l}</div><div class="val ${v&&cls==='red'?'red':''}">${v}</div><div class="foot">${foot}</div></div></button>`;
   document.getElementById('homeKpi').innerHTML=
     K('todo','truck',todo?'red':'green','ຍັງບໍ່ສົ່ງມື້ນີ້',money(todo),'ລາຍ')+
-    K('noDay','hole',u.noDay.length?'red':'green','ຍັງບໍ່ເຂົ້າແຜນ',money(u.noDay.length),'ລາຍ')+
+    K('noDay','hole',u.noDay.length?'red':'green','ຍັງບໍ່ເຂົ້າແຜນ',money(u.noDay.length),u.offd.length?'ລາຍ · ວັນພັກ ຕ້ອງຍ້າຍ '+money(u.offd.length):'ລາຍ')+
     K('over','clock',u.over.length?'amber':'green','ເກີນກຳນົດຮອບ',money(u.over.length),'ລາຍ')+
     K('debt','wallet',debt?'red':'green','ໜີ້ຄ້າງຊຳລະ',money(debt),'ກີບ');
   const by={};rows.forEach(c=>{if(!st(c)){const b=c.branch||'-';by[b]=(by[b]||0)+1;}});
@@ -998,10 +998,10 @@ function renderCustomers(){
   const gc={};base0.forEach(c=>{const k=custGroup(c);gc[k]=(gc[k]||0)+1;});const nBad=base0.filter(c=>custIssues(c).length).length;
   document.getElementById('custSum').innerHTML=base0.length?Object.entries(GRP_NAME).filter(([k])=>gc[k]).map(([k,n])=>`<a role="button" tabindex="0" style="cursor:pointer" onclick="setCustGrp('${k}')" onkeydown="if(event.key==='Enter')this.click()">${n} <b class="${k===fg?'blue':k.endsWith('_out')||k==='off'?'red':''}">${money(gc[k])}</b></a>`).join('')+(nBad?`<a role="button" tabindex="0" style="cursor:pointer" onclick="setCq('bad')" onkeydown="if(event.key==='Enter')this.click()">ຂໍ້ມູນບໍ່ຄົບ <b class="red">${money(nBad)}</b></a>`:''):'';
   const base=fg?base0.filter(c=>custGroup(c)===fg):base0;
-  const free=base.filter(c=>!hasDay(c)&&!c.mode),withDebt=base.filter(c=>(debtMap[c.id]||0)>0),bad=base.filter(c=>custIssues(c).length),fresh=free.filter(isNewCust);
-  document.getElementById('custChips').innerHTML=chipHtml([['all','ທັງໝົດ',base.length],['free','ຍັງບໍ່ເຂົ້າແຜນ',free.length],['new','ລູກຄ້າໃໝ່ ຍັງບໍ່ເຂົ້າແຜນ',fresh.length],['bad','ຂໍ້ມູນບໍ່ຄົບ',bad.length],['debt','ມີໜີ້ຄ້າງ',withDebt.length]],CQ,'setCq');
-  const rxl=recentBuys();if(CQ==='free'||CQ==='new')free.sort((a,b)=>((rxl[b.id]||{}).last||'').localeCompare((rxl[a.id]||{}).last||''));
-  const all0=CQ==='free'?free:CQ==='debt'?withDebt:CQ==='bad'?bad:CQ==='new'?fresh.sort((a,b)=>regDateOf(b).localeCompare(regDateOf(a))):base,showIss=CQ==='bad'||!!fm,showNew=CQ==='new',showFu=CQ==='free'||CQ==='new';
+  const free=base.filter(notPlanned),offl=base.filter(offPlanned),withDebt=base.filter(c=>(debtMap[c.id]||0)>0),bad=base.filter(c=>custIssues(c).length),fresh=free.filter(isNewCust);
+  document.getElementById('custChips').innerHTML=chipHtml([['all','ທັງໝົດ',base.length],['free','ຍັງບໍ່ເຂົ້າແຜນ',free.length],['new','ລູກຄ້າໃໝ່ ຍັງບໍ່ເຂົ້າແຜນ',fresh.length],['off','ວັນພັກ · ຕ້ອງຍ້າຍວັນ',offl.length],['bad','ຂໍ້ມູນບໍ່ຄົບ',bad.length],['debt','ມີໜີ້ຄ້າງ',withDebt.length]],CQ,'setCq');
+  const rxl=recentBuys();if(CQ==='off')offl.sort((a,b)=>((rxl[b.id]||{}).last||'').localeCompare((rxl[a.id]||{}).last||''));if(CQ==='free'||CQ==='new')free.sort((a,b)=>((rxl[b.id]||{}).last||'').localeCompare((rxl[a.id]||{}).last||''));
+  const all0=CQ==='free'?free:CQ==='off'?offl:CQ==='debt'?withDebt:CQ==='bad'?bad:CQ==='new'?fresh.sort((a,b)=>regDateOf(b).localeCompare(regDateOf(a))):base,showIss=CQ==='bad'||!!fm,showNew=CQ==='new',showFu=CQ==='free'||CQ==='new'||CQ==='off';
   const fc={};if(showFu)all0.forEach(c=>{const k=fuKey(c);fc[k]=(fc[k]||0)+1;});
   const all=showFu&&FQ!=='all'?all0.filter(c=>fuKey(c)===FQ):all0;window.__custRows=all;
   document.getElementById('custNote').innerHTML=CQ==='bad'?`<div class="notice">ມາດຕະຖານ: ລູກຄ້າທຸກລາຍຕ້ອງມີ ${REQ_FIELDS.filter(x=>CF().req.includes(x[0])).map(x=>x[1]).join(' · ')} — ປ່ຽນໄດ້ທີ່ <a onclick="go('settings','setGeneral')">ຕັ້ງຄ່າ → ທົ່ວໄປ</a></div>`:CQ==='new'?`<div class="notice">ລູກຄ້າທີ່ລົງທະບຽນ ຫຼື ເພີ່ມເຂົ້າລະບົບບໍ່ເກີນ ${esc(CF().newDays)} ມື້ ແລະ ຍັງບໍ່ມີວັນສົ່ງ — ກົດ "ຈັດເຂົ້າແຜນ" ເພື່ອກຳນົດແຜນ ແລະ ວັນ</div>`:'';
@@ -1014,7 +1014,7 @@ function renderCustomers(){
   t.innerHTML=`<thead><tr><th>ຊື່ລູກຄ້າ</th><th>ປະເພດ</th><th>ແຜນ / ວັນ</th><th>ເບີ</th><th class="opt">ຜະລິດຕະພັນ</th><th class="opt">ລົດ</th><th class="num opt">ຖ້ຽວ</th><th class="num">ໜີ້ຄ້າງ</th><th></th></tr></thead><tbody>`+
    rows.map(c=>{
      const dn=DB.deliveries.filter(d=>d.customerId===c.id).length,owe=debtMap[c.id]||0;
-     const rb=(CQ==='free'||CQ==='new')&&rxl[c.id],fu=showFu&&FU()[c.id];return `<tr><td><b>${esc(c.name)}</b>${rb?` <span class="tag partial">ຊື້ ${rb.n} ຄັ້ງ · ລ່າສຸດ ${rb.last.slice(8)}/${rb.last.slice(5,7)}</span>`:''}${showFu?` <span class="tag ${FU_CLS[fuKey(c)]}">${FU_ST[fuKey(c)]}${fu&&fu.d?' · '+esc(String(fu.d).slice(8))+'/'+esc(String(fu.d).slice(5,7)):''}</span>`:''}${fu&&fu.n?`<div class="hint">📝 ${esc(fu.n)}</div>`:''}<div class="hint">${esc([c.branch,GRP_NAME[custGroup(c)]].filter(Boolean).join(' · '))}${showNew?' · ລົງທະບຽນ '+esc(regDateOf(c)):''}</div>${showIss?`<div style="margin-top:3px">${custIssues(c).map(i=>`<span class="tag partial" style="margin:1px 3px 1px 0">${i[1]}</span>`).join('')}</div>`:''}</td><td><span class="tag ${typeCls(c.type)}">${typeName(c.type)}</span></td>
+     const rb=showFu&&rxl[c.id],fu=showFu&&FU()[c.id];return `<tr><td><b>${esc(c.name)}</b>${rb?` <span class="tag partial">ຊື້ ${rb.n} ຄັ້ງ · ລ່າສຸດ ${rb.last.slice(8)}/${rb.last.slice(5,7)}</span>`:''}${showFu?` <span class="tag ${FU_CLS[fuKey(c)]}">${FU_ST[fuKey(c)]}${fu&&fu.d?' · '+esc(String(fu.d).slice(8))+'/'+esc(String(fu.d).slice(5,7)):''}</span>`:''}${fu&&fu.n?`<div class="hint">📝 ${esc(fu.n)}</div>`:''}<div class="hint">${esc([c.branch,GRP_NAME[custGroup(c)]].filter(Boolean).join(' · '))}${showNew?' · ລົງທະບຽນ '+esc(regDateOf(c)):''}</div>${showIss?`<div style="margin-top:3px">${custIssues(c).map(i=>`<span class="tag partial" style="margin:1px 3px 1px 0">${i[1]}</span>`).join('')}</div>`:''}</td><td><span class="tag ${typeCls(c.type)}">${typeName(c.type)}</span></td>
        <td>${offDay(c)?'<span class="tag partial">ວັນພັກ — ຕ້ອງຍ້າຍວັນ</span>':hasDay(c)?esc(c.zone||'-')+' · '+c.day:c.mode?(c.mode==='special'?'ນັດພິເສດ':'ຮັບເອງ'):'<span class="tag unpaid">ຍັງບໍ່ເຂົ້າແຜນ</span>'}</td><td>${esc(c.phone)||'-'}</td><td class="opt">${esc(c.prod||'-')}</td><td class="opt">${esc(c.vehicle||RV()[c.zone]||'-')}</td>
        <td class="num opt">${dn}</td><td class="num" style="color:${owe>0?'var(--red)':'var(--muted)'};font-weight:${owe>0?700:400}">${money(owe)}</td>
        <td><div class="actions">${showFu?`<button class="icon-btn" onclick="openFollow(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-clipboard /></svg> ຕິດຕາມ</button>`:''}<button class="icon-btn" onclick="openCustomer(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-pencil /></svg> ${showNew?'ຈັດເຂົ້າແຜນ':showIss?'ເຕີມຂໍ້ມູນ':'ແກ້ໄຂ'}</button>
@@ -1022,7 +1022,7 @@ function renderCustomers(){
    (all.length>rows.length?`<tr><td colspan="9" class="empty">ສະແດງ ${rows.length} ຈາກ ${all.length} ລາຍ — ໃຊ້ຊ່ອງຄົ້ນຫາ/ຕົວກອງ</td></tr>`:'')+`</tbody>`;
 }
 function exportCustomers(){const rows=window.__custRows||[];if(!rows.length){toast('ບໍ່ມີລູກຄ້າໃນລາຍການນີ້ໃຫ້ສົ່ງອອກ');return;}
-  csvDownload(rows,'customers-'+({all:'all',free:'unplanned',new:'new-unplanned',bad:'incomplete',debt:'debt'}[CQ]||'list')+'-'+today(),[['ກຸ່ມ',c=>GRP_NAME[custGroup(c)]],['ຕິດຕາມ',c=>hasDay(c)||c.mode?'':FU_ST[fuKey(c)]],['ບັນທຶກຕິດຕາມ',c=>(FU()[c.id]||{}).n||''],['ວັນຕິດຕາມ',c=>(FU()[c.id]||{}).d||''],['ຂາດຂໍ້ມູນ',c=>custIssues(c).map(i=>i[1]).join(' · ')],['ລົງທະບຽນ',regDateOf]]);}
+  csvDownload(rows,'customers-'+({all:'all',free:'unplanned',new:'new-unplanned',off:'day-off',bad:'incomplete',debt:'debt'}[CQ]||'list')+'-'+today(),[['ກຸ່ມ',c=>GRP_NAME[custGroup(c)]],['ຕິດຕາມ',c=>hasDay(c)||c.mode?'':FU_ST[fuKey(c)]],['ບັນທຶກຕິດຕາມ',c=>(FU()[c.id]||{}).n||''],['ວັນຕິດຕາມ',c=>(FU()[c.id]||{}).d||''],['ຂາດຂໍ້ມູນ',c=>custIssues(c).map(i=>i[1]).join(' · ')],['ລົງທະບຽນ',regDateOf]]);}
 /* customer groups: old/new × in plan/not, plus Sunday-day and self-pickup (all separable for follow-up) */
 const GRP_NAME={old_in:'ເກົ່າ · ໃນແຜນ',old_out:'ເກົ່າ · ຍັງບໍ່ເຂົ້າແຜນ',new_in:'ໃໝ່ · ໃນແຜນ',new_out:'ໃໝ່ · ຍັງບໍ່ເຂົ້າແຜນ',off:'ວັນພັກ · ຕ້ອງຍ້າຍວັນ',self:'ຮັບເອງ / ນັດພິເສດ'};
 function custGroup(c){if(c.mode&&!hasDay(c))return 'self';if(offDay(c))return 'off';return (isNewCust(c)?'new':'old')+(hasDay(c)?'_in':'_out');}
@@ -1496,16 +1496,16 @@ function planWeek(date,f,last,body,kpi){
 }
 function planMonth(date,f,body,kpi){
   const m=date.slice(0,7),dim=new Date(Date.UTC(+m.slice(0,4),+m.slice(5,7),0)).getUTCDate(),g={};
-  DB.customers.forEach(c=>{if(!f(c))return;const b=c.branch||'(ບໍ່ມີສາຂາ)',o=g[b]||(g[b]={n:0,exp:0,done:0,nod:0});
-    if(hasDay(c)){o.n++;o.exp+=c.freq*dim/7;}else o.nod++;});
+  DB.customers.forEach(c=>{if(!f(c))return;const b=c.branch||'(ບໍ່ມີສາຂາ)',o=g[b]||(g[b]={n:0,exp:0,done:0,nod:0,off:0,self:0});
+    if(hasDay(c)){o.n++;o.exp+=c.freq*dim/7;}else if(c.mode)o.self++;else if(offDay(c))o.off++;else o.nod++;});
   const seen=new Set(),hit=(d,id)=>{if(d.slice(0,7)!==m)return;const k=d+'|'+id;if(seen.has(k))return;seen.add(k);const c=custById(id);if(c&&f(c)&&g[c.branch||'(ບໍ່ມີສາຂາ)'])g[c.branch||'(ບໍ່ມີສາຂາ)'].done++;};
   DB.deliveries.forEach(d=>hit(d.date,d.customerId));
   Object.entries(RX()).forEach(([d,o])=>Object.keys(o).forEach(c=>hit(d,c)));
   Object.entries(P()).forEach(([k,v])=>{if(v.s==='done'){const i=k.indexOf('|');hit(k.slice(0,i),k.slice(i+1));}});
   const ents=Object.entries(g).sort((a,b)=>b[1].exp-a[1].exp),T=ents.reduce((s,e)=>[s[0]+e[1].exp,s[1]+e[1].done],[0,0]);
   kpi.innerHTML=strip([['ແຜນເດືອນ '+m,Math.round(T[0])+' ຄັ້ງ (ຄາດ)'],['ສົ່ງແລ້ວ',T[1],'green'],['ບັນລຸ',T[0]?Math.round(T[1]/T[0]*100)+'%':'-']]);
-  body.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>ສາຂາ</th><th class="num">ລູກຄ້າໃນແຜນ</th><th class="num">ບໍ່ມີວັນ</th><th class="num">ຄາດວ່າຈະສົ່ງ</th><th class="num">ສົ່ງແລ້ວ</th><th class="num">%</th></tr></thead><tbody>`+
-    ents.map(([b,o])=>`<tr><td><b>${esc(b)}</b></td><td class="num">${o.n}</td><td class="num" style="color:${o.nod?'var(--red)':'var(--muted)'}">${o.nod}</td><td class="num">${Math.round(o.exp)}</td><td class="num">${o.done}</td><td class="num">${o.exp?Math.round(o.done/o.exp*100):0}%</td></tr>`).join('')+`</tbody></table></div><div class="hint">"ສົ່ງແລ້ວ" ນັບຈາກທີ່ກົດ ✓ ແລະ ລາຍການຈັດສົ່ງທີ່ບັນທຶກ</div>`;
+  body.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>ສາຂາ</th><th class="num">ລູກຄ້າໃນແຜນ</th><th class="num">ຍັງບໍ່ເຂົ້າແຜນ</th><th class="num">ວັນພັກ · ຕ້ອງຍ້າຍວັນ</th><th class="num">ຮັບເອງ / ນັດພິເສດ</th><th class="num">ຄາດວ່າຈະສົ່ງ</th><th class="num">ສົ່ງແລ້ວ</th><th class="num">%</th></tr></thead><tbody>`+
+    ents.map(([b,o])=>`<tr><td><b>${esc(b)}</b></td><td class="num">${o.n}</td><td class="num" style="color:${o.nod?'var(--red)':'var(--muted)'}">${o.nod}</td><td class="num" style="color:${o.off?'var(--amber)':'var(--muted)'}">${o.off}</td><td class="num" style="color:var(--muted)">${o.self}</td><td class="num">${Math.round(o.exp)}</td><td class="num">${o.done}</td><td class="num">${o.exp?Math.round(o.done/o.exp*100):0}%</td></tr>`).join('')+`</tbody></table></div><div class="hint">"ສົ່ງແລ້ວ" ນັບຈາກທີ່ກົດ ✓ ແລະ ລາຍການຈັດສົ່ງທີ່ບັນທຶກ</div>`;
 }
 /* ---- urgent: customers that fell out of the plan ---- */
 var UGK='all';
@@ -1513,19 +1513,19 @@ function setUg(k){UGK=k;renderUrgent();}
 function urgentData(b){
   const t=ymd(new Date()),last=lastDone(),ps=PS(),cs=DB.customers.filter(c=>!b||c.branch===b);
   const inToday=c=>{const e=P()[t+'|'+c.id];return !!e&&(e.s==='extra'||!!e.x);};
-  const noDay=cs.filter(c=>!hasDay(c)&&!c.mode&&!inToday(c)),off=cs.filter(c=>c.mode).length,over=[];
+  const noDay=cs.filter(c=>notPlanned(c)&&!inToday(c)),offd=cs.filter(c=>offPlanned(c)&&!inToday(c)),off=cs.filter(c=>c.mode).length,over=[];
   cs.forEach(c=>{if(!hasDay(c)||inToday(c))return;const p=per(c),d=dDiff(t,last[c.id]||ps);if(d>p+CF().grace)over.push({c,d,p,r:d/p});});
   over.sort((a,c)=>c.r-a.r);
   const post=Object.entries(P()).filter(([k,v])=>v.s==='postpone').map(([k])=>{const i=k.indexOf('|');return {date:k.slice(0,i),c:custById(k.slice(i+1))};})
     .filter(x=>x.c&&(!b||x.c.branch===b)&&x.date<=t&&(last[x.c.id]||'')<x.date).sort((a,c)=>a.date.localeCompare(c.date));
-  return {noDay,over,post,off,last,total:noDay.length+over.length+post.length};}
+  return {noDay,offd,over,post,off,last,total:noDay.length+offd.length+over.length+post.length};}
 function renderUrgent(){
   if(!document.getElementById('urgent').classList.contains('active'))return;
   fillBranchSel('urgBranch');
   const b=val('urgBranch'),u=urgentData(b),last=u.last;
   document.getElementById('urgStart').value=PS();
   setFbtn('urgFbtn',(b?1:0));
-  document.getElementById('urgChips').innerHTML=chipHtml([['all','ທັງໝົດ',u.total],['noDay','ຍັງບໍ່ເຂົ້າແຜນ',u.noDay.length],['over','ເກີນກຳນົດ',u.over.length],['post','ເລື່ອນແລ້ວ',u.post.length]],UGK,'setUg');
+  document.getElementById('urgChips').innerHTML=chipHtml([['all','ທັງໝົດ',u.total],['noDay','ຍັງບໍ່ເຂົ້າແຜນ',u.noDay.length],['offd','ວັນພັກ · ຕ້ອງຍ້າຍວັນ',u.offd.length],['over','ເກີນກຳນົດ',u.over.length],['post','ເລື່ອນແລ້ວ',u.post.length]],UGK,'setUg');
   document.getElementById('urgHint').textContent=`ບໍ່ນັບ ນັດພິເສດ/ຮັບເອງ ${u.off} ລາຍ (ບໍ່ມີຮອບປະຈຳ)`+(b?' · ສາຂາ: '+b:'');
   const cap=(a,n=200)=>a.slice(0,n),more=(a,n=200)=>a.length>n?`<div class="hint">ສະແດງ ${n} ຈາກ ${a.length} ລາຍ</div>`:'';
   const btn=c=>`<div class="actions"><button class="icon-btn" onclick="addExtra(${js(c.id)})">＋ ເຂົ້າແຜນມື້ນີ້</button><button class="icon-btn" onclick="doneToday(${js(c.id)})">✓ ສົ່ງແລ້ວ</button><button class="icon-btn" onclick="openCustomer(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-pencil /></svg> ແກ້ໄຂ</button></div>`;
@@ -1533,7 +1533,9 @@ function renderUrgent(){
   const sev=r=>r>=CF().sev2?'<span class="tag unpaid">ຫາຍ</span>':r>=CF().sev1?'<span class="tag partial">ຫາຍນານ</span>':'<span class="tag house">ເກີນກຳນົດ</span>';
   const show=k=>UGK==='all'||UGK===k;let h='';
   if(show('noDay')&&u.noDay.length)h+=tbl('<svg class=i aria-hidden=true><use href=#i-hole /></svg> ຍັງບໍ່ເຂົ້າແຜນ (ບໍ່ມີວັນສົ່ງ)','var(--red)',['ລູກຄ້າ','ສາຂາ','ບ້ານ','ເບີ','ສະຖານະ',''],
-      cap(u.noDay).map(c=>`<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.branch)||'-'}</td><td>${esc(c.village)||'-'}</td><td>${esc(c.phone)||'-'}</td><td>${offDay(c)?'ວັນ'+c.day+' = ວັນພັກ ຕ້ອງຍ້າຍວັນ':c.freq===0?'ບໍ່ມີຄວາມຖີ່ສົ່ງ':'ບໍ່ມີວັນ'}</td><td>${btn(c)}</td></tr>`).join(''),u.noDay.length)+more(u.noDay);
+      cap(u.noDay).map(c=>`<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.branch)||'-'}</td><td>${esc(c.village)||'-'}</td><td>${esc(c.phone)||'-'}</td><td>${c.freq===0&&c.day?'ບໍ່ມີຄວາມຖີ່ສົ່ງ':'ບໍ່ມີວັນ'}</td><td>${btn(c)}</td></tr>`).join(''),u.noDay.length)+more(u.noDay);
+  if(show('offd')&&u.offd.length)h+=tbl('<svg class=i aria-hidden=true><use href=#i-calendar /></svg> ວັນພັກ · ຕ້ອງຍ້າຍວັນ','var(--amber)',['ລູກຄ້າ','ສາຂາ','ບ້ານ','ເບີ','ວັນເດີມ',''],
+      cap(u.offd).map(c=>`<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.branch)||'-'}</td><td>${esc(c.village)||'-'}</td><td>${esc(c.phone)||'-'}</td><td>ວັນ${esc(c.day)} = ວັນພັກ</td><td>${btn(c)}</td></tr>`).join(''),u.offd.length)+more(u.offd);
   if(show('over')&&u.over.length)h+=tbl('<svg class=i aria-hidden=true><use href=#i-clock /></svg> ເກີນກຳນົດຮອບ / ຫາຍ','var(--red)',['ລູກຄ້າ','ສາຂາ','ແຜນ','ວັນສົ່ງ','ສົ່ງຄັ້ງລ່າສຸດ','ເກີນ (ມື້)','ລະດັບ',''],
       cap(u.over).map(o=>`<tr><td><b>${esc(o.c.name)}</b></td><td>${esc(o.c.branch)||'-'}</td><td>${esc(o.c.zone)||'-'}</td><td>${o.c.day}</td><td>${last[o.c.id]||'ບໍ່ມີບັນທຶກ'}</td><td class="num">${o.d}</td><td>${sev(o.r)}</td><td>${btn(o.c)}</td></tr>`).join(''),u.over.length)+more(u.over);
   if(show('post')&&u.post.length)h+=tbl('↷ ເລື່ອນແລ້ວ ຍັງບໍ່ໄດ້ສົ່ງ','var(--amber)',['ລູກຄ້າ','ສາຂາ','ວັນທີ່ເລື່ອນ','ເບີ',''],
@@ -1689,7 +1691,7 @@ function pnCandRender(){
   const m=DB.customers.filter(c=>{
     if(c.day===PL.day&&zeq(c,PL.open))return false;
     if(b&&c.branch!==b)return false;if(p&&c.prod!==p)return false;
-    const free=!hasDay(c);if(s==='free'&&!free)return false;if(s==='other'&&free)return false;
+    const free=notPlanned(c)||offPlanned(c);if(s==='free'&&!free)return false;if(s==='other'&&free)return false;
     return !q||((c.name||'')+(c.id||'')+(c.village||'')+(c.phone||'')).toLowerCase().includes(q);});
   document.getElementById('pnCandCount').textContent=m.length+' ລາຍ'+(m.length>100?' (ສະແດງ 100 ລາຍທຳອິດ — ກັ່ນຕອງເພີ່ມ)':'');
   t.innerHTML=`<thead><tr><th><input type="checkbox" onclick="document.querySelectorAll('.pn-c').forEach(x=>x.checked=this.checked)"></th><th>ຊື່ລູກຄ້າ</th><th>ປະເພດ</th><th>ຜະລິດຕະພັນ</th><th>ບ້ານ</th><th>ເມືອງ</th><th>ແຜນປັດຈຸບັນ</th><th>ຊື້ລ່າສຸດ</th><th class="num">ໜີ້</th></tr></thead><tbody>`+
@@ -1796,7 +1798,7 @@ function showImportPreview(P,name){const s=P.st,W=(t)=>`<div class="notice" styl
      <span>ລູກຄ້າໃໝ່ <b class="green">${money(s.add)}</b> · ອັບເດດລູກຄ້າເດີມ <b>${money(s.upd)}</b></span>
      <span>ຈຳນວນແຜນ <b>${money(s.plans)}</b> · ແຜນທີ່ມີລົດ <b>${money(s.withVeh)}</b> · ຜູ້ຮັບຜິດຊອບທີ່ຈັບຄູ່ໄດ້ <b>${s.ownersOk.length}</b></span>
    </div>
-   ${s.sun?W(`${money(s.sun)} ລາຍຢູ່ໃນວັນພັກ — ຈະເປັນ "ຍັງບໍ່ເຂົ້າແຜນ" ຈົນກວ່າຈະຍ້າຍວັນ`):''}
+   ${s.sun?W(`${money(s.sun)} ລາຍຢູ່ໃນວັນພັກ — ຈະຢູ່ກຸ່ມ "ວັນພັກ · ຕ້ອງຍ້າຍວັນ" ຈົນກວ່າຈະຍ້າຍວັນ`):''}
    ${s.noDay?W(`${money(s.noDay)} ລາຍບໍ່ມີວັນສົ່ງ — ຈະເປັນ "ຍັງບໍ່ເຂົ້າແຜນ"`):''}
    ${s.ownersBad.length?W('ຫາພະນັກງານບໍ່ເຈິ (ຈະບໍ່ຜູກຜູ້ຮັບຜິດຊອບ): '+esc(s.ownersBad.slice(0,6).join(', '))+(s.ownersBad.length>6?' …':'')):''}
    ${s.newVeh.length?W('ຈະເພີ່ມລົດໃໝ່ເຂົ້າແທັບທີມງານ: '+esc(s.newVeh.slice(0,6).join(', '))):''}
@@ -1846,7 +1848,7 @@ function cmdkRender(){
       out.push({g:'ແຜນ',t:z,sub:'ວັນ'+d+' · '+vehTxt(z),ic:'calendar',go:()=>{PL.day=d;go('plan','planner');pnOpen(z);}});});
     let n=0;for(const c of DB.customers){if(n>=8)break;
       if(((c.name||'')+' '+(c.phone||'')+' '+c.id+' '+(c.village||'')).toLowerCase().includes(q)){n++;
-        out.push({g:'ລູກຄ້າ',t:c.name,sub:[c.branch,hasDay(c)?c.zone+' · '+c.day:'ຍັງບໍ່ເຂົ້າແຜນ'].filter(Boolean).join(' · '),ic:'users',go:()=>{go('customers');openCustomer(c.id);}});}}
+        out.push({g:'ລູກຄ້າ',t:c.name,sub:[c.branch,hasDay(c)?c.zone+' · '+c.day:offPlanned(c)?'ວັນພັກ · ຕ້ອງຍ້າຍວັນ':c.mode?(c.mode==='special'?'ນັດພິເສດ':'ຮັບເອງ'):'ຍັງບໍ່ເຂົ້າແຜນ'].filter(Boolean).join(' · '),ic:'users',go:()=>{go('customers');openCustomer(c.id);}});}}
   }
   CK.items=out;CK.sel=0;let h='',g='';
   out.forEach((x,i)=>{if(x.g!==g){g=x.g;h+=`<div class="grp">${g}</div>`;}
@@ -1900,6 +1902,9 @@ function carryOver(){const t=ymd(new Date()),rows=carryRows(planFilter());if(!ro
 /* ============ SETTINGS: all back-office data the admin can change ============ */
 function isWork(d){return CF().work.includes(DOW[d]);}
 function offDay(c){return DOW[c.day]!==undefined&&!isWork(c.day);}
+/* one rule everywhere (CRM + Nani summary): 'not in plan' = no work day, not self-pickup/special, not a Sunday-day customer (those are 'ວັນພັກ · ຕ້ອງຍ້າຍວັນ') */
+function notPlanned(c){return !hasDay(c)&&!c.mode&&!offDay(c);}
+function offPlanned(c){return offDay(c)&&!c.mode;}
 function WD(){return DOWN.filter(isWork);}
 function branches(){return [...new Set(DB.customers.map(c=>c.branch).concat(CF().branches,CF().hq).filter(Boolean))].sort();}
 function applyNames(){const c=CF();TYPES.forEach(t=>{const n=(c.typeNames||{})[t.id];if(n)t.name=n;});PRODUCTS.forEach(p=>{const n=(c.prodNames||{})[p.id];if(n)p.name=n;});}
@@ -1941,7 +1946,7 @@ function saveGeneral(){const e=document.getElementById('sgErr'),fail=(m,id)=>{e.
   const newDays=n('cf_newdays',1,365,'ລູກຄ້າໃໝ່');if(newDays===null)return;const req=[...document.querySelectorAll('.cf_req:checked')].map(x=>x.value);if(!req.length){document.getElementById('sgErr').textContent='ມາດຕະຖານຂໍ້ມູນ: ຕິກຢ່າງໜ້ອຍ 1 ຊ່ອງ';return;}
   const carry=n('cf_carry',0,100,'ຍົກງານຄ້າງ');if(carry===null)return;const keep=n('cf_keep',7,365,'ເກັບຍອດຂາຍ');if(keep===null)return;if(!val('cf_start'))return fail('ເລືອກວັນທີເລີ່ມນັບແຜນ','cf_start');
   const off=DB.customers.filter(c=>DOW[c.day]!==undefined&&CF().work.includes(DOW[c.day])&&!work.includes(DOW[c.day])).length;
-  if(off&&!confirm(`ລູກຄ້າ ${off} ລາຍຢູ່ໃນວັນທີ່ຈະປິດ ແລະ ຈະຂຶ້ນເປັນ "ຍັງບໍ່ເຂົ້າແຜນ" ຕ້ອງການບັນທຶກບໍ?`))return;
+  if(off&&!confirm(`ລູກຄ້າ ${off} ລາຍຢູ່ໃນວັນທີ່ຈະປິດ ແລະ ຈະຍ້າຍໄປກຸ່ມ "ວັນພັກ · ຕ້ອງຍ້າຍວັນ" ຕ້ອງການບັນທຶກບໍ?`))return;
   const undo=snapAll();Object.assign(CF(),{brand,unit:val('cf_unit').trim(),hq:val('cf_hq'),work,grace,lead,sev1,sev2,carry,keep,req,newDays});DB.planStart=val('cf_start');e.style.display='none';save();renderAll();toast('ບັນທຶກການຕັ້ງຄ່າແລ້ວ ✓',()=>{undo();document.getElementById('sgBody').innerHTML='';renderAll();});}
 function setPin(){showModal('ຕັ້ງລະຫັດຜູ້ດູແລ',`<div class="frow"><div class="field"><label>PIN ໃໝ່ (4-8 ຕົວເລກ)</label><input id="pin_a" type="password" inputmode="numeric" autocomplete="new-password"></div><div class="field"><label>ໃສ່ PIN ອີກຄັ້ງ</label><input id="pin_b" type="password" inputmode="numeric" autocomplete="new-password"></div></div><div class="hint" id="pin_err" role="alert"></div>`,
   ()=>{const a=val('pin_a'),m=t=>{document.getElementById('pin_err').textContent=t;return false;};if(!/^\d{4,8}$/.test(a))return m('PIN ຕ້ອງເປັນຕົວເລກ 4 ຫາ 8 ຫຼັກ');if(a!==val('pin_b'))return m('PIN ທັງສອງຊ່ອງບໍ່ກົງກັນ');CF().pin=pinHash(a);adminOpen=true;save();document.getElementById('sgBody').innerHTML='';renderAll();toast('ຕັ້ງ PIN ແລ້ວ ✓');});}
@@ -1982,47 +1987,67 @@ function renderSetData(){const used=(localStorage.getItem(KEY)||'').length,pct=M
    <div class="panel"><h3>ພື້ນທີ່ເກັບຂໍ້ມູນໃນເຄື່ອງ</h3><div class="prog" style="max-width:420px"><div class="t"><i style="width:${pct}%;${pct>85?'background:var(--red)':''}"></i></div><span>${pct}%</span></div>
      <div class="strip" style="margin:12px 0 0"><span>ລູກຄ້າ <b>${money(DB.customers.length)}</b></span><span>ລາຍການຈັດສົ່ງ <b>${money(DB.deliveries.length)}</b></span><span>ແຖວຍອດຂາຍ <b>${money(Object.keys(RXB()).length)}</b></span><span>ບັນທຶກສະຖານະ <b>${money(Object.keys(P()).length)}</b></span></div></div>
    <div class="panel"><h3>ສຳຮອງ ແລະ ນຳເຂົ້າ</h3><div class="row" style="margin:0"><button class="btn sm" onclick="exportJSON()">ສຳຮອງຂໍ້ມູນ</button><button class="btn sm" onclick="document.getElementById('importFile').click()">ກູ້ຈາກໄຟລ໌ສຳຮອງ</button><button class="btn sm" onclick="document.getElementById('planFile').click()">ນຳເຂົ້າແຜນສົ່ງ</button><button class="btn sm" onclick="exportAllPlans()">ສົ່ງອອກແຜນທັງໝົດ</button><button class="btn sm" onclick="document.getElementById('salesFile').click()">ນຳເຂົ້າຍອດຂາຍ</button><button class="btn sm" onclick="openCloud()">ຖານຂໍ້ມູນກາງ</button></div></div>
-   <div class="panel"><h3>ສົ່ງຂຶ້ນ Nani Logistics</h3><p class="hint" style="margin:0 0 10px">ສົ່ງສະຫຼຸບຕົວເລກແຜນສົ່ງ ທຽບ ຍອດຂາຍ 7 ມື້ລ່າສຸດ ໄປສະແດງໃນໜ້າ "ແຜນສົ່ງ ທຽບຍອດຂາຍ" ຂອງ Nani Logistics (LogisticsNext) · ບໍ່ສົ່ງຊື່ ຫຼື ເບີໂທລູກຄ້າ${CF().naniAt?` · ສົ່ງລ່າສຸດ <b>${esc(CF().naniAt)}</b>`:''}</p><div class="row" style="margin:0"><button class="btn sm" onclick="openNani()">ສົ່ງຂຶ້ນ Nani</button><a class="btn sm ghost" href="${NANI_URL}#plans" target="_blank" rel="noopener noreferrer">ເປີດ Nani Logistics</a></div></div>
+   <div class="panel"><h3>ສົ່ງຂຶ້ນ Nani Logistics</h3><p class="hint" style="margin:0 0 10px">ສະເພາະສຳນັກງານໃຫຍ່ · ສົ່ງສະຫຼຸບຕົວເລກແຜນສົ່ງ ທຽບ ຍອດຂາຍ 7 ມື້ລ່າສຸດ ໄປສະແດງໃນໜ້າ "ແຜນສົ່ງ ທຽບຍອດຂາຍ" ຂອງ Nani Logistics (LogisticsNext) · ບໍ່ສົ່ງຊື່ ຫຼື ເບີໂທລູກຄ້າ${CF().naniAt?` · ສົ່ງລ່າສຸດ <b>${esc(CF().naniAt)}</b>`:''}</p><div class="row" style="margin:0"><button class="btn sm" onclick="openNani()">ສົ່ງຂຶ້ນ Nani</button><button class="btn sm ghost" onclick="openNaniCode()">ຕັ້ງ / ປ່ຽນລະຫັດສົ່ງ</button><a class="btn sm ghost" href="${NANI_URL}#plans" target="_blank" rel="noopener noreferrer">ເປີດ Nani Logistics</a></div></div>
    <div class="panel"><h3>ຍອດຂາຍທີ່ນຳເຂົ້າ <span class="count">${days.length?days.length+' ວັນ':''}</span></h3>${days.length?`<div class="tbl-wrap"><table><thead><tr><th>ວັນທີ</th><th class="num">ແຖວ</th><th class="num">ລູກຄ້າ</th><th></th></tr></thead><tbody>${days.slice(0,31).map(([d,o])=>`<tr><td><b>${d}</b></td><td class="num">${money(o.n)}</td><td class="num">${money(o.c.size)}</td><td><div class="actions"><button class="icon-btn del" onclick="delSalesDay('${d}')">ລຶບວັນນີ້</button></div></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty">ຍັງບໍ່ໄດ້ນຳເຂົ້າຍອດຂາຍ<br><button class="btn sm" onclick="document.getElementById('salesFile').click()">ນຳເຂົ້າຍອດຂາຍ</button></div>`}</div>
    <div class="panel"><h3>ລ້າງຂໍ້ມູນ</h3><div class="row" style="margin:0"><button class="btn sm" onclick="cleanSeed()">ລຶບຂໍ້ມູນຕົວຢ່າງ</button><button class="btn sm" onclick="clearOldMarks()">ລ້າງສະຖານະເກົ່າ</button><button class="btn sm" style="color:var(--red)" onclick="resetAll()">ລ້າງຂໍ້ມູນທັງໝົດ</button></div></div>`;}
 /* ---- Nani Logistics hub: push a numbers-only plan vs sales summary (no customer names/phones) ---- */
-const NANI_API='https://sfwsedtxdlummiqblufq.supabase.co/functions/v1/api',NANI_URL='https://ksaiyasen-eng.github.io/nani-logistics-web/',NANI_DEPT='dept-logistics',NANI_TOK='vari_nani_tok';
+const NANI_API='https://sfwsedtxdlummiqblufq.supabase.co/functions/v1/api',NANI_URL='https://ksaiyasen-eng.github.io/nani-logistics-web/',NANI_TOK='vari_nani_tok2';
 function naniSummary(){
   const dates=Object.keys(RX()).sort(),to=dates[dates.length-1]||'',win=[];
   if(to)for(let i=6;i>=0;i--){const d=new Date(to);d.setUTCDate(d.getUTCDate()-i);const k=d.toISOString().slice(0,10);if(isWork(DOWN[(d.getUTCDay()+6)%7])&&RX()[k])win.push(k);} // only days with a sales file imported, else every due stop there looks missed
-  const inP=DB.customers.filter(c=>hasDay(c)&&c.zone),pl={};
-  inP.forEach(c=>{const z=c.zone,x=pl[z]||(pl[z]={z,br:'',veh:'',cust:0,days:{},due:0,done:0,off:0});x.cust++;x.days[c.day]=(x.days[c.day]||0)+1;});
+  const inP=DB.customers.filter(hasDay),pl={};
+  inP.forEach(c=>{const z=c.zone||'ບໍ່ມີຊື່ແຜນ',x=pl[z]||(pl[z]={z,br:'',veh:'',cust:0,days:{},due:0,done:0,off:0});x.cust++;x.days[c.day]=(x.days[c.day]||0)+1;});
   Object.values(pl).forEach(x=>{x.br=RBr()[x.z]||planBranch(x.z);x.veh=RV()[x.z]||(selfDelivered(x.z)?'ສົ່ງເອງ':'');});
+  const li=CF().lastImport||{};
   let offNoPlan=0;const inSet=new Set(inP.map(c=>c.id)),hist={},addH=(id,dt)=>{if(inSet.has(id))(hist[id]||(hist[id]=[])).push(dt);};
   DB.deliveries.forEach(x=>addH(x.customerId,x.date));Object.entries(RX()).forEach(([dt,o])=>Object.keys(o).forEach(id=>addH(id,dt)));
   Object.entries(P()).forEach(([k,v])=>{if(v.s==='done'){const i=k.indexOf('|');addH(k.slice(i+1),k.slice(0,i));}});
   const byDate=win.map(d=>{const ds=deliverySet(d),sold=RX()[d]||{},r={d,due:0,done:0,off:0,sold:Object.keys(sold).length},last={};
     for(const id in hist){let m='';for(const t of hist[id])if(t<=d&&t>m)m=t;if(m)last[id]=m;}
-    inP.forEach(c=>{const x=pl[c.zone];if(dueOn(c,d,last)){r.due++;x.due++;if(stOf(d,c,ds)==='done'){r.done++;x.done++;}}else if(sold[c.id]){r.off++;x.off++;}});
+    inP.forEach(c=>{const x=pl[c.zone||'ບໍ່ມີຊື່ແຜນ'];if(dueOn(c,d,last)){r.due++;x.due++;if(stOf(d,c,ds)==='done'){r.done++;x.done++;}}else if(sold[c.id]){r.off++;x.off++;}});
     DB.customers.forEach(c=>{if(!inSet.has(c.id)&&sold[c.id])offNoPlan++;});return r;});
-  return {from:win[0]||'',to:win.length?win[win.length-1]:'',cust:DB.customers.length,inPlan:inP.length,noPlan:DB.customers.filter(c=>!inSet.has(c.id)&&!c.mode).length,offNoPlan,byDate,plans:Object.values(pl)};}
+  return {from:win[0]||'',to:win.length?win[win.length-1]:'',cust:DB.customers.length,inPlan:inP.length,noPlan:DB.customers.filter(notPlanned).length,offDay:DB.customers.filter(offPlanned).length,offNoPlan,byDate,plans:Object.values(pl),
+    src:{file:li.file||'',at:li.at||'',rows:li.n||0,salesTo:dates[dates.length-1]||''}};}
 function naniTok(){try{const t=JSON.parse(sessionStorage.getItem(NANI_TOK));return t&&t.exp>Date.now()?t.token:'';}catch(e){return '';}}
 async function naniPost(body){const r=await fetch(NANI_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
 function openNani(){
   if(!DB.customers.length){toast('ຍັງບໍ່ມີລູກຄ້າໃນເຄື່ອງນີ້ — ນຳເຂົ້າແຜນສົ່ງກ່ອນ');return;}
   const S=naniSummary(),due=S.byDate.reduce((a,x)=>a+x.due,0),done=S.byDate.reduce((a,x)=>a+x.done,0),tok=naniTok();
-  showModal('ສົ່ງຂຶ້ນ Nani Logistics',`<div class="strip" style="margin:0 0 12px;flex-wrap:wrap"><span>ແຜນ <b>${money(S.plans.length)}</b></span><span>ລູກຄ້າໃນແຜນ <b>${money(S.inPlan)}</b></span><span>ຍັງບໍ່ເຂົ້າແຜນ <b>${money(S.noPlan)}</b></span>${S.to?`<span>ຍອດຂາຍ <b>${S.from} – ${S.to}</b></span><span>ສົ່ງຕາມແຜນ <b>${done}/${due}</b></span>`:''}</div>
+  showModal('ສົ່ງຂຶ້ນ Nani Logistics',`<div class="strip" style="margin:0 0 12px;flex-wrap:wrap"><span>ແຜນ <b>${money(S.plans.length)}</b></span><span>ລູກຄ້າໃນແຜນ <b>${money(S.inPlan)}</b></span><span>ຍັງບໍ່ເຂົ້າແຜນ <b>${money(S.noPlan)}</b></span>${S.offDay?`<span>ວັນພັກ ຕ້ອງຍ້າຍວັນ <b>${money(S.offDay)}</b></span>`:''}<span>ໄຟລ໌ແຜນ <b>${esc(S.src.file||'—')}</b>${S.src.at?' · '+esc(S.src.at):''}</span>${S.to?`<span>ຍອດຂາຍ <b>${S.from} – ${S.to}</b></span><span>ສົ່ງຕາມແຜນ <b>${done}/${due}</b></span>`:''}</div>
     ${S.to?'':'<div class="notice">ຍັງບໍ່ມີຍອດຂາຍໃນເຄື່ອງນີ້ — ຈະສົ່ງສະເພາະຈຳນວນແຜນ ແລະ ລູກຄ້າ. ນຳເຂົ້າຍອດຂາຍກ່ອນເພື່ອທຽບກັບແຜນ</div>'}
     <p class="hint" style="margin:0 0 10px">ສົ່ງຊື່ແຜນ ສາຂາ ລະຫັດລົດ ແລະ ຕົວເລກເທົ່ານັ້ນ · ຂໍ້ມູນເກົ່າໃນ Nani ຈະຖືກແທນທີ່</p>
-    ${tok?'<p class="hint" style="margin:0">ໃສ່ PIN ແລ້ວໃນຮອບນີ້ — ກົດ "ສົ່ງຂຶ້ນ Nani" ໄດ້ເລີຍ</p>':`<div class="field"><label for="nn_pin">PIN ພະແນກຂົນສົ່ງ (ຂອງ Nani Logistics)</label><input id="nn_pin" type="password" inputmode="numeric" autocomplete="off"></div>`}
+    ${tok?'<p class="hint" style="margin:0">ໃສ່ລະຫັດແລ້ວໃນຮອບນີ້ — ກົດ "ສົ່ງຂຶ້ນ Nani" ໄດ້ເລີຍ</p>':`<div class="field"><label for="nn_pin">ລະຫັດສົ່ງຂອງສຳນັກງານໃຫຍ່</label><input id="nn_pin" type="password" autocomplete="off"><div class="hint">ຍັງບໍ່ມີລະຫັດ? ກົດ "ຕັ້ງ / ປ່ຽນລະຫັດສົ່ງ" (ໃຊ້ລະຫັດແອດມິນ Nani)</div></div>`}
     <div class="hint" id="nn_err" role="alert" style="color:var(--red)"></div>`,()=>{sendNani(S);return false;});
   const b=document.querySelector('#modal .modal-foot .btn:last-child');b.textContent='ສົ່ງຂຶ້ນ Nani';b.id='nn_go';}
 async function sendNani(S){
   const b=document.getElementById('nn_go'),err=document.getElementById('nn_err'),fail=m=>{err.textContent=m;b.disabled=false;b.textContent='ສົ່ງຂຶ້ນ Nani';};
   if(b.disabled)return;b.disabled=true;b.textContent='ກຳລັງສົ່ງ...';err.textContent='';
   try{let tok=naniTok();
-    if(!tok){const pin=val('nn_pin').trim();if(!pin)return fail('ໃສ່ PIN ພະແນກຂົນສົ່ງກ່ອນ');
-      const u=await naniPost({action:'unlock',deptId:NANI_DEPT,pin});
-      if(!u.ok)return fail(u.error==='locked'?'ໃສ່ PIN ຜິດຫຼາຍເທື່ອ — ລໍຖ້າ 15 ນາທີແລ້ວລອງໃໝ່':u.error==='no_pin'?'ພະແນກຂົນສົ່ງຍັງບໍ່ໄດ້ຕັ້ງ PIN ໃນ Nani Logistics — ໃຫ້ແອດມິນຕັ້ງກ່ອນ':'PIN ບໍ່ຖືກ — ກວດແລ້ວລອງໃໝ່');
+    if(!tok){const code=val('nn_pin').trim();if(!code)return fail('ໃສ່ລະຫັດສົ່ງຂອງສຳນັກງານໃຫຍ່ກ່ອນ');
+      const u=await naniPost({action:'unlockPlan',code});
+      if(!u.ok)return fail(u.error==='locked'?'ໃສ່ລະຫັດຜິດຫຼາຍເທື່ອ — ລໍຖ້າ 15 ນາທີແລ້ວລອງໃໝ່':u.error==='no_code'?'ຍັງບໍ່ໄດ້ຕັ້ງລະຫັດສົ່ງ — ກົດ "ຕັ້ງ / ປ່ຽນລະຫັດສົ່ງ" ກ່ອນ':'ລະຫັດບໍ່ຖືກ — ກວດແລ້ວລອງໃໝ່');
       tok=u.token;try{sessionStorage.setItem(NANI_TOK,JSON.stringify({token:u.token,exp:u.exp}));}catch(e){}}
     const r=await naniPost({action:'putPlans',token:tok,data:S});
-    if(!r.ok){if(r.error==='unauthorized'){try{sessionStorage.removeItem(NANI_TOK);}catch(e){}return fail('PIN ໝົດອາຍຸ — ປິດແລ້ວກົດສົ່ງໃໝ່ ເພື່ອໃສ່ PIN ອີກຄັ້ງ');}return fail('Nani ບໍ່ຮັບຂໍ້ມູນ ('+r.error+') — ລອງໃໝ່ອີກຄັ້ງ');}
+    if(!r.ok){if(r.error==='unauthorized'){try{sessionStorage.removeItem(NANI_TOK);}catch(e){}return fail('ລະຫັດໝົດອາຍຸ ຫຼື ຖືກປ່ຽນແລ້ວ — ປິດແລ້ວກົດສົ່ງໃໝ່ ເພື່ອໃສ່ລະຫັດອີກຄັ້ງ');}return fail('Nani ບໍ່ຮັບຂໍ້ມູນ ('+r.error+') — ລອງໃໝ່ອີກຄັ້ງ');}
     CF().naniAt=new Date().toLocaleString('en-GB');save();closeModal();renderAll();toast(`ສົ່ງຂຶ້ນ Nani ແລ້ວ ${money(r.plans)} ແຜນ`);
+  }catch(e){fail('ເຊື່ອມຕໍ່ Nani ບໍ່ໄດ້ — ກວດອິນເຕີເນັດແລ້ວລອງໃໝ່');}}
+function openNaniCode(){
+  showModal('ຕັ້ງ / ປ່ຽນລະຫັດສົ່ງ',`<p class="hint" style="margin:0 0 10px">ລະຫັດນີ້ໃຊ້ສົ່ງສະຫຼຸບຂຶ້ນ Nani · ໃຫ້ສະເພາະພະນັກງານສຳນັກງານໃຫຍ່ · ປ່ຽນແລ້ວລະຫັດເກົ່າໃຊ້ບໍ່ໄດ້ທັນທີ</p>
+    <div class="field"><label for="nc_pw">ລະຫັດແອດມິນ Nani Logistics</label><input id="nc_pw" type="password" autocomplete="off"></div>
+    <div class="field"><label for="nc_1">ລະຫັດສົ່ງໃໝ່ (ຢ່າງໜ້ອຍ 6 ຕົວ)</label><input id="nc_1" type="password" autocomplete="new-password"></div>
+    <div class="field"><label for="nc_2">ພິມລະຫັດສົ່ງໃໝ່ອີກຄັ້ງ</label><input id="nc_2" type="password" autocomplete="new-password"></div>
+    <div class="hint" id="nc_err" role="alert" style="color:var(--red)"></div>`,()=>{setNaniCode();return false;});
+  const b=document.querySelector('#modal .modal-foot .btn:last-child');b.textContent='ບັນທຶກລະຫັດ';b.id='nc_go';}
+async function setNaniCode(){
+  const b=document.getElementById('nc_go'),err=document.getElementById('nc_err'),fail=m=>{err.textContent=m;b.disabled=false;b.textContent='ບັນທຶກລະຫັດ';};
+  if(b.disabled)return;const pw=val('nc_pw'),c1=val('nc_1').trim(),c2=val('nc_2').trim();
+  if(!pw)return fail('ໃສ່ລະຫັດແອດມິນ Nani ກ່ອນ');if(c1.length<6)return fail('ລະຫັດສົ່ງຕ້ອງມີຢ່າງໜ້ອຍ 6 ຕົວ');if(c1!==c2)return fail('ລະຫັດສົ່ງທັງສອງຊ່ອງບໍ່ກົງກັນ — ພິມໃໝ່');
+  b.disabled=true;b.textContent='ກຳລັງບັນທຶກ...';err.textContent='';
+  try{const l=await naniPost({action:'login',password:pw});
+    if(!l.ok)return fail(l.error==='locked'?'ໃສ່ລະຫັດແອດມິນຜິດຫຼາຍເທື່ອ — ລໍຖ້າ 15 ນາທີ':'ລະຫັດແອດມິນບໍ່ຖືກ — ກວດແລ້ວລອງໃໝ່');
+    const r=await naniPost({action:'setPlanCode',token:l.token,code:c1}); // admin token used once, never stored
+    if(!r.ok)return fail('ບັນທຶກບໍ່ສຳເລັດ ('+r.error+') — ລອງໃໝ່');
+    try{sessionStorage.removeItem(NANI_TOK);}catch(e){}closeModal();toast('ຕັ້ງລະຫັດສົ່ງແລ້ວ — ແຈ້ງລະຫັດໃຫ້ພະນັກງານສຳນັກງານໃຫຍ່ທີ່ຕ້ອງສົ່ງ');
   }catch(e){fail('ເຊື່ອມຕໍ່ Nani ບໍ່ໄດ້ — ກວດອິນເຕີເນັດແລ້ວລອງໃໝ່');}}
 function delSalesDay(d){const B=RXB(),keys=Object.keys(B).filter(k=>B[k][0]===d),bak=keys.map(k=>B[k]);keys.forEach(k=>delete B[k]);_rxC=null;save();renderAll();toast(`ລຶບຍອດຂາຍ ${d} ແລ້ວ`,()=>{keys.forEach((k,i)=>B[k]=bak[i]);_rxC=null;save();renderAll();});}
 function clearOldMarks(){const c=new Date(ymd(new Date()));c.setUTCDate(c.getUTCDate()-CF().keep);const cut=c.toISOString().slice(0,10),keys=Object.keys(P()).filter(k=>k.slice(0,10)<cut);if(!keys.length){toast(`ບໍ່ມີສະຖານະເກົ່າກວ່າ ${CF().keep} ມື້`);return;}const before=keys.map(k=>P()[k]);keys.forEach(k=>delete P()[k]);save();renderAll();toast(`ລ້າງແລ້ວ ${keys.length} ລາຍການ`,restoreP(keys,before));}
