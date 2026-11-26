@@ -1820,15 +1820,18 @@ function parseCSV(t){const rows=[];let r=[],f='',q=false;t=t.replace(/^﻿/,'');
     else if(ch==='\n'){r.push(f);rows.push(r);r=[];f='';}else if(ch!=='\r')f+=ch;}
   if(f||r.length){r.push(f);rows.push(r);}return rows;}
 /* ---- import ALL plan data (CSV / Excel / the app's own export): preview -> merge or replace -> undo ---- */
-const PA={code:['ລະຫັດລູກຄ້າ','ລະຫັດ','รหัสลูกค้า'],name:['ຊື່ລູກຄ້າ','ชื่อลูกค้า'],branch:['ສາຂາ','สาขา'],type:['ປະເພດ'],tier:['ລຳດັບຄວາມສຳຄັນ'],
+const PA={code:['ລະຫັດລູກຄ້າ','ລະຫັດ','รหัสลูกค้า'],name:['ຊື່ລູກຄ້າ','ชื่อลูกค้า'],branch:['ສາຂາ','สาขา'],type:['ປະເພດ','ກູ່ມລູກຄ້າ','ກຸ່ມລູກຄ້າ'],tier:['ລຳດັບຄວາມສຳຄັນ'],
  district:['ເມືອງ','เมือง'],village:['ບ້ານ','บ้าน'],phone:['ເບີໂທ','ເບີ','เบอร์โทร','เบอร์'],behavior:['ພຶດຕິກຳການສັ່ງ'],freq:['ຄວາມຖີ່/ອາທິດ','ຄວາມຖີ່'],
- tank:['ສົ່ງ (ຖັງ)/ຮອບ','ຖັງ/ຮອບ','ถัง/เที่ยว(18L)'],zone:['ໂຊນໃໝ່','ແຜນ/ໂຊນ','ແຜນ','ໂຊນ','โซน'],day:['ວັນໃໝ່','ວັນ','วันจัดส่ง','วัน'],
- seq:['ລຳດັບຈຸດ','#','ลำดับในรถ'],vehicle:['ລົດ','รถ'],owner:['ຜູ້ຮັບຜິດຊອບ'],lat:['Lat'],lng:['Lng','Long','Lon'],geo:['ພິກັດ'],seg:['Segment'],prod:['ຜະລິດຕະພັນ'],
- lastBuy:['ວັນຊື້ລ່າສຸດ','ຊື້ລ່າສຸດ'],regDate:['ວັນລົງທະບຽນ','ວັນທີລົງທະບຽນ','ລົງທະບຽນ'],debt:['ໜີ້(ກີບ)','ໜີ້ລະບົບຂາຍ'],bottles:['ຕຸກຢູ່ນຳລູກຄ້າ','ຕຸກຢູ່ລູກຄ້າ'],timeWin:['ເວລາສະດວກສົ່ງ','ເວລາສະດວກ'],note:['ໝາຍເຫດ']};
+ tank:['ສົ່ງ (ຖັງ)/ຮອບ','ຖັງ/ຮອບ','ถัง/เที่ยว(18L)'],zone:['ໂຊນໃໝ່','ແຜນ/ໂຊນ','ແຜນ','ໂຊນ','โซน'],day:['ວັນໃໝ່','ວັນ','ມື້ຈັດສົ່ງ','วันจัดส่ง','วัน'],
+ seq:['ລຳດັບຈຸດ','#','ลำดับในรถ'],vehicle:['ລົດ','รถ'],owner:['ຜູ້ຮັບຜິດຊອບ'],lat:['Lat','Latitude'],lng:['Lng','Long','Lon','Longitude'],geo:['ພິກັດ'],seg:['Segment'],prod:['ຜະລິດຕະພັນ','ສິນຄ້າ'],
+ lastBuy:['ວັນຊື້ລ່າສຸດ','ຊື້ລ່າສຸດ'],regDate:['ວັນລົງທະບຽນ','ວັນທີລົງທະບຽນ','ລົງທະບຽນ','ວັນທີ່ສະໝັກ','ວັນທີສະໝັກ'],debt:['ໜີ້(ກີບ)','ໜີ້ລະບົບຂາຍ'],bottles:['ຕຸກຢູ່ນຳລູກຄ້າ','ຕຸກຢູ່ລູກຄ້າ'],timeWin:['ເວລາສະດວກສົ່ງ','ເວລາສະດວກ'],note:['ໝາຍເຫດ']};
 const TH_DAY={'จันทร์':'ຈັນ','อังคาร':'ອັງຄານ','พุธ':'ພຸດ','พฤหัสบดี':'ພະຫັດ','พฤหัส':'ພະຫັດ','ศุกร์':'ສຸກ','เสาร์':'ເສົາ','อาทิตย์':'ອາທິດ'};
 const TYPE_MAP={'ສາຂາ/ແຟຣນຊາຍ':'branch','ຄົວເຮືອນ/ຮ້ານຄ້າ':'house','ອົງກອນ':'org','ໂຮງແຮມ/ຮ້ານອາຫານ':'org','ຕົວແທນຈຳໜ່າຍ':'retail'};
 function normDay(v){v=String(v||'').trim().split('(')[0].trim();return TH_DAY[v]||v;}
-function typeOf(v){v=String(v||'');return TYPE_MAP[v]||(/ครัวเรือน/.test(v)?'house':/องค์กร|โรงแรม/.test(v)?'org':/ตัวแทน/.test(v)?'retail':'');}
+function typeOf(v){v=String(v||'');return TYPE_MAP[v]||(/ครัวเรือน|ຄົວເຮືອນ/.test(v)?'house':/องค์กร|โรงแรม|ອົງກອນ|ໂຮງແຮມ|ຮ້ານອາຫານ/.test(v)?'org':/ตัวแทน|ຕົວແທນ|ແຟຣນໄຊ/.test(v)?'retail':'');}
+/* ERP customer export: product names -> the CRM's product groups; order-behaviour text -> visits per week (literal reading of the ERP words) */
+function prodOf(v){return /18\s*ລິດ/.test(v)?'18L':/ຂວດແກ້ວ/.test(v)?'ຂວດແກ້ວ':/ຕຸກຢາງ|ແພັກ|ມິນິ|Mini/i.test(v)?'PET/ແພັກ':v;}
+function behFreq(v){return /2\s*ອາທິດ\s*\/\s*ຄັ້ງ|2\s*ຄັ້ງ\s*\/\s*ເດືອນ/.test(v)?0.5:/ເດືອນລະຄັ້ງ/.test(v)?0.25:/ທຸກອາທິດ|ຄັ້ງ\s*\/\s*ອາທິດ/.test(v)?1:0;}
 function pg(o,k){for(const a of PA[k]){const v=o[a];if(v!==undefined&&v!==null){const t=String(v).trim();if(t!==''&&t!=='-')return t;}}return '';}
 function empByName(n){return DB.employees.find(e=>e.nick===n||e.name===n);}
 function snapAll(){ // one in-memory snapshot of everything a plan import/edit can change -> powers the "undo" button
@@ -1836,38 +1839,45 @@ function snapAll(){ // one in-memory snapshot of everything a plan import/edit c
   return ()=>{const x=JSON.parse(s);DB.cfg=x.cf;DB.customers=x.c;DB.routeVeh=x.v;DB.routeOwner=x.o;DB.routeMeta=x.m;DB.routeBranch=x.b;DB.vehicles=x.ve;DB.planStart=x.ps;save();renderAll();};}
 function parsePlanItems(rows){
   if(!rows.length)throw new Error('ໄຟລ໌ວ່າງ');
-  const hk=Object.keys(rows[0]),has=k=>PA[k].some(a=>hk.includes(a));
+  const hk=Object.keys(rows[0]),has=k=>PA[k].some(a=>hk.includes(a)),erpDay=hk.includes('ມື້ຈັດສົ່ງ'); // ERP export: an empty day cell means "not set", never "clear the plan day"
   if(!has('code')||!(has('day')||has('zone')))throw new Error('ຫົວຖັນບໍ່ຖືກ — ຕ້ອງມີ "ລະຫັດລູກຄ້າ" ແລະ "ວັນ" ຫຼື "ແຜນ/ໂຊນ"');
   const byId=new Map(DB.customers.map(c=>[c.id,c])),seen=new Map(),items=[];
   const st={rows:0,add:0,upd:0,dup:0,sun:0,noDay:0},zones=new Set(),zoneVeh=new Set(),okOwn=new Set(),badOwn=new Set(),newVeh=new Set();
   rows.forEach(r=>{
     const id=String(pg(r,'code')).trim();if(!id)return;st.rows++;
     const rawZone=pg(r,'zone'),z=rawZone?rawZone.split(' · ').map(x=>x.trim()):[];
-    let day=normDay(pg(r,'day'));
+    const dl=String(pg(r,'day')).replace(/\([^)]*\)/g,'').split(',').map(normDay).filter(Boolean);let day=dl[0]||''; // ERP lists several days "ຈັນ, ອັງຄານ, …": first one is the plan day
     if(z.length>1&&DOW[normDay(z[z.length-1])]!==undefined){const d2=normDay(z.pop());if(!day)day=d2;}
     const zone=z.join(' · '),o={id};
-    if(day||has('day'))o.day=day; // a file without a day column must not wipe existing days
+    if(day||(has('day')&&!erpDay))o.day=day; // a file without a day column must not wipe existing days
     if(zone)o.zone=zone;
     if(rawZone||day)o.mode=rawZone.includes('ນັດສົ່ງພິເສດ')?'special':rawZone.includes('ຮັບເອງ')?'pickup':'';
     const put=(k,v)=>{if(v!==''&&v!==undefined)o[k]=v;},num=(k,key)=>{const v=pg(r,key);if(v!=='')o[k]=+String(v).replace(/,/g,'')||0;};
     put('name',pg(r,'name'));put('branch',normBranch(pg(r,'branch')));put('phone',pg(r,'phone'));put('village',pg(r,'village'));put('district',pg(r,'district'));
-    put('tier',pg(r,'tier').replace('ທົ່ວໄປ ',''));put('note',pg(r,'behavior')||pg(r,'note'));put('prod',pg(r,'prod'));put('lastBuy',pg(r,'lastBuy'));put('regDate',isoDate(pg(r,'regDate')));
+    put('tier',pg(r,'tier').replace('ທົ່ວໄປ ',''));put('note',pg(r,'behavior')||pg(r,'note'));put('prod',erpDay?prodOf(pg(r,'prod')):pg(r,'prod'));put('lastBuy',pg(r,'lastBuy'));put('regDate',isoDate(pg(r,'regDate')));
     const tv=pg(r,'type');if(typeOf(tv))o.type=typeOf(tv);
     put('seg',pg(r,'seg')||(/[฀-๿]/.test(tv)?tv:''));
+    if(erpDay&&!has('freq')){const f=behFreq(pg(r,'behavior'));if(f)o.freq=f;}if(erpDay){const bh=pg(r,'behavior');if(/ຮັບ[^\s]{0,6}ເອງ/.test(bh)&&!/ບໍ່/.test(bh))o.mode='pickup';}
     num('freq','freq');num('tank','tank');num('seq','seq');num('debt','debt');num('bottles','bottles');
     const geo=String(pg(r,'geo')).split(','),lat=+(+(pg(r,'lat')||geo[0])).toFixed(5)||0,lng=+(+(pg(r,'lng')||geo[1])).toFixed(5)||0;if(lat){o.lat=lat;o.lng=lng;}
     const tw=pg(r,'timeWin');if(tw&&!/narmal|normal/.test(tw))o.timeWin=tw;
     const e=byId.get(id);
+    if(erpDay&&e){if(e.day)delete o.day;if(e.freq>0)delete o.freq;if(e.note)delete o.note;if(e.day||(e.mode&&o.mode!=='pickup'))delete o.mode;} // owner rule 2026-11-26: the ERP file only fills a known customer's empty day / frequency / note
+    const pick=erpDay&&(o.mode==='pickup'||(o.mode===undefined&&e&&e.mode==='pickup')),pickNote=pick&&o.day?'ວັນໃນ ERP: '+dl.join(', '):''; // owner rule 2026-11-26: pickup customers never become delivery stops
+    if(pick)delete o.day;
     if(seen.has(id)){ // same code on several rows: keep the first, remember other days in the note (multi-day customers are rare)
-      st.dup++;const f=seen.get(id);if(day&&day!==f.o.day&&!(f.dayNote||'').includes(day))f.dayNote=(f.dayNote?f.dayNote+' · ':'')+'ມີວັນອື່ນ: '+day+(zone?' ('+zone+')':'');return;}
-    const it={o,existing:!!e,vehicle:pg(r,'vehicle'),owner:pg(r,'owner'),dayNote:''};
+      st.dup++;const f=seen.get(id);if(o.prod==='18L'&&f.o.prod!=='18L')f.o.prod='18L'; // one row per product in the ERP: 18L wins so the 18L plan filter finds the customer
+      if(erpDay){if(day&&f.o.day===undefined&&!(e&&e.day)&&!pick){f.o.day=day;if(dl.length>1)f.dayNote='ມີວັນອື່ນ: '+dl.slice(1).join(', ');}return;} // ERP product rows repeat the same days: only fill a day the first row left empty
+      if(day&&day!==f.o.day&&!(f.dayNote||'').includes(day))f.dayNote=(f.dayNote?f.dayNote+' · ':'')+'ມີວັນອື່ນ: '+day+(zone?' ('+zone+')':'');return;}
+    const it={o,existing:!!e,vehicle:pg(r,'vehicle'),owner:pg(r,'owner'),dayNote:pickNote||(dl.length>1&&o.day?'ມີວັນອື່ນ: '+dl.slice(1).join(', '):'')};
     seen.set(id,it);items.push(it);
     if(e)st.upd++;else st.add++;
-    if(DOW[day]!==undefined&&!isWork(day))st.sun++;else if(DOW[day]===undefined&&!o.mode)st.noDay++;
+    const kd=o.day!==undefined?o.day:(e?e.day:''),km=o.mode!==undefined?o.mode:(e?e.mode:''); // counts use the day that will really be kept
+    if(DOW[kd]!==undefined&&!isWork(kd))st.sun++;else if(DOW[kd]===undefined&&!km)st.noDay++;
     if(zone){zones.add(zone);if(it.vehicle){zoneVeh.add(zone);if(!DB.vehicles.some(v=>v.id===it.vehicle))newVeh.add(it.vehicle);}
       if(it.owner)(empByName(it.owner)?okOwn:badOwn).add(it.owner);}
   });
-  Object.assign(st,{plans:zones.size,withVeh:zoneVeh.size,ownersOk:[...okOwn],ownersBad:[...badOwn],newVeh:[...newVeh]});
+  Object.assign(st,{erp:erpDay,plans:zones.size,withVeh:zoneVeh.size,ownersOk:[...okOwn],ownersBad:[...badOwn],newVeh:[...newVeh]});
   return {items,st};}
 function applyPlanItems(P,opt){
   const undo=snapAll(),byId=new Map(DB.customers.map(c=>[c.id,c]));let add=0,upd=0;const inFile=new Set(P.items.map(i=>i.o.id));
@@ -1875,7 +1885,7 @@ function applyPlanItems(P,opt){
   P.items.forEach(it=>{const o=it.o,e=byId.get(o.id);
     if(e){Object.assign(e,o);if(!(e.freq>0)&&isWork(e.day))e.freq=1;upd++;}
     else{const n={vehicle:'',driver:'',createdAt:today(),name:o.id,type:'house',zone:'',day:'',mode:'',freq:0,tank:0,seq:0,...o};if(!(n.freq>0)&&isWork(n.day))n.freq=1;DB.customers.push(n);byId.set(n.id,n);add++;}
-    const c=byId.get(o.id);if(it.dayNote)c.note=(c.note?c.note+' · ':'')+it.dayNote;
+    const c=byId.get(o.id);if(it.dayNote&&!(c.note||'').includes(it.dayNote))c.note=(c.note?c.note+' · ':'')+it.dayNote;
     const z=c.zone;
     if(z&&it.vehicle){RV()[z]=it.vehicle;if(!DB.vehicles.some(v=>v.id===it.vehicle))DB.vehicles.push({id:it.vehicle,type:'',driver:'',helper:''});}
     if(z&&it.owner){const em=empByName(it.owner);if(em)RO()[z]=em.id;}});
@@ -1894,7 +1904,7 @@ function showImportPreview(P,name){const s=P.st,W=(t)=>`<div class="notice" styl
    ${s.dup?W(`ລະຫັດລູກຄ້າຊ້ຳ ${money(s.dup)} ແຖວ — ໃຊ້ແຖວທຳອິດ ວັນອື່ນຈະຈົດໃນໝາຍເຫດ`):''}
    <div class="field"><label>ວິທີນຳເຂົ້າ</label>
     <label style="font-weight:400;color:var(--ink)"><input type="radio" name="imode" value="merge" checked style="width:auto"> ເພີ່ມ / ອັບເດດ — ລູກຄ້າທີ່ບໍ່ຢູ່ໃນໄຟລ໌ ຍັງຢູ່ແຜນເດີມ (ແນະນຳ)</label>
-    <label style="font-weight:400;color:var(--ink)"><input type="radio" name="imode" value="replace" style="width:auto"> ແທນແຜນເກົ່າທັງໝົດ — ລູກຄ້າທີ່ບໍ່ຢູ່ໃນໄຟລ໌ ຈະເປັນ "ຍັງບໍ່ເຂົ້າແຜນ" ແລະ ລົດ/ຜູ້ຮັບຜິດຊອບເກົ່າຖືກລ້າງ</label></div>
+    ${s.erp?'<div class="hint">ໄຟລ໌ລູກຄ້າຈາກ ERP: ລູກຄ້າທີ່ມີຢູ່ແລ້ວ ວັນສົ່ງ / ຄວາມຖີ່ / ໝາຍເຫດ ຈະເຕີມສະເພາະທີ່ຍັງວ່າງ · ຊື່ ເບີ ສາຂາ ພິກັດ ອັບເດດຕາມ ERP</div>':`<label style="font-weight:400;color:var(--ink)"><input type="radio" name="imode" value="replace" style="width:auto"> ແທນແຜນເກົ່າທັງໝົດ — ລູກຄ້າທີ່ບໍ່ຢູ່ໃນໄຟລ໌ ຈະເປັນ "ຍັງບໍ່ເຂົ້າແຜນ" ແລະ ລົດ/ຜູ້ຮັບຜິດຊອບເກົ່າຖືກລ້າງ</label>`}</div>
    <div class="hint">ນຳເຂົ້າແລ້ວ ກົດ "ຍ້ອນກັບ" ໄດ້ ໃນ 7 ວິນາທີ</div>`,
   ()=>{const r=applyPlanItems(P,{replace:document.querySelector('input[name=imode]:checked').value==='replace'});CF().lastImport={file:String(name).slice(0,120),at:today()+' '+new Date().toTimeString().slice(0,5),n:P.st.rows};save();
     toast(`ນຳເຂົ້າແລ້ວ: ໃໝ່ ${r.add} · ອັບເດດ ${r.upd} · ${r.plans} ແຜນ`,r.undo);});
