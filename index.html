@@ -565,6 +565,7 @@ table.stops tr:hover td:last-child{background:var(--card2)}
       <span id="pnDays" style="display:flex;gap:6px;flex-wrap:wrap"></span>
       <div class="row" style="margin:0">
         <button class="btn sm" onclick="exportAllPlans()"><svg class=i aria-hidden=true><use href=#i-download /></svg> ສົ່ງອອກແຜນທັງໝົດ</button>
+        <button class="btn sm" onclick="autoPlanOpen()"><svg class=i aria-hidden=true><use href=#i-pin /></svg> ຈັດແຜນສາຂາອັດຕະໂນມັດ</button>
         <button class="btn sm" onclick="document.getElementById('planFile').click()"><svg class=i aria-hidden=true><use href=#i-upload /></svg> ນຳເຂົ້າແຜນ</button>
         <button class="btn" onclick="newPlan()">+ ແຜນໃໝ່</button>
       </div>
@@ -730,7 +731,7 @@ const PRODUCTS=[
   {id:'org',name:'ອົງກອນ18L'},{id:'ml250',name:'250ml'},{id:'pack',name:'ນ້ຳແພັກ'}
 ];
 const DEFAULT_RATES={glass:0,house:0,org:0,ml250:0,pack:0}; // real prices are set by the admin, never in the public source
-const CFG_DEF={brand:'VARI',unit:'ຂົນສົ່ງ',hq:'ສຳນັກງານໃຫຍ່',work:[1,2,3,4,5,6],grace:1,lead:3,sev1:1.5,sev2:3,carry:30,keep:60,prods:['18L','ຂວດແກ້ວ','PET/ແພັກ'],branches:[],pin:'',req:['phone','branch','village','geo','plan','type'],newDays:30};
+const CFG_DEF={brand:'VARI',unit:'ຂົນສົ່ງ',hq:'ສຳນັກງານໃຫຍ່',work:[1,2,3,4,5,6],grace:1,lead:3,sev1:1.5,sev2:3,carry:30,keep:60,prods:['18L','ຂວດແກ້ວ','PET/ແພັກ'],branches:[],bpos:{},pin:'',req:['phone','branch','village','geo','plan','type'],newDays:30};
 function CF(){const c=DB.cfg||(DB.cfg={});for(const k in CFG_DEF)if(c[k]===undefined)c[k]=JSON.parse(JSON.stringify(CFG_DEF[k]));return c;}
 let DB=load();
 
@@ -1656,6 +1657,39 @@ function RM(){return DB.routeMeta||(DB.routeMeta={});}
 function empName(id){const e=DB.employees.find(x=>x.id===id);return e?(e.nick||e.name):'';}
 function ownerSel(z){const cur=RO()[z]||'';return `<select data-z="${esc(z)}" onchange="setRouteOwner(this.dataset.z,this.value)"><option value="">- ຜູ້ຮັບຜິດຊອບ -</option>${DB.employees.map(e=>`<option value="${e.id}" ${e.id===cur?'selected':''}>${esc(e.nick||e.name)} (${esc(e.role)})</option>`).join('')}</select>`;}
 function setRouteOwner(z,v){if(v)RO()[z]=v;else delete RO()[z];save();renderAll();}
+/* auto plan per branch (owner rules 2026-11-26): branch = the customer's ສາຂາ field, HQ never planned, the branch area is cut into one slice per work day by direction around the shop
+   (equal customer counts), every customer in it is replanned, stops ordered nearest-first from the shop pin (or the customers' middle point when the shop has no pin) */
+function geoOk(c){return c.lat>=13.9&&c.lat<=22.6&&c.lng>=100&&c.lng<=107.8&&!(Math.abs(c.lat-18.11894)<1e-4&&Math.abs(c.lng-102.29022)<1e-4);} // 18.11894,102.29022 = filler point shared by many rows
+function apPlan(b,incl){const all=DB.customers.filter(c=>c.branch===b&&!c.mode&&c.zone!=='ລູກຄ້າຮັບເອງ'&&(incl||c.freq>0)),cs=all.filter(geoOk),days=WD(),n=days.length;
+  const r={b,n:cs.length,nog:all.length-cs.length,by:[],pin:!!(CF().bpos||{})[b]};if(!cs.length||!n)return r;
+  const md=a=>a.slice().sort((x,y)=>x-y)[a.length>>1],pp=r.pin?CF().bpos[b].split(',').map(Number):null;
+  const o={lat:pp?pp[0]:md(cs.map(c=>c.lat)),lng:pp?pp[1]:md(cs.map(c=>c.lng))},k=Math.cos(o.lat*Math.PI/180);
+  const s=cs.map(c=>[Math.atan2(c.lat-o.lat,(c.lng-o.lng)*k),c]).sort((x,y)=>x[0]-y[0]);
+  let gi=0,g=-1;s.forEach((x,i)=>{const d=i?x[0]-s[i-1][0]:x[0]+2*Math.PI-s[s.length-1][0];if(d>g){g=d;gi=i;}}); // start at the widest empty direction so no day straddles it
+  const ord=s.slice(gi).concat(s.slice(0,gi)).map(x=>x[1]);
+  r.by=days.map((d,i)=>{const left=ord.slice(Math.round(i*ord.length/n),Math.round((i+1)*ord.length/n)),out=[];let p=o;
+    while(left.length){let bi=0,bd=Infinity;left.forEach((c,j)=>{const dd=(c.lat-p.lat)**2+((c.lng-p.lng)*k)**2;if(dd<bd){bd=dd;bi=j;}});p=left.splice(bi,1)[0];out.push(p);}
+    return [d,out];});
+  return r;}
+function apZone(b){const m={},used=new Set();DB.customers.forEach(c=>{if(!c.zone)return;used.add(c.zone);if(c.branch===b&&c.zone!=='ລູກຄ້າຮັບເອງ')m[c.zone]=(m[c.zone]||0)+1;});
+  const e=Object.entries(m).filter(([z])=>planBranch(z)===b).sort((x,y)=>y[1]-x[1])[0]; // the branch's own main plan (mostly its customers) so truck/owner stay bound; never HQ's or another branch's plan
+  return e?e[0]:used.has(b)&&planBranch(b)!==b?b+' · ອັດຕະໂນມັດ':b;}
+const AP={on:null,bs:[],res:[]};
+function apRender(){const inc=document.getElementById('ap_inc').checked;AP.res=AP.bs.map(b=>apPlan(b,inc));
+  document.getElementById('apTbl').innerHTML=`<thead><tr><th></th><th>ສາຂາ</th><th class="num">ຈະຈັດ</th><th class="num">ບໍ່ມີພິກັດ</th><th>ລູກຄ້າຕໍ່ວັນ</th></tr></thead><tbody>`+
+   AP.res.map((r,i)=>`<tr><td style="padding:0"><label style="display:inline-flex;padding:11px;cursor:pointer"><input type="checkbox" style="width:22px;height:22px;margin:0" class="ap-b" aria-label="ເລືອກ ${esc(r.b)}" data-i="${i}" ${AP.on.has(r.b)?'checked':''} ${r.n?'':'disabled'} onchange="AP.on[this.checked?'add':'delete'](AP.bs[this.dataset.i])"></label></td><td><b>${esc(r.b)}</b>${r.n?`<div class="hint">ແຜນ: ${esc(apZone(r.b))} · ເລີ່ມຈາກ${r.pin?'ຮ້ານ':'ກາງກຸ່ມລູກຄ້າ'}</div>`:''}</td><td class="num">${money(r.n)}</td><td class="num">${r.nog?money(r.nog):''}</td>
+     <td class="hint" style="white-space:normal;min-width:200px">${r.by.map(([d,a])=>esc(d)+' '+a.length).join(' · ')||'-'}</td></tr>`).join('')+'</tbody>';}
+function autoPlanOpen(){const hq=CF().hq;AP.bs=branches().filter(b=>b!==hq&&DB.customers.some(c=>c.branch===b));
+  if(!AP.bs.length)return toast('ຍັງບໍ່ມີລູກຄ້າຂອງສາຂາ — ນຳເຂົ້າລູກຄ້າກ່ອນ');
+  AP.on=new Set(AP.bs.filter(b=>/^ສາຂາ/.test(b)));
+  showModal('ຈັດແຜນສາຂາອັດຕະໂນມັດ',`<p class="hint" style="margin-bottom:10px">ລູກຄ້າຂອງແຕ່ລະສາຂາ (ຕາມຊ່ອງສາຂາ) ຈະຖືກແບ່ງພື້ນທີ່ຕາມທິດອ້ອມຮ້ານ ເປັນ ${WD().length} ວັນ ວັນລະເທົ່າໆກັນ ແລະ ລຽງລຳດັບຈຸດສົ່ງຈາກໃກ້ໄປໄກ. ວັນ ແລະ ລຳດັບເດີມຈະຖືກແທນທີ່ (ກົດຍ້ອນກັບໄດ້). ${esc(hq)} ບໍ່ຖືກຈັດ.</p>
+    <label class="chip" style="cursor:pointer;margin-bottom:10px"><input type="checkbox" id="ap_inc" checked onchange="apRender()"> ລວມລູກຄ້າທີ່ບໍ່ມີຄວາມຖີ່ສົ່ງ (ຕັ້ງເປັນທຸກອາທິດ)</label>
+    <div class="tbl-wrap"><table id="apTbl"></table></div><div class="hint">ລູກຄ້າທີ່ບໍ່ມີພິກັດ ຫຼື ຮັບເອງ ບໍ່ຖືກປ່ຽນ · ໃສ່ພິກັດຮ້ານໄດ້ທີ່ ຕັ້ງຄ່າ › ສາຂາ</div><div class="hint" id="ap_err" role="alert"></div>`,
+   ()=>{AP.res=AP.bs.map(b=>apPlan(b,document.getElementById('ap_inc').checked));const res=AP.res.filter(r=>AP.on.has(r.b)&&r.n); // recompute: a cloud sync may have replaced customer objects while the window was open
+    if(!res.length){document.getElementById('ap_err').textContent='ເລືອກຢ່າງໜ້ອຍ 1 ສາຂາ';return false;}
+     const undo=snapAll();let n=0;res.forEach(r=>{const z=apZone(r.b);r.by.forEach(([d,a])=>a.forEach((c,i)=>{c.zone=z;c.day=d;c.freq=c.freq>0?c.freq:1;c.seq=i+1;n++;}));});
+     PL.open='';save();renderAll();toast(`ຈັດແຜນ ${res.length} ສາຂາ · ${money(n)} ລາຍ ✓`,undo);});
+  document.querySelector('#modal .modal-foot .btn:last-child').textContent='ຈັດແຜນ';apRender();}
 function setSeq(id,v){const c=custById(id);if(c){c.seq=+v||0;save();renderPlanner();}}
 function zoneBranch(cs){const m={};cs.forEach(c=>{const k=c.branch||'-';m[k]=(m[k]||0)+1;});const e=Object.entries(m).sort((a,b)=>b[1]-a[1])[0];return e?e[0]:'-';}
 function mixTxt(cs){const m={};cs.forEach(c=>{const p=c.prod||'-';m[p]=(m[p]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([p,n])=>p+' '+n).join(' · ');}
@@ -2003,13 +2037,19 @@ function clearPin(){if(!confirm('ຍົກເລີກ PIN? ທຸກຄົນ�
 function renderSetBranch(){const rows=branches().map(b=>({b,n:DB.customers.filter(c=>c.branch===b).length,p:new Set(DB.customers.filter(c=>c.branch===b&&c.zone).map(c=>c.zone)).size}));
   document.getElementById('sbTable').innerHTML=`<thead><tr><th>ສາຂາ</th><th class="num">ລູກຄ້າ</th><th class="num">ແຜນ</th><th></th></tr></thead><tbody>`+rows.map(r=>`<tr><td><b>${esc(r.b)}</b>${r.b===CF().hq?' <span class="tag house">ສາຂາຫຼັກ</span>':''}</td><td class="num">${money(r.n)}</td><td class="num">${r.p}</td><td><div class="actions"><button class="icon-btn" data-b="${esc(r.b)}" onclick="branchEdit(this.dataset.b)">ແກ້ໄຂ</button></div></td></tr>`).join('')+'</tbody>';}
 function branchEdit(b){const n=b?DB.customers.filter(c=>c.branch===b).length:0;
-  showModal(b?'ແກ້ໄຂສາຂາ':'ເພີ່ມສາຂາ',`<div class="field"><label for="bf_name">ຊື່ສາຂາ *</label><input id="bf_name" list="bfList" autocomplete="off" value="${esc(b||'')}"><datalist id="bfList">${branches().filter(x=>x!==b).map(x=>`<option value="${esc(x)}">`).join('')}</datalist>${b?`<div class="hint">ລູກຄ້າ ${money(n)} ລາຍຈະຍ້າຍຕາມ · ເລືອກຊື່ສາຂາທີ່ມີຢູ່ ເພື່ອລວມສອງສາຂາ</div>`:''}<div class="hint" id="bf_err" role="alert"></div></div>`,
+  showModal(b?'ແກ້ໄຂສາຂາ':'ເພີ່ມສາຂາ',`<div class="field"><label for="bf_name">ຊື່ສາຂາ *</label><input id="bf_name" list="bfList" autocomplete="off" value="${esc(b||'')}"><datalist id="bfList">${branches().filter(x=>x!==b).map(x=>`<option value="${esc(x)}">`).join('')}</datalist>${b?`<div class="hint">ລູກຄ້າ ${money(n)} ລາຍຈະຍ້າຍຕາມ · ເລືອກຊື່ສາຂາທີ່ມີຢູ່ ເພື່ອລວມສອງສາຂາ</div>`:''}</div>
+   <div class="field"><label for="bf_pos">ພິກັດຮ້ານ (Lat, Lng)</label><input id="bf_pos" inputmode="decimal" autocomplete="off" placeholder="17.9700, 102.6000" value="${esc((CF().bpos||{})[b]||'')}"><div class="hint">ວາງຈາກ Google Maps ໄດ້ · ໃຊ້ເປັນຈຸດເລີ່ມຕອນຈັດແຜນສາຂາອັດຕະໂນມັດ</div></div><div class="hint" id="bf_err" role="alert"></div>`,
   ()=>{const v=normBranch(val('bf_name')),m=t=>{document.getElementById('bf_err').textContent=t;return false;};if(!v)return m('ໃສ່ຊື່ສາຂາກ່ອນບັນທຶກ');
-    if(!b){if(branches().includes(v))return m('ມີສາຂານີ້ຢູ່ແລ້ວ');CF().branches.push(v);save();renderAll();toast('ເພີ່ມສາຂາແລ້ວ ✓');return;}
-    if(v===b)return;if(branches().includes(v)&&!confirm(`ລວມ "${b}" ເຂົ້າກັບ "${v}"?`))return false;
-    const undo=snapAll();DB.customers.forEach(c=>{if(c.branch===b)c.branch=v;});[DB.routeBranch||{}].forEach(m2=>Object.keys(m2).forEach(k=>{if(m2[k]===b)m2[k]=v;}));Object.values(DB.routeMeta||{}).forEach(x=>{if(x.branch===b)x.branch=v;});Object.values(DB.rxUnk||{}).forEach(x=>{if(x.b===b)x.b=v;});
+    const pos=val('bf_pos').trim(),pm=pos.match(/(\d{1,2}(?:\.\d+)?)\s*,\s*(\d{2,3}(?:\.\d+)?)/);
+    if(pos&&(!pm||+pm[1]<13.9||+pm[1]>22.6||+pm[2]<100||+pm[2]>107.8))return m('ພິກັດຮ້ານບໍ່ຖືກ: ວາງ Lat, Lng ເຊັ່ນ 17.9700, 102.6000');
+    const BP=CF().bpos||(CF().bpos={}),setPos=k=>{if(pm)BP[k]=pm[1]+','+pm[2];else delete BP[k];};
+    if(!b){if(branches().includes(v))return m('ມີສາຂານີ້ຢູ່ແລ້ວ');CF().branches.push(v);setPos(v);save();renderAll();toast('ເພີ່ມສາຂາແລ້ວ ✓');return;}
+    if(v===b){setPos(v);save();renderAll();toast('ບັນທຶກສາຂາແລ້ວ ✓');return;}
+    const merge=branches().includes(v);if(merge&&!confirm(`ລວມ "${b}" ເຂົ້າກັບ "${v}"?`))return false;
+    const undo=snapAll(),src=BP[b];delete BP[b];if(!merge||!Object.hasOwn(BP,v)||(pm&&pm[1]+','+pm[2]!==src))setPos(v); // merge keeps the target's pin unless a new one was typed
+DB.customers.forEach(c=>{if(c.branch===b)c.branch=v;});[DB.routeBranch||{}].forEach(m2=>Object.keys(m2).forEach(k=>{if(m2[k]===b)m2[k]=v;}));Object.values(DB.routeMeta||{}).forEach(x=>{if(x.branch===b)x.branch=v;});Object.values(DB.rxUnk||{}).forEach(x=>{if(x.b===b)x.b=v;});
     CF().branches=[...new Set(CF().branches.map(x=>x===b?v:x))];if(CF().hq===b)CF().hq=v;save();renderAll();toast('ບັນທຶກສາຂາແລ້ວ ✓',undo);},
-  b&&!n&&b!==CF().hq?{extra:'ລຶບສາຂາ',extraFn:()=>{CF().branches=CF().branches.filter(x=>x!==b);closeModal();save();renderAll();toast('ລຶບສາຂາແລ້ວ');}}:null);}
+  b&&!n&&b!==CF().hq?{extra:'ລຶບສາຂາ',extraFn:()=>{CF().branches=CF().branches.filter(x=>x!==b);delete (CF().bpos||{})[b];closeModal();save();renderAll();toast('ລຶບສາຂາແລ້ວ');}}:null);}
 /* plans */
 function renderSetPlans(){const q=(val('spQ')||'').toLowerCase(),g={};DB.customers.forEach(c=>{if(!c.zone)return;const o=g[c.zone]||(g[c.zone]={n:0,d:{},b:{}});o.n++;if(isWork(c.day))o.d[c.day]=(o.d[c.day]||0)+1;});Object.keys(RM()).forEach(z=>{if(!g[z])g[z]={n:0,d:{}};});
   const ents=Object.entries(g).filter(([z])=>z.toLowerCase().includes(q)).sort((a,b)=>a[0].localeCompare(b[0]));
