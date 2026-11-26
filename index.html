@@ -941,7 +941,7 @@ function renderSummary(){if(!document.getElementById('summary').classList.contai
   const byVeh={};dels.forEach(d=>{const q=PRODUCTS.reduce((a,p)=>a+(d.items[p.id]||0),0);byVeh[d.vehicle]=(byVeh[d.vehicle]||0)+q;});
   document.getElementById('chartVehicle').innerHTML=barChart(byVeh);
   // by type (revenue)
-  const byType={};dels.forEach(d=>{const c=custById(d.customerId);const t=c?typeName(c.type):'ອື່ນໆ';byType[t]=(byType[t]||0)+d.amount;});
+  const byType={};dels.forEach(d=>{const c=custById(d.customerId);const t=(c&&typeName(c.type))||'ອື່ນໆ';byType[t]=(byType[t]||0)+d.amount;});
   document.getElementById('chartType').innerHTML=barChart(byType,true);
   // top customers by revenue
   const byCust={};dels.forEach(d=>{byCust[d.customer]=(byCust[d.customer]||0)+d.amount;});
@@ -1234,7 +1234,7 @@ function custPick(keep){const el=document.getElementById('f_cust'),cur=keep||el.
   const total=m.length;m=m.slice(0,80);
   if(q&&total===1){el.innerHTML=`<option value="${esc(m[0].id)}" selected>${esc(m[0].name)} (${esc(typeName(m[0].type)||'-')})</option>`;delCustChanged();return;}
   if(cur&&!m.some(c=>c.id===cur)){const c=custById(cur);if(c)m.unshift(c);}
-  el.innerHTML=`<option value="">- ເລືອກລູກຄ້າ (${total} ລາຍ) -</option>`+m.map(c=>`<option value="${c.id}" ${c.id===cur?'selected':''}>${esc(c.name)} (${esc(typeName(c.type)||'-')})</option>`).join('');}
+  el.innerHTML=`<option value="">- ເລືອກລູກຄ້າ (${total} ລາຍ) -</option>`+m.map(c=>`<option value="${esc(c.id)}" ${c.id===cur?'selected':''}>${esc(c.name)} (${esc(typeName(c.type)||'-')})</option>`).join('');}
 function delCustChanged(){const c=custById(val('f_cust'));if(c){if(!val('f_veh')&&c.vehicle)document.getElementById('f_veh').value=c.vehicle;if(!val('f_driver')&&c.driver)document.getElementById('f_driver').value=c.driver;}}
 function calcDel(){const box=document.getElementById('calcAmt');if(!box)return;const items={};PRODUCTS.forEach(p=>items[p.id]=+val('q_'+p.id)||0);const a=calcAmount(items);
   box.textContent=money(a);
@@ -1353,10 +1353,10 @@ function exportDeliveriesCSV(){
   const head=['ວັນທີ','ລູກຄ້າ','ປະເພດ','ລົດ','ຄົນຂັບ','ຮອບ',...PRODUCTS.map(p=>p.name),'ລາຍຮັບ','ຈ່າຍແລ້ວ','ຄ້າງ','ສະຖານະ'];
   const lines=[head.join(',')];
   DB.deliveries.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(d=>{const c=custById(d.customerId);const it=d.items;
-    lines.push([d.date,q(d.customer),q(c?typeName(c.type):''),d.vehicle,q(d.driver),d.round||1,it.glass||0,it.house||0,it.org||0,it.ml250||0,it.pack||0,d.amount,d.paid||0,d.amount-(d.paid||0),d.pay].join(','));});
+    lines.push([q(d.date),q(d.customer),q(c?typeName(c.type):''),q(d.vehicle),q(d.driver),d.round||1,it.glass||0,it.house||0,it.org||0,it.ml250||0,it.pack||0,d.amount,d.paid||0,d.amount-(d.paid||0),q(d.pay)].join(','));});
   const blob=new Blob(['﻿'+lines.join('\n')],{type:'text/csv'});const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);a.download='vari-deliveries-'+today()+'.csv';a.click();toast('ສົ່ງອອກ CSV ແລ້ວ ✓');
-  function q(s){s=(s||'').toString();return s.includes(',')?'"'+s+'"':s;}}
+  function q(s){s=String(s??'');if(/^[=+\-@\t\r]/.test(s)&&!/^[+\-]?[\d.,\s]*$/.test(s))s="'"+s;return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}}
 function printView(){window.print();}
 
 /* ============ PLAN (derived from customer day+freq; only actions are stored in DB.plan) ============ */
