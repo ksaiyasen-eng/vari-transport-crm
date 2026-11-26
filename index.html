@@ -708,8 +708,9 @@ function normDB(d){ // returns usable data, or null when the data cannot be trus
   d.customers.forEach(c=>{c.id=String(c.id);c.name=String(c.name??c.id);});d.employees.forEach(e=>{e.id=String(e.id);e.name=String(e.name??e.id);});d.vehicles.forEach(v=>{v.id=String(v.id);});
   d.deliveries.forEach(x=>{x.items=x.items&&typeof x.items==='object'?x.items:{};x.amount=+x.amount||0;x.paid=+x.paid||0;});
   d.rates={...DEFAULT_RATES,...(d.rates&&typeof d.rates==='object'?d.rates:{})};
-  for(const k of ['plan','rxb','rxUnk','routeVeh','routeOwner','routeMeta','routeBranch','cfg'])if(d[k]!==undefined&&(d[k]===null||typeof d[k]!=='object'||Array.isArray(d[k])))delete d[k];
+  for(const k of ['plan','rxb','rxUnk','routeVeh','routeOwner','routeMeta','routeBranch','cfg','fu'])if(d[k]!==undefined&&(d[k]===null||typeof d[k]!=='object'||Array.isArray(d[k])))delete d[k];
   if(d.rxb)Object.keys(d.rxb).forEach(k=>{if(!Array.isArray(d.rxb[k]))delete d.rxb[k];});
+  if(d.fu)Object.keys(d.fu).forEach(k=>{const f=d.fu[k];if(!f||typeof f!=='object')delete d.fu[k];else{f.n=String(f.n??'').slice(0,300);f.d=/^\d{4}-\d{2}-\d{2}$/.test(String(f.d??''))?String(f.d):'';}});
   d.customers.forEach(c=>{if(c.branch)c.branch=normBranch(c.branch);});
   if(d.routeBranch)Object.keys(d.routeBranch).forEach(k=>{d.routeBranch[k]=normBranch(d.routeBranch[k]);});
   if(d.routeMeta)Object.values(d.routeMeta).forEach(x=>{if(x&&x.branch)x.branch=normBranch(x.branch);});
@@ -726,7 +727,7 @@ function save(){saveLocal();pushCloud();}
 
 /* ============ CLOUD SYNC (Firebase): every record is saved and merged on its own, so a tap sends a few bytes and two people never overwrite each other ============ */
 const CLOUD_KEY='vari_crm_cloud',PEND_KEY='vari_crm_pending';
-const FB_LISTS=['customers','deliveries','employees','vehicles'],FB_MAPS=['plan','rxb','rxUnk','routeVeh','routeOwner','routeMeta','routeBranch','rates','cfg'];
+const FB_LISTS=['customers','deliveries','employees','vehicles'],FB_MAPS=['plan','rxb','rxUnk','routeVeh','routeOwner','routeMeta','routeBranch','rates','cfg','fu'];
 let cloud={on:false,ready:false,ref:null,link:null,last:{},pending:{},gen:0,timer:0,snap:null,snapT:0,choosing:false,online:false,retry:0};
 function setCloudStatus(state,txt){const b=document.getElementById('cloudBtn');const d=document.getElementById('cloudDot');
   b.classList.remove('on','syncing');if(state)b.classList.add(state);d.textContent=txt;}
@@ -979,7 +980,7 @@ function renderHome(){
 /* ============ CUSTOMERS ============ */
 function fillSelect(el,items,val,txt,cur){el.innerHTML=el.querySelector('option').outerHTML+items.map(i=>`<option value="${i[val]}" ${cur===i[val]?'selected':''}>${i[txt]}</option>`).join('');}
 var CQ='all';
-function setCq(k){CQ=k;renderCustomers();}
+function setCq(k){CQ=k;FQ='all';renderCustomers();}
 function fillSelect(el,items,val,txt,cur){el.innerHTML=el.querySelector('option').outerHTML+items.map(i=>`<option value="${esc(String(i[val]))}" ${cur===i[val]?'selected':''}>${esc(String(i[txt]))}</option>`).join('');}
 function renderCustomers(){
   if(!document.getElementById('customers').classList.contains('active'))return;
@@ -1000,8 +1001,12 @@ function renderCustomers(){
   const free=base.filter(c=>!hasDay(c)&&!c.mode),withDebt=base.filter(c=>(debtMap[c.id]||0)>0),bad=base.filter(c=>custIssues(c).length),fresh=free.filter(isNewCust);
   document.getElementById('custChips').innerHTML=chipHtml([['all','ທັງໝົດ',base.length],['free','ຍັງບໍ່ເຂົ້າແຜນ',free.length],['new','ລູກຄ້າໃໝ່ ຍັງບໍ່ເຂົ້າແຜນ',fresh.length],['bad','ຂໍ້ມູນບໍ່ຄົບ',bad.length],['debt','ມີໜີ້ຄ້າງ',withDebt.length]],CQ,'setCq');
   const rxl=recentBuys();if(CQ==='free'||CQ==='new')free.sort((a,b)=>((rxl[b.id]||{}).last||'').localeCompare((rxl[a.id]||{}).last||''));
-  const all=CQ==='free'?free:CQ==='debt'?withDebt:CQ==='bad'?bad:CQ==='new'?fresh.sort((a,b)=>regDateOf(b).localeCompare(regDateOf(a))):base,showIss=CQ==='bad'||!!fm,showNew=CQ==='new';window.__custRows=all;
-  document.getElementById('custNote').innerHTML=CQ==='bad'?`<div class="notice">ມາດຕະຖານ: ລູກຄ້າທຸກລາຍຕ້ອງມີ ${REQ_FIELDS.filter(x=>CF().req.includes(x[0])).map(x=>x[1]).join(' · ')} — ປ່ຽນໄດ້ທີ່ <a onclick="go('settings','setGeneral')">ຕັ້ງຄ່າ → ທົ່ວໄປ</a></div>`:CQ==='new'?`<div class="notice">ລູກຄ້າທີ່ລົງທະບຽນ ຫຼື ເພີ່ມເຂົ້າລະບົບບໍ່ເກີນ ${esc(CF().newDays)} ມື້ ແລະ ຍັງບໍ່ມີວັນສົ່ງ — ກົດ "ຈັດເຂົ້າແຜນ" ເພື່ອກຳນົດແຜນ ແລະ ວັນ</div>`:'';const rows=all.slice(0,300); // shortcut: 300-row cap keeps 6k customers fast, use search to narrow
+  const all0=CQ==='free'?free:CQ==='debt'?withDebt:CQ==='bad'?bad:CQ==='new'?fresh.sort((a,b)=>regDateOf(b).localeCompare(regDateOf(a))):base,showIss=CQ==='bad'||!!fm,showNew=CQ==='new',showFu=CQ==='free'||CQ==='new';
+  const fc={};if(showFu)all0.forEach(c=>{const k=fuKey(c);fc[k]=(fc[k]||0)+1;});
+  const all=showFu&&FQ!=='all'?all0.filter(c=>fuKey(c)===FQ):all0;window.__custRows=all;
+  document.getElementById('custNote').innerHTML=CQ==='bad'?`<div class="notice">ມາດຕະຖານ: ລູກຄ້າທຸກລາຍຕ້ອງມີ ${REQ_FIELDS.filter(x=>CF().req.includes(x[0])).map(x=>x[1]).join(' · ')} — ປ່ຽນໄດ້ທີ່ <a onclick="go('settings','setGeneral')">ຕັ້ງຄ່າ → ທົ່ວໄປ</a></div>`:CQ==='new'?`<div class="notice">ລູກຄ້າທີ່ລົງທະບຽນ ຫຼື ເພີ່ມເຂົ້າລະບົບບໍ່ເກີນ ${esc(CF().newDays)} ມື້ ແລະ ຍັງບໍ່ມີວັນສົ່ງ — ກົດ "ຈັດເຂົ້າແຜນ" ເພື່ອກຳນົດແຜນ ແລະ ວັນ</div>`:'';
+  if(showFu)document.getElementById('custNote').innerHTML+=`<div class="row" style="margin:0 0 8px;gap:6px;flex-wrap:wrap"><span class="hint" style="align-self:center">ການຕິດຕາມ:</span>${chipHtml([['all','ທຸກສະຖານະ',all0.length],...Object.entries(FU_ST).map(([k,n])=>[k,n,fc[k]||0])],FQ,'setFq')}</div>`;
+  const rows=all.slice(0,300); // shortcut: 300-row cap keeps 6k customers fast, use search to narrow
   const t=document.getElementById('custTable');
   if(!rows.length){
     t.innerHTML=`<tbody><tr><td class="empty" style="display:block">${DB.customers.length?'ບໍ່ພົບລູກຄ້າທີ່ຕົງກັບການຄົ້ນຫາ/ຕົວກອງ':'ຍັງບໍ່ມີລູກຄ້າ — ເລີ່ມຈາກນຳເຂົ້າລາຍຊື່ ຫຼື ເພີ່ມລູກຄ້າຄົນທຳອິດ'}<br>`+
@@ -1009,19 +1014,35 @@ function renderCustomers(){
   t.innerHTML=`<thead><tr><th>ຊື່ລູກຄ້າ</th><th>ປະເພດ</th><th>ແຜນ / ວັນ</th><th>ເບີ</th><th class="opt">ຜະລິດຕະພັນ</th><th class="opt">ລົດ</th><th class="num opt">ຖ້ຽວ</th><th class="num">ໜີ້ຄ້າງ</th><th></th></tr></thead><tbody>`+
    rows.map(c=>{
      const dn=DB.deliveries.filter(d=>d.customerId===c.id).length,owe=debtMap[c.id]||0;
-     const rb=(CQ==='free'||CQ==='new')&&rxl[c.id];return `<tr><td><b>${esc(c.name)}</b>${rb?` <span class="tag partial">ຊື້ ${rb.n} ຄັ້ງ · ລ່າສຸດ ${rb.last.slice(8)}/${rb.last.slice(5,7)}</span>`:''}<div class="hint">${esc([c.branch,GRP_NAME[custGroup(c)]].filter(Boolean).join(' · '))}${showNew?' · ລົງທະບຽນ '+esc(regDateOf(c)):''}</div>${showIss?`<div style="margin-top:3px">${custIssues(c).map(i=>`<span class="tag partial" style="margin:1px 3px 1px 0">${i[1]}</span>`).join('')}</div>`:''}</td><td><span class="tag ${typeCls(c.type)}">${typeName(c.type)}</span></td>
+     const rb=(CQ==='free'||CQ==='new')&&rxl[c.id],fu=showFu&&FU()[c.id];return `<tr><td><b>${esc(c.name)}</b>${rb?` <span class="tag partial">ຊື້ ${rb.n} ຄັ້ງ · ລ່າສຸດ ${rb.last.slice(8)}/${rb.last.slice(5,7)}</span>`:''}${showFu?` <span class="tag ${FU_CLS[fuKey(c)]}">${FU_ST[fuKey(c)]}${fu&&fu.d?' · '+esc(String(fu.d).slice(8))+'/'+esc(String(fu.d).slice(5,7)):''}</span>`:''}${fu&&fu.n?`<div class="hint">📝 ${esc(fu.n)}</div>`:''}<div class="hint">${esc([c.branch,GRP_NAME[custGroup(c)]].filter(Boolean).join(' · '))}${showNew?' · ລົງທະບຽນ '+esc(regDateOf(c)):''}</div>${showIss?`<div style="margin-top:3px">${custIssues(c).map(i=>`<span class="tag partial" style="margin:1px 3px 1px 0">${i[1]}</span>`).join('')}</div>`:''}</td><td><span class="tag ${typeCls(c.type)}">${typeName(c.type)}</span></td>
        <td>${offDay(c)?'<span class="tag partial">ວັນພັກ — ຕ້ອງຍ້າຍວັນ</span>':hasDay(c)?esc(c.zone||'-')+' · '+c.day:c.mode?(c.mode==='special'?'ນັດພິເສດ':'ຮັບເອງ'):'<span class="tag unpaid">ຍັງບໍ່ເຂົ້າແຜນ</span>'}</td><td>${esc(c.phone)||'-'}</td><td class="opt">${esc(c.prod||'-')}</td><td class="opt">${esc(c.vehicle||RV()[c.zone]||'-')}</td>
        <td class="num opt">${dn}</td><td class="num" style="color:${owe>0?'var(--red)':'var(--muted)'};font-weight:${owe>0?700:400}">${money(owe)}</td>
-       <td><div class="actions"><button class="icon-btn" onclick="openCustomer(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-pencil /></svg> ${showNew?'ຈັດເຂົ້າແຜນ':showIss?'ເຕີມຂໍ້ມູນ':'ແກ້ໄຂ'}</button>
+       <td><div class="actions">${showFu?`<button class="icon-btn" onclick="openFollow(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-clipboard /></svg> ຕິດຕາມ</button>`:''}<button class="icon-btn" onclick="openCustomer(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-pencil /></svg> ${showNew?'ຈັດເຂົ້າແຜນ':showIss?'ເຕີມຂໍ້ມູນ':'ແກ້ໄຂ'}</button>
        <button class="icon-btn del" onclick="delCustomer(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-trash /></svg> ລຶບ</button></div></td></tr>`;}).join('')+
    (all.length>rows.length?`<tr><td colspan="9" class="empty">ສະແດງ ${rows.length} ຈາກ ${all.length} ລາຍ — ໃຊ້ຊ່ອງຄົ້ນຫາ/ຕົວກອງ</td></tr>`:'')+`</tbody>`;
 }
 function exportCustomers(){const rows=window.__custRows||[];if(!rows.length){toast('ບໍ່ມີລູກຄ້າໃນລາຍການນີ້ໃຫ້ສົ່ງອອກ');return;}
-  csvDownload(rows,'customers-'+({all:'all',free:'unplanned',new:'new-unplanned',bad:'incomplete',debt:'debt'}[CQ]||'list')+'-'+today(),[['ກຸ່ມ',c=>GRP_NAME[custGroup(c)]],['ຂາດຂໍ້ມູນ',c=>custIssues(c).map(i=>i[1]).join(' · ')],['ລົງທະບຽນ',regDateOf]]);}
+  csvDownload(rows,'customers-'+({all:'all',free:'unplanned',new:'new-unplanned',bad:'incomplete',debt:'debt'}[CQ]||'list')+'-'+today(),[['ກຸ່ມ',c=>GRP_NAME[custGroup(c)]],['ຕິດຕາມ',c=>hasDay(c)||c.mode?'':FU_ST[fuKey(c)]],['ບັນທຶກຕິດຕາມ',c=>(FU()[c.id]||{}).n||''],['ວັນຕິດຕາມ',c=>(FU()[c.id]||{}).d||''],['ຂາດຂໍ້ມູນ',c=>custIssues(c).map(i=>i[1]).join(' · ')],['ລົງທະບຽນ',regDateOf]]);}
 /* customer groups: old/new × in plan/not, plus Sunday-day and self-pickup (all separable for follow-up) */
 const GRP_NAME={old_in:'ເກົ່າ · ໃນແຜນ',old_out:'ເກົ່າ · ຍັງບໍ່ເຂົ້າແຜນ',new_in:'ໃໝ່ · ໃນແຜນ',new_out:'ໃໝ່ · ຍັງບໍ່ເຂົ້າແຜນ',off:'ວັນພັກ · ຕ້ອງຍ້າຍວັນ',self:'ຮັບເອງ / ນັດພິເສດ'};
 function custGroup(c){if(c.mode&&!hasDay(c))return 'self';if(offDay(c))return 'off';return (isNewCust(c)?'new':'old')+(hasDay(c)?'_in':'_out');}
 function setCustGrp(k){const s=document.getElementById('custGrp');s.value=s.value===k?'':k;CQ='all';renderCustomers();}
+/* follow-up of customers not in a plan: status + note + date per customer (DB.fu; stays in the CRM, never sent to Nani) */
+const FU_ST={todo:'ຍັງບໍ່ໄດ້ໂທ',wait:'ໂທແລ້ວ ລໍຖ້າ',ok:'ຕົກລົງແລ້ວ ລໍໃສ່ວັນ',no:'ບໍ່ຕ້ອງການ'},FU_CLS={todo:'unpaid',wait:'partial',ok:'paid',no:''};
+var FQ='all';
+function FU(){return DB.fu||(DB.fu={});}
+function fuKey(c){const s=(FU()[c.id]||{}).s;return FU_ST[s]?s:'todo';}
+function setFq(k){FQ=k;renderCustomers();}
+function openFollow(id){const c=DB.customers.find(x=>x.id===id);if(!c)return;const f=FU()[c.id]||{};
+  showModal('ຕິດຕາມ · '+esc(c.name),`<p class="hint" style="margin:0 0 10px">${c.phone?`${esc(c.phone)} · <a href="tel:${esc(telNo(c.phone))}">ໂທ</a>`:'ບໍ່ມີເບີໂທ'}${c.branch?' · '+esc(c.branch):''}</p>
+    <div class="field"><label for="fu_s">ສະຖານະ</label><select id="fu_s">${Object.entries(FU_ST).map(([k,n])=>`<option value="${k}" ${k===fuKey(c)?'selected':''}>${n}</option>`).join('')}</select></div>
+    <div class="field"><label for="fu_n">ບັນທຶກ</label><textarea id="fu_n" rows="3" maxlength="300" placeholder="ຕົວຢ່າງ: ໃຫ້ໂທຄືນວັນຈັນ">${esc(f.n||'')}</textarea></div>
+    ${f.d?`<p class="hint" style="margin:0">ຕິດຕາມລ່າສຸດ ${esc(f.d)}</p>`:''}<p class="hint" style="margin:6px 0 0">ເລືອກ "ຕົກລົງແລ້ວ ລໍໃສ່ວັນ" ແລ້ວຈະເປີດໜ້າແກ້ໄຂລູກຄ້າ ໃຫ້ໃສ່ແຜນ ແລະ ວັນສົ່ງ · ໃສ່ວັນແລ້ວ ລູກຄ້າຈະອອກຈາກລາຍການນີ້ເອງ</p>`,()=>{
+    const s=val('fu_s'),n=val('fu_n').trim().slice(0,300),bak=FU()[c.id];
+    if(s==='todo'&&!n)delete FU()[c.id];else FU()[c.id]={s,n,d:today()};
+    save();renderAll();toast('ບັນທຶກການຕິດຕາມແລ້ວ',()=>{if(bak)FU()[c.id]=bak;else delete FU()[c.id];save();renderAll();});
+    if(s==='ok'&&!hasDay(c))setTimeout(()=>openCustomer(c.id),0); // after this modal closes
+  });}
 function resetCust(){['custSearch','custGrp','custType','custBranch','custProd','custVeh','custMiss'].forEach(i=>document.getElementById(i).value='');CQ='all';renderCustomers();}
 /* customer data standard: which fields every customer must have (admin chooses in Settings) */
 const REQ_FIELDS=[['phone','ເບີໂທ'],['branch','ສາຂາ'],['village','ບ້ານ'],['district','ເມືອງ'],['geo','ພິກັດ'],['plan','ແຜນ / ວັນສົ່ງ'],['type','ປະເພດ'],['prod','ກຸ່ມຜະລິດຕະພັນ'],['tank','ຖັງ/ຮອບ']];
@@ -1093,7 +1114,7 @@ function openCustomer(id){
 }
 function delCustomer(id){const c=custById(id);const n=DB.deliveries.filter(d=>d.customerId===id).length;
   if(!confirm(`ລຶບລູກຄ້າ "${c.name}"?`+(n?`\n(ມີປະຫວັດຈັດສົ່ງ ${n} ຄັ້ງ ຈະບໍ່ຖືກລຶບ ແຕ່ຈະບໍ່ຜູກກັບລູກຄ້ານີ້)`:'')))return;
-  DB.customers=DB.customers.filter(x=>x.id!==id);save();renderAll();toast('ລຶບແລ້ວ');}
+  DB.customers=DB.customers.filter(x=>x.id!==id);if(DB.fu)delete DB.fu[id];save();renderAll();toast('ລຶບແລ້ວ');}
 
 /* ============ DELIVERIES ============ */
 function renderDeliveries(){
