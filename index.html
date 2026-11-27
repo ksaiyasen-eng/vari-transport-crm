@@ -130,6 +130,13 @@ h2{font-size:22px;font-weight:700;letter-spacing:-.01em}
 td.num,th.num,.kpi .val,.hstat b,.strip b{font-variant-numeric:tabular-nums} /* digits line up in columns */
 .tbl-wrap tr:has(.cname[data-cid]):not(:has(input[type=checkbox])){cursor:pointer}
 @media(max-width:767px){#sbTable td a{display:inline-flex;align-items:center;gap:4px;min-height:44px}}
+.brc{padding:0}
+.brh{width:100%;display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:52px;background:none;border:0;text-align:left;color:var(--ink);font:inherit;cursor:pointer;border-radius:inherit}
+.brh:hover{background:var(--card2)}.brh:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.brh .brn{flex:0 0 auto;font-size:16px}.brh .brs{flex:1;display:flex;flex-wrap:wrap;gap:4px 16px;justify-content:flex-end;font-size:13px;color:var(--muted)}.brh .brs b{font-size:14.5px;color:var(--ink);font-variant-numeric:tabular-nums}.brh .brs b.green{color:var(--green)}.brh .brs b.red{color:var(--red)}
+.brh>.i{color:var(--muted);transition:transform .15s}.brc.open>.brh>.i{transform:rotate(90deg)}
+.brb{padding:4px 16px 16px;border-top:1px solid var(--line)}.brb .chip{margin-top:10px}
+@media(max-width:767px){.brh{flex-wrap:wrap;gap:6px 10px}.brh .brn{flex:1 1 auto}.brh .brs{flex:1 1 100%;justify-content:flex-start;order:3}}
 .cname:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
 @media (max-width:767px){.cname{padding:9px 0;margin:-8px 0;min-height:44px}} /* finger-sized tap target without making rows taller */
 .icon-btn{background:var(--card);border:1px solid var(--line);border-radius:6px;min-height:30px;padding:3px 10px;font-size:14.5px;color:var(--ink2);display:inline-flex;align-items:center;gap:5px;transition:all .15s}
@@ -608,8 +615,8 @@ table.stops tr:hover td:last-child{background:var(--card2)}
       <button class="btn sm" onclick="autoPlanOpen()"><svg class=i aria-hidden=true><use href=#i-pin /></svg> ຈັດແຜນສາຂາອັດຕະໂນມັດ</button>
       <button class="btn" onclick="newPlan()">+ ແຜນໃໝ່</button>
     </div>
-    <div class="panel"><h3>ລູກຄ້າແຕ່ລະສາຂາ</h3><div class="tbl-wrap"><table id="plBr"></table></div></div>
-    <div class="panel"><h3>ແຜນທັງໝົດ <span class="count" id="plN"></span></h3><div class="tbl-wrap"><table id="plTbl"></table></div></div>
+    <div class="strip" id="plKpi"></div>
+    <div id="plBody" data-ui="content"></div>
   </section>
 
   <section class="view" id="vplan">
@@ -1660,24 +1667,41 @@ function csvDownload(rows,name,extra=[]){
   const lines=[[...extra.map(e=>e[0]),'ແຜນ/ໂຊນ','ລົດ','ຜູ້ຮັບຜິດຊອບ','ສາຂາ','ວັນ','ຄວາມຖີ່/ອາທິດ',...INFO.map(i=>i[0])].map(q).join(',')];
   rows.forEach(c=>lines.push([...extra.map(e=>e[1](c)),c.zone,RV()[c.zone]||'',empName(RO()[c.zone]),c.branch,c.day,c.freq||'',...INFO.map(i=>i[1](c))].map(q).join(',')));
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+lines.join('\n')],{type:'text/csv'}));a.download=String(name).replace(/[\\/:*?"<>|]/g,'-')+'.csv';a.click();toast('ສົ່ງອອກ CSV ແລ້ວ ✓');}
-/* all plans: one row per plan, with how many customers of each branch are in a plan (owner request 2026-11-26) */
+/* all plans, grouped by branch (owner request 2026-11-27): one card per branch holding its numbers, its plans, and a day picker that lists every customer of that day */
+const PLS={open:new Set(),day:{}};
+function plFocus(sel){const e=document.querySelector('#plBody '+sel);if(e)e.focus({preventScroll:true});} // re-rendering must not drop keyboard focus
+function plToggle(b){if(PLS.forced)return;if(PLS.open.has(b))PLS.open.delete(b);else PLS.open.add(b);renderPlans();plFocus('.brh[data-b="'+CSS.escape(b)+'"]');}
+function plDay(b,d){PLS.day[b]=PLS.day[b]===d?'':d;renderPlans();plFocus('.chip[data-b="'+CSS.escape(b)+'"][data-d="'+CSS.escape(d)+'"]');}
 function renderPlans(){if(!document.getElementById('plans').classList.contains('active'))return;fillBranchSel('plBranch');
   const b=val('plBranch'),q=(val('plQ')||'').toLowerCase().trim(),br={},pl={};
-  DB.customers.forEach(c=>{if(b&&c.branch!==b)return;const k=c.branch||'-',o=br[k]||(br[k]={n:0,p:0,u:0,w:0,z:new Set()});o.n++;if(notPlanned(c))o.u++;else if(hasDay(c)&&!c.zone)o.w++;
-    if(hasDay(c)&&c.zone){o.p++;o.z.add(c.zone);const x=pl[c.zone]||(pl[c.zone]={n:0,t:0,d:{}});x.n++;x.t+=+c.tank||0;x.d[c.day]=(x.d[c.day]||0)+1;}}); // in plan = has a work day + frequency + plan name; not in plan = the app-wide notPlanned rule
-  const bs=Object.keys(br).sort((x,y)=>(x===CF().hq)-(y===CF().hq)||x.localeCompare(y)),T={n:0,p:0,u:0,w:0};bs.forEach(k=>{T.n+=br[k].n;T.p+=br[k].p;T.u+=br[k].u;T.w+=br[k].w;});
-  document.getElementById('plBr').innerHTML=bs.length?`<thead><tr><th>ສາຂາ</th><th class="num">ລູກຄ້າ</th><th class="num">ຢູ່ໃນແຜນ</th><th class="num">ມີວັນ ແຕ່ຍັງບໍ່ມີຊື່ແຜນ</th><th class="num">ຍັງບໍ່ເຂົ້າແຜນ</th><th class="num">ຮັບເອງ / ວັນພັກ</th><th class="num">ຈຳນວນແຜນ</th></tr></thead><tbody>`+
-    bs.map(k=>{const o=br[k];return `<tr><td><b>${esc(k)}</b>${bClosed(k)?' <span class="tag unpaid">ປິດ</span>':''}</td><td class="num">${money(o.n)}</td><td class="num">${o.p?money(o.p):''}</td><td class="num">${o.w?money(o.w):''}</td><td class="num" style="color:${o.u?'var(--red)':'var(--muted)'}">${o.u?money(o.u):''}</td><td class="num">${o.n-o.p-o.w-o.u?money(o.n-o.p-o.w-o.u):''}</td><td class="num">${o.z.size||''}</td></tr>`;}).join('')+
-    (bs.length>1?`<tr><td><b>ລວມ</b></td><td class="num"><b>${money(T.n)}</b></td><td class="num"><b>${money(T.p)}</b></td><td class="num"><b>${T.w?money(T.w):''}</b></td><td class="num"><b>${T.u?money(T.u):''}</b></td><td class="num"><b>${T.n-T.p-T.w-T.u?money(T.n-T.p-T.w-T.u):''}</b></td><td class="num"><b>${Object.keys(pl).length}</b></td></tr>`:'')+'</tbody>'
-    :`<tbody><tr><td class="empty">ຍັງບໍ່ມີລູກຄ້າ<br><button class="btn sm" onclick="document.getElementById('planFile').click()">ນຳເຂົ້າລູກຄ້າ</button></td></tr></tbody>`;
-  Object.keys(RM()).forEach(z=>{if(!pl[z]&&!DB.customers.some(c=>c.zone===z&&hasDay(c))&&(!b||(RBr()[z]||(RM()[z]||{}).branch||planBranch(z))===b))pl[z]={n:0,t:0,d:{}};}); // plans created by hand that have no customers yet
-  const od=d=>{const i=WD().indexOf(d);return i<0?9:i;},pb={},md={};Object.keys(pl).forEach(z=>{pb[z]=RBr()[z]||planBranch(z)||(RM()[z]||{}).branch||'';const e=Object.entries(pl[z].d).sort((a,c)=>c[1]-a[1])[0];md[z]=e?e[0]:'';});
-  const zs=Object.keys(pl).filter(z=>!q||(z+' '+(RV()[z]||'')+' '+empName(RO()[z])).toLowerCase().includes(q)).sort((x,y)=>pb[x].localeCompare(pb[y])||od(md[x])-od(md[y])||x.localeCompare(y));
-  document.getElementById('plN').textContent=zs.length?money(zs.length):'';
-  document.getElementById('plTbl').innerHTML=zs.length?`<thead><tr><th>ຊື່ແຜນ</th><th>ສາຂາ</th><th>ວັນ</th><th class="num">ບ້ານ</th><th class="num opt">ຖັງ</th><th class="opt">ລົດ</th><th class="opt">ຜູ້ຮັບຜິດຊອບ</th><th></th></tr></thead><tbody>`+
-    zs.map(z=>{const x=pl[z],days=Object.entries(x.d).sort((a,c)=>od(a[0])-od(c[0]));return `<tr><td><b>${esc(z)}</b></td><td>${esc(pb[z]||'-')}</td><td>${!days.length?'<span class="tag partial">ຍັງບໍ່ມີລູກຄ້າ</span>':days.length===1?esc(days[0][0]):days.map(([d,n])=>esc(d)+' '+n).join(' · ')}</td><td class="num">${x.n?money(x.n):''}</td><td class="num opt">${x.t?money(x.t):''}</td><td class="opt">${esc(RV()[z]||'-')}</td><td class="opt">${esc(empName(RO()[z])||'-')}</td>
-      <td><div class="actions"><button class="icon-btn" data-z="${esc(z)}" data-d="${esc(md[z])}" onclick="plOpen(this.dataset.z,this.dataset.d)">${ico('calendar')} ເປີດ</button><button class="icon-btn" data-z="${esc(z)}" data-d="${esc(md[z])}" aria-label="ແກ້ໄຂ / ຕັ້ງຊື່ແຜນ ${esc(z)}" onclick="PL.day=this.dataset.d;PL.open=this.dataset.z;editPlan(this.dataset.z)">${ico('pencil')} ຕັ້ງຊື່ / ແກ້ໄຂ</button></div></td></tr>`;}).join('')+'</tbody>'
-    :`<tbody><tr><td class="empty">${q?'ບໍ່ພົບແຜນທີ່ຄົ້ນຫາ':'ຍັງບໍ່ມີແຜນ'}<br><button class="btn sm" onclick="${q?"document.getElementById('plQ').value='';renderPlans()":"go('plan','planner')"}">${q?'ລ້າງການຄົ້ນຫາ':'ໄປຈັດແຜນ'}</button></td></tr></tbody>`;}
+  DB.customers.forEach(c=>{if(b&&c.branch!==b)return;const k=c.branch||'-',o=br[k]||(br[k]={n:0,p:0,u:0,w:0,d:{}});o.n++;if(notPlanned(c))o.u++;else if(hasDay(c)&&!c.zone)o.w++;
+    if(hasDay(c)){o.d[c.day]=(o.d[c.day]||0)+1;if(c.zone){o.p++;const x=pl[c.zone]||(pl[c.zone]={n:0,t:0,d:{},dt:{}});x.n++;x.t+=+c.tank||0;x.d[c.day]=(x.d[c.day]||0)+1;x.dt[c.day]=(x.dt[c.day]||0)+(+c.tank||0);}}}); // in plan = work day + frequency + plan name; not in plan = the app-wide notPlanned rule
+  const T={n:0,p:0,u:0,w:0};Object.values(br).forEach(o=>{T.n+=o.n;T.p+=o.p;T.u+=o.u;T.w+=o.w;});
+  Object.keys(RM()).forEach(z=>{if(!pl[z]&&!DB.customers.some(c=>c.zone===z&&hasDay(c))&&(!b||(RBr()[z]||(RM()[z]||{}).branch||planBranch(z))===b))pl[z]={n:0,t:0,d:{},dt:{}};}); // plans created by hand that have no customers yet
+  const nPlans=Object.keys(pl).length;
+  const od=d=>{const i=WD().indexOf(d);return i<0?9:i;},zb={};
+  Object.keys(pl).forEach(z=>{const k=b||RBr()[z]||planBranch(z)||(RM()[z]||{}).branch||'-',e=Object.entries(pl[z].d).sort((a,c)=>c[1]-a[1])[0];pl[z].md=e?e[0]:'';
+    if(q&&!(z+' '+(RV()[z]||'')+' '+empName(RO()[z])).toLowerCase().includes(q))return;(zb[k]=zb[k]||[]).push(z);if(!br[k])br[k]={n:0,p:0,u:0,w:0,d:{}};});
+  const bs=Object.keys(br).filter(k=>!q||zb[k]).sort((x,y)=>(x===CF().hq)-(y===CF().hq)||x.localeCompare(y));
+  document.getElementById('plKpi').innerHTML=strip([['ລູກຄ້າ',money(T.n)],['ຢູ່ໃນແຜນ',money(T.p),'green'],T.w?['ມີວັນ ແຕ່ຍັງບໍ່ມີຊື່ແຜນ',money(T.w)]:null,T.u?['ຍັງບໍ່ເຂົ້າແຜນ',money(T.u),'red']:null,['ແຜນ',money(nPlans)]]);
+  const one=bs.length===1;PLS.forced=one||!!q; // a single card or a search keeps cards open, so the header does not toggle
+  document.getElementById('plBody').innerHTML=bs.length?bs.map(k=>{const o=br[k],open=one||PLS.open.has(k)||!!q,rest=o.n-o.p-o.w-o.u,sel=o.d[PLS.day[k]]?PLS.day[k]:'';
+    const head=`<button type="button" class="brh" aria-expanded="${open}" data-b="${esc(k)}" onclick="plToggle(this.dataset.b)"><span class="brn"><b>${esc(k)}</b>${k===CF().hq?' <span class="tag house">ສາຂາຫຼັກ</span>':''}${bClosed(k)?' <span class="tag unpaid">ປິດ</span>':''}</span>
+      <span class="brs"><span>ລູກຄ້າ <b>${money(o.n)}</b></span>${o.p?`<span>ໃນແຜນ <b class="green">${money(o.p)}</b></span>`:''}${o.w?`<span>ບໍ່ມີຊື່ແຜນ <b>${money(o.w)}</b></span>`:''}${o.u?`<span>ຍັງບໍ່ເຂົ້າແຜນ <b class="red">${money(o.u)}</b></span>`:''}${rest>0?`<span>ຮັບເອງ / ວັນພັກ <b>${money(rest)}</b></span>`:''}${(zb[k]||[]).length?`<span>ແຜນ <b>${(zb[k]||[]).length}</b></span>`:''}</span>${ico('chev-right')}</button>`;
+    if(!open)return `<div class="panel brc">${head}</div>`;
+    const days=WD().filter(d=>o.d[d]),chips=days.length?`<div class="row" style="margin:0 0 10px;gap:6px;flex-wrap:wrap" role="group" aria-label="ເລືອກວັນ">${days.map(d=>`<button type="button" class="chip ${d===sel?'on':''}" aria-pressed="${d===sel}" data-b="${esc(k)}" data-d="${d}" onclick="plDay(this.dataset.b,this.dataset.d)">${d} <span class="n">${money(o.d[d])}</span></button>`).join('')}</div>`:'';
+    const zs=(zb[k]||[]).filter(z=>!sel||pl[z].d[sel]).sort((x,y)=>od(pl[x].md)-od(pl[y].md)||x.localeCompare(y));
+    const plans=zs.length?`<div class="tbl-wrap"><table><thead><tr><th>ຊື່ແຜນ</th><th>ວັນ</th><th class="num">ບ້ານ</th><th class="num opt">ຖັງ</th><th>ລົດ</th><th class="opt">ຜູ້ຮັບຜິດຊອບ</th><th></th></tr></thead><tbody>`+zs.map(z=>{const x=pl[z],dd=Object.entries(x.d).sort((a,c)=>od(a[0])-od(c[0]));return `<tr><td><b>${esc(z)}</b></td><td>${!dd.length?'<span class="tag partial">ຍັງບໍ່ມີລູກຄ້າ</span>':dd.length===1?esc(dd[0][0]):dd.map(([d,n])=>esc(d)+' '+n).join(' · ')}</td><td class="num">${x.n?money(sel?x.d[sel]:x.n):''}</td><td class="num opt">${(sel?x.dt[sel]:x.t)?money(sel?x.dt[sel]:x.t):''}</td><td>${esc(RV()[z]||'-')}</td><td class="opt">${esc(empName(RO()[z])||'-')}</td>
+        <td><div class="actions"><button class="icon-btn" data-z="${esc(z)}" data-d="${esc(sel||x.md)}" onclick="plOpen(this.dataset.z,this.dataset.d)">${ico('calendar')} ເປີດ</button><button class="icon-btn" data-z="${esc(z)}" data-d="${esc(sel||x.md)}" aria-label="ແກ້ໄຂ / ຕັ້ງຊື່ແຜນ ${esc(z)}" onclick="PL.day=this.dataset.d;PL.open=this.dataset.z;editPlan(this.dataset.z)">${ico('pencil')} ຕັ້ງຊື່ / ແກ້ໄຂ</button></div></td></tr>`;}).join('')+'</tbody></table></div>'
+      :`<p class="hint">${o.w||o.u?'ສາຂານີ້ຍັງບໍ່ມີແຜນ — ກົດ "ຈັດແຜນສາຂາອັດຕະໂນມັດ" ຫຼື "+ ແຜນໃໝ່"':'ຍັງບໍ່ມີແຜນ'}</p>`;
+    let cust='';
+    if(sel){const cs=DB.customers.filter(c=>(c.branch||'-')===k&&hasDay(c)&&c.day===sel).sort((x,y)=>(x.zone||'').localeCompare(y.zone||'')||(x.seq||0)-(y.seq||0)),cap=300;
+      cust=`<h4 style="margin:14px 0 6px">ລູກຄ້າວັນ${sel} <span class="count">${money(cs.length)}</span></h4><div class="tbl-wrap"><table><thead><tr><th>ຊື່ລູກຄ້າ</th><th class="opt">ບ້ານ</th><th>ເບີ</th><th>ແຜນ</th></tr></thead><tbody>`+
+        cs.slice(0,cap).map(c=>`<tr><td>${c.seq?`<span class="hint" style="display:inline-block;min-width:26px">${c.seq}.</span> `:''}${cn(c)}</td><td class="opt">${esc(c.village||'')}</td><td>${c.phone?`<a href="tel:${esc(telNo(c.phone))}">${esc(c.phone)}</a>`:''}</td><td>${esc(c.zone||'')}</td></tr>`).join('')+
+        (cs.length>cap?`<tr><td colspan="4" class="empty">ສະແດງ ${cap} ຈາກ ${money(cs.length)} ລາຍ — ກົດ "ເປີດ" ທີ່ແຜນ ເພື່ອເບິ່ງທັງໝົດ</td></tr>`:'')+'</tbody></table></div>';}
+    else if(days.length)cust='<p class="hint" style="margin-top:8px">ກົດວັນດ້ານເທິງ ເພື່ອເບິ່ງລູກຄ້າທັງໝົດຂອງວັນນັ້ນ</p>';
+    return `<div class="panel brc open">${head}<div class="brb">${chips}${plans}${cust}</div></div>`;}).join('')
+    :`<div class="panel"><div class="empty">${q?'ບໍ່ພົບແຜນທີ່ຄົ້ນຫາ':'ຍັງບໍ່ມີລູກຄ້າ'}<br><button class="btn sm" onclick="${q?"document.getElementById('plQ').value='';renderPlans()":"document.getElementById('planFile').click()"}">${q?'ລ້າງການຄົ້ນຫາ':'ນຳເຂົ້າລູກຄ້າ'}</button></div></div>`;}
 /* trucks × days: which plans each truck runs this week, tanks vs capacity, and one-day swaps when a truck is unavailable */
 function vpWeek(){const el=document.getElementById('vpDate');if(!el.value)el.value=ymd(new Date());const d=new Date(el.value);d.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));
   return DOWN.map((n,i)=>{const x=new Date(d);x.setUTCDate(d.getUTCDate()+i);return {n,date:x.toISOString().slice(0,10)};}).filter(x=>isWork(x.n));}
