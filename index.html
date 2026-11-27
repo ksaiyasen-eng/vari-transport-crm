@@ -46,6 +46,7 @@
   --shadow:none; --pop:0 16px 40px rgba(0,0,0,.55);
   color-scheme:dark;}}
 *{box-sizing:border-box;margin:0;padding:0}
+/* type scale (px): 13 small · 14.5 body · 16 emphasis · 18 title · 22 · 26 · 34 · 40 — keep to these */
 :root{--font:"Phetsarath","Noto Sans Lao","Noto Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif}
 :root[data-font="modern"]{--font:"Noto Sans Lao","Noto Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14.5px;line-height:1.65}
@@ -57,14 +58,14 @@ a{color:var(--accent)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 /* ---- header ---- */
 header{background:var(--card);border-bottom:1px solid var(--line);padding:0 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:60;height:60px;grid-area:head}
-.logo{width:34px;height:34px;border-radius:6px;background:none;color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0}
-header h1{font-size:17px;font-weight:700;line-height:1.2;letter-spacing:-.01em}
+.logo{width:34px;height:34px;border-radius:6px;background:none;color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
+header h1{font-size:18px;font-weight:700;line-height:1.2;letter-spacing:-.01em}
 header .sub{font-size:13px;color:var(--muted)}
 header .spacer{flex:1}
-.searchbtn{display:flex;align-items:center;gap:8px;height:38px;padding:0 10px 0 14px;border:1px solid var(--line);border-radius:6px;background:var(--card2);color:var(--muted);font-size:14px;min-width:260px;transition:border-color .15s}
+.searchbtn{display:flex;align-items:center;gap:8px;height:38px;padding:0 10px 0 14px;border:1px solid var(--line);border-radius:6px;background:var(--card2);color:var(--muted);font-size:14.5px;min-width:260px;transition:border-color .15s}
 .searchbtn:hover{border-color:var(--accent-b);color:var(--ink2)}
 .searchbtn kbd{margin-left:auto;font:11px ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:6px;padding:1px 6px;background:var(--card)}
-.chipbtn{background:var(--card);border:1px solid var(--line);color:var(--ink2);height:34px;padding:0 12px;border-radius:6px;font-size:13.5px;display:flex;align-items:center;gap:7px}
+.chipbtn{background:var(--card);border:1px solid var(--line);color:var(--ink2);height:34px;padding:0 12px;border-radius:6px;font-size:14.5px;display:flex;align-items:center;gap:7px}
 .chipbtn .dot{width:8px;height:8px;border-radius:50%;background:#94a3b8}
 #cloudBtn.on .dot{background:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.2)} #cloudBtn.syncing .dot{background:#f59e0b}
 .iconbtn{background:var(--card);border:1px solid var(--line);color:var(--ink2);width:38px;height:38px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center}
@@ -81,7 +82,7 @@ header .spacer{flex:1}
 /* ---- main navigation: tabs (tablet) → sidebar (desktop) → bottom bar (phone) ---- */
 nav#nav{background:var(--card);display:flex;gap:2px;padding:0 12px;border-bottom:1px solid var(--line);overflow-x:auto;position:sticky;top:60px;z-index:50;grid-area:nav}
 nav#nav .nbrand,nav#nav .nfoot{display:none}
-.tab{background:none;border:none;padding:0 14px;height:46px;font-size:15px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;font-weight:500;display:flex;align-items:center;gap:8px;transition:color .15s,background .15s}
+.tab{background:none;border:none;padding:0 14px;height:46px;font-size:14.5px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;font-weight:400;display:flex;align-items:center;gap:8px;transition:color .15s,background .15s}
 .tab:hover{color:var(--ink)}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
 .tab .n,#bottomnav .n{font-size:13px;background:var(--red);color:#fff;border-radius:6px;padding:0 6px;min-width:18px;text-align:center;line-height:18px;font-weight:700}
@@ -92,14 +93,14 @@ main{padding:26px 28px;max-width:1320px;width:100%;margin:0 auto;grid-area:main;
 .view{display:none}
 .view.active{display:block;animation:fade .2s ease-out}
 @keyframes fade{from{opacity:.55;transform:translateY(3px)}to{opacity:1;transform:none}}
-h2{font-size:21px;font-weight:700;letter-spacing:-.01em}
+h2{font-size:22px;font-weight:700;letter-spacing:-.01em}
 @media (min-width:1024px){
   body{display:grid;grid-template-columns:var(--side) minmax(0,1fr);grid-template-rows:60px 1fr;grid-template-areas:"nav head" "nav main";min-height:100vh}
   nav#nav{flex-direction:column;gap:4px;padding:16px 12px;border-bottom:none;border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--card)}
   nav#nav .nbrand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px}
   nav#nav .nbrand b{display:block;font-size:16px;line-height:1.2} nav#nav .nbrand small{color:var(--muted);font-size:13px}
   nav#nav .nfoot{display:block;margin-top:auto;padding:12px 8px 0;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
-  nav#nav .tab{height:44px;border-bottom:none;border-radius:6px;padding:0 12px;width:100%;font-size:15px}
+  nav#nav .tab{height:44px;border-bottom:none;border-radius:6px;padding:0 12px;width:100%;font-size:14.5px}
   nav#nav .tab .i{width:19px;height:19px}
   nav#nav .tab .n{margin-left:auto}
   nav#nav .tab:hover{background:var(--card2)}
@@ -107,29 +108,30 @@ h2{font-size:21px;font-weight:700;letter-spacing:-.01em}
   header .logo{display:none}
 }
 /* ---- control levels: A primary · B secondary · C view switch · D chips ---- */
-.btn{background:var(--accent);color:var(--on-accent);border:1px solid var(--accent);height:42px;padding:0 18px;border-radius:6px;font-size:15px;font-weight:700;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;transition:background .15s,transform .1s,box-shadow .15s}
+.btn{background:var(--accent);color:var(--on-accent);border:1px solid var(--accent);height:42px;padding:0 18px;border-radius:6px;font-size:14.5px;font-weight:700;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;transition:background .15s,transform .1s,box-shadow .15s}
 .btn:hover{background:var(--accent2);border-color:var(--accent2)}
 .btn:active{transform:translateY(1px)}
 .btn:disabled{opacity:.55;cursor:wait}
-.btn.sm,.btn.ghost{background:var(--card);color:var(--ink2);border:1px solid var(--line);height:38px;padding:0 13px;font-size:14.5px;font-weight:600;box-shadow:none}
+.btn.sm,.btn.ghost{background:var(--card);color:var(--ink2);border:1px solid var(--line);height:38px;padding:0 13px;font-size:14.5px;font-weight:700;box-shadow:none}
 .btn.sm:hover,.btn.ghost:hover{border-color:var(--accent-b);color:var(--accent);background:var(--card2)}
 .btn.danger{background:var(--red);border-color:var(--red);color:#fff;box-shadow:none}
 .btn.danger:hover{filter:brightness(.92)}
-.chip{height:32px;padding:0 13px;border-radius:6px;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.chip{height:32px;padding:0 13px;border-radius:6px;font-size:14.5px;border:1px solid var(--line);background:var(--card);color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
 .chip:hover{color:var(--ink);border-color:var(--accent-b)}
 .chip.on{background:var(--accent-l);color:var(--accent);border-color:var(--accent-b);font-weight:700}
 .chip .n{font-size:13px;opacity:.8;font-variant-numeric:tabular-nums}
 .chip.x{height:28px;font-size:13px;color:var(--ink2)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--card);padding:3px;gap:2px}
-.seg button{height:28px;padding:0 12px;border:none;background:transparent;font-size:14px;color:var(--muted);border-radius:6px}
+.seg button{height:28px;padding:0 12px;border:none;background:transparent;font-size:14.5px;color:var(--muted);border-radius:6px}
 .seg button.on{background:var(--accent-l);color:var(--accent);font-weight:700}
-.fbtn{height:34px;padding:0 12px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink2);font-size:14px;display:inline-flex;align-items:center;gap:6px}
+.fbtn{height:34px;padding:0 12px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink2);font-size:14.5px;display:inline-flex;align-items:center;gap:6px}
 .fbtn.has{border-color:var(--accent-b);color:var(--accent);background:var(--accent-l);font-weight:700}
-.cname{background:none;border:0;padding:2px 0;margin:0;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;min-height:24px}
-.cname:hover{color:var(--accent);text-decoration-color:currentColor}
+.cname{background:none;border:0;padding:2px 0;margin:0;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;text-align:left;min-height:24px}
+td.num,th.num,.kpi .val,.hstat b,.strip b{font-variant-numeric:tabular-nums} /* digits line up in columns */
+.tbl-wrap tr:has(.cname[data-cid]):not(:has(input[type=checkbox])){cursor:pointer}
 .cname:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
 @media (max-width:767px){.cname{padding:9px 0;margin:-8px 0;min-height:44px}} /* finger-sized tap target without making rows taller */
-.icon-btn{background:var(--card);border:1px solid var(--line);border-radius:6px;min-height:30px;padding:3px 10px;font-size:13.5px;color:var(--ink2);display:inline-flex;align-items:center;gap:5px;transition:all .15s}
+.icon-btn{background:var(--card);border:1px solid var(--line);border-radius:6px;min-height:30px;padding:3px 10px;font-size:14.5px;color:var(--ink2);display:inline-flex;align-items:center;gap:5px;transition:all .15s}
 .icon-btn:hover{border-color:var(--accent-b);color:var(--accent)}
 .icon-btn.del:hover{border-color:var(--red);color:var(--red)}
 .icon-btn .i{width:14px;height:14px}
@@ -146,11 +148,11 @@ input[type=search],input[type=date],.row select,.fpanel select,.fpanel input{hei
 input[type=search]{min-width:220px;flex:1;max-width:400px}
 .fpanel{display:none;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:0 0 14px;box-shadow:var(--shadow)}
 .fpanel.open{display:block}
-.fpanel h4{font-size:14px;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;font-weight:600}
+.fpanel h4{font-size:14.5px;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;font-weight:700}
 .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-.fgrid label{display:block;font-size:13.5px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.fgrid label{display:block;font-size:14.5px;font-weight:700;color:var(--muted);margin-bottom:4px}
 .fgrid select,.fgrid input{width:100%}
-.strip{display:flex;gap:8px 26px;flex-wrap:wrap;align-items:baseline;margin:0 0 16px;padding:14px 18px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);font-size:14px;color:var(--muted);box-shadow:var(--shadow)}
+.strip{display:flex;gap:8px 26px;flex-wrap:wrap;align-items:baseline;margin:0 0 16px;padding:14px 18px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);font-size:14.5px;color:var(--muted);box-shadow:var(--shadow)}
 .strip b{color:var(--ink);font-size:18px;margin-left:6px;font-variant-numeric:tabular-nums}
 .strip b.red{color:var(--red)} .strip b.green{color:var(--green)} .strip b.blue{color:var(--accent);text-decoration:underline}
 /* plan cards (planner) */
@@ -159,19 +161,19 @@ input[type=search]{min-width:220px;flex:1;max-width:400px}
 .pcard:hover{border-color:var(--accent-b)} .pcard.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .pcard .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .pcard .nm{font-size:16px;font-weight:700;color:var(--ink);line-height:1.4;overflow-wrap:anywhere}
-.pcard .br{font-size:13.5px;color:var(--muted)}
+.pcard .br{font-size:14.5px;color:var(--muted)}
 .pcard .big{font-size:26px;font-weight:700;line-height:1;text-align:right;color:var(--ink);font-variant-numeric:tabular-nums;flex:0 0 auto}
 .pcard .big small{display:block;font-size:13px;font-weight:400;color:var(--muted);margin-top:5px}
 .pdays{display:flex;gap:4px;flex-wrap:wrap}
 .pdays span{font-size:13px;line-height:20px;padding:0 8px;border-radius:999px;background:var(--card2);color:var(--muted)}
-.pdays span.on{background:var(--accent-l);color:var(--accent);font-weight:600} .pdays span.cur{box-shadow:inset 0 0 0 1px var(--accent)}
-.pline{font-size:14px;color:var(--ink2);display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+.pdays span.on{background:var(--accent-l);color:var(--accent);font-weight:700} .pdays span.cur{box-shadow:inset 0 0 0 1px var(--accent)}
+.pline{font-size:14.5px;color:var(--ink2);display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
 .pline .i{width:15px;height:15px;flex:0 0 auto} .pline.warn{color:var(--red)} .pline b.red{color:var(--red)}
 .pbar{height:4px;border-radius:2px;background:var(--card2);overflow:hidden} .pbar i{display:block;height:100%;background:var(--accent)}
 .pft{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);gap:8px;border-top:1px solid var(--line);padding-top:8px}
 .pft>span:first-child{min-width:0;overflow-wrap:anywhere}
-.pgrp{margin:18px 0 8px;font-size:15px;font-weight:700;color:var(--ink)} .pgrp .hint{font-weight:400}
-.notice{background:var(--amber-l);border:1px solid color-mix(in srgb,var(--amber) 28%,transparent);color:var(--amber);border-radius:6px;padding:10px 14px;font-size:14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pgrp{margin:18px 0 8px;font-size:14.5px;font-weight:700;color:var(--ink)} .pgrp .hint{font-weight:400}
+.notice{background:var(--amber-l);border:1px solid color-mix(in srgb,var(--amber) 28%,transparent);color:var(--amber);border-radius:6px;padding:10px 14px;font-size:14.5px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .notice a{color:var(--accent);font-weight:700;cursor:pointer}
 #home .panel{min-width:0} #home td{white-space:normal;overflow-wrap:anywhere} /* branch names have no space (ສາຂາX): let them wrap */
 .more,.notice a,td a{display:inline-flex;align-items:center;min-height:24px}
@@ -179,18 +181,18 @@ input[type=search]{min-width:220px;flex:1;max-width:400px}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px}
 .kpi{background:var(--card);border-radius:var(--r);padding:16px 18px;border:1px solid var(--line);text-align:left;cursor:default;font:inherit;color:inherit;box-shadow:var(--shadow);display:flex;gap:14px;align-items:flex-start;transition:border-color .15s,transform .15s}
 button.kpi{cursor:pointer} button.kpi:hover{border-color:var(--accent-b);transform:translateY(-2px)}
-.kpi .lbl{font-size:13.5px;color:var(--muted);font-weight:600}
-.kpi .val{font-size:26px;font-weight:800;margin-top:1px;color:var(--ink);line-height:1.2;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.kpi .lbl{font-size:14.5px;color:var(--muted);font-weight:700}
+.kpi .val{font-size:26px;font-weight:700;margin-top:1px;color:var(--ink);line-height:1.2;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .kpi .val.red{color:var(--red)} .kpi .val.green{color:var(--green)}
 .kpi .foot{font-size:13px;color:var(--muted)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .panel{background:var(--card);border-radius:var(--r);padding:18px;border:1px solid var(--line);margin-bottom:18px;box-shadow:var(--shadow)}
-.panel h3{font-size:15.5px;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:700}
+.panel h3{font-size:16px;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-weight:700}
 .panel h3 .i{color:var(--accent)}
 .panel h3 .count{font-size:13px;background:var(--accent-l);color:var(--accent);padding:1px 9px;border-radius:6px;font-weight:700}
-.panel h3 .more{margin-left:auto;font-size:14px;font-weight:600;color:var(--accent);background:none;border:none}
+.panel h3 .more{margin-left:auto;font-size:14.5px;font-weight:700;color:var(--accent);background:none;border:none}
 .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
-.bar-row .name{width:130px;font-size:13.5px;color:var(--ink2);text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-row .name{width:130px;font-size:14.5px;color:var(--ink2);text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar-track{flex:1;background:var(--line2);border-radius:6px;height:20px;overflow:hidden}
 .bar-fill{height:100%;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:7px;color:var(--on-accent);font-size:13px;font-weight:700;min-width:30px}
 .prog{display:flex;align-items:center;gap:8px;min-width:130px}
@@ -199,10 +201,10 @@ button.kpi{cursor:pointer} button.kpi:hover{border-color:var(--accent-b);transfo
 .prog span{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;width:38px;text-align:right}
 /* ---- tables ---- */
 .tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow)}
-table{width:100%;border-collapse:collapse;background:var(--card);font-size:14px}
+table{width:100%;border-collapse:collapse;background:var(--card);font-size:14.5px}
 th{background:var(--card2);color:var(--muted);text-align:left;padding:11px 14px;font-weight:700;font-size:13px;white-space:nowrap;position:sticky;top:0;border-bottom:1px solid var(--line)}
 td{padding:10px 14px;border-bottom:1px solid var(--line2);white-space:nowrap;color:var(--ink2)}
-td b{color:var(--ink);font-weight:600}
+td b{color:var(--ink);font-weight:700}
 tr:hover td{background:var(--card2)}
 tr:last-child td{border-bottom:none}
 .tag{display:inline-flex;align-items:center;gap:4px;padding:1px 10px;border-radius:6px;font-size:13px;font-weight:700;line-height:21px}
@@ -211,7 +213,7 @@ tr:last-child td{border-bottom:none}
 .tag.paid{background:var(--green-l);color:var(--green)} .tag.unpaid{background:var(--red-l);color:var(--red)} .tag.partial{background:var(--amber-l);color:var(--amber)}
 .num{text-align:right;font-variant-numeric:tabular-nums}
 .actions{display:flex;gap:5px;flex-wrap:wrap}
-.more-fields summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:14px;padding:6px 0}
+.more-fields summary{cursor:pointer;color:var(--accent);font-weight:700;font-size:14.5px;padding:6px 0}
 .empty{text-align:center;padding:40px 16px;color:var(--muted)}
 .empty .i{width:30px;height:30px;display:block;margin:0 auto 8px;color:var(--green)}
 .empty .btn,.empty .btn.sm{margin-top:12px}
@@ -221,12 +223,13 @@ tr:last-child td{border-bottom:none}
 .modal{background:var(--card);border:1px solid var(--line);border-radius:6px;width:100%;max-width:580px;box-shadow:var(--pop);animation:pop .18s ease-out}
 @keyframes pop{from{transform:translateY(8px) scale(.99);opacity:.4}to{transform:none;opacity:1}}
 .modal-head{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center}
-.modal-head h3{color:var(--ink);font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px}
-.modal-head .x{margin-left:auto;background:none;border:none;font-size:24px;color:var(--muted);line-height:1;width:40px;height:40px;border-radius:6px}
+.modal-head h3{color:var(--ink);font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.modal-head .x{margin-left:auto;background:none;border:none;font-size:22px;color:var(--muted);line-height:1;width:40px;height:40px;border-radius:6px}
 .modal-head .x:hover{background:var(--card2)}
+.modal-head .x{display:inline-flex;align-items:center;justify-content:center}.modal-head .x .i{width:20px;height:20px}
 .modal-body{padding:20px 22px}
 .field{margin-bottom:14px}
-.field label{display:block;font-size:13.5px;font-weight:600;color:var(--muted);margin-bottom:5px}
+.field label{display:block;font-size:14.5px;font-weight:700;color:var(--muted);margin-bottom:5px}
 .field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--card)}
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--sky);box-shadow:0 0 0 3px color-mix(in srgb,var(--sky) 22%,transparent)}
 .field textarea.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
@@ -235,10 +238,10 @@ tr:last-child td{border-bottom:none}
 .qty-grid .field label{font-size:13px}
 .modal-foot{padding:14px 22px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--card);border-radius:0 0 20px 20px}
 .hint{font-size:13px;color:var(--muted);margin-top:2px}
-.calc-box{background:var(--accent-l);border-radius:6px;padding:10px 14px;font-size:14px;display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.calc-box{background:var(--accent-l);border-radius:6px;padding:10px 14px;font-size:14.5px;display:flex;justify-content:space-between;align-items:center;margin-top:6px}
 .calc-box b{font-size:18px;color:var(--accent)}
-.steps{background:var(--accent-l);border-radius:6px;padding:12px 14px 12px 30px;margin-bottom:14px;font-size:13.5px;line-height:1.7}
-.steps a{color:var(--accent);font-weight:600}
+.steps{background:var(--accent-l);border-radius:6px;padding:12px 14px 12px 30px;margin-bottom:14px;font-size:14.5px;line-height:1.7}
+.steps a{color:var(--accent);font-weight:700}
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(90px);background:#0b2540;color:#fff;padding:10px 12px 10px 18px;border-radius:6px;font-size:14.5px;z-index:200;transition:transform .22s ease-out;box-shadow:var(--pop);display:flex;align-items:center;gap:14px;max-width:92vw}
 #toast{opacity:0;visibility:hidden;transition:transform .22s ease-out,opacity .18s,visibility 0s .22s}
 #toast.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible;transition:transform .22s ease-out,opacity .18s}
@@ -261,11 +264,11 @@ tr:last-child td{border-bottom:none}
 :root{--nav:#0a213d;--nav-ink:#c7dcef}
 :root[data-theme="dark"]{--nav:#0a1a28}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--nav:#0a1a28}}
-.logo{width:auto;height:auto;background:none;box-shadow:none;color:var(--accent);font-size:17px;font-weight:800;letter-spacing:.08em;border-radius:0}
+.logo{width:auto;height:auto;background:none;box-shadow:none;color:var(--accent);font-size:18px;font-weight:700;letter-spacing:.08em;border-radius:0}
 header{height:52px}
 nav#nav{top:52px}
-.btn{height:38px;padding:0 14px;font-size:14.5px;font-weight:600}
-.btn.sm,.btn.ghost{height:38px;padding:0 12px;font-size:14px}
+.btn{height:38px;padding:0 14px;font-size:14.5px;font-weight:700}
+.btn.sm,.btn.ghost{height:38px;padding:0 12px;font-size:14.5px}
 .chip{height:32px;padding:0 11px;background:transparent;border-color:transparent;color:var(--muted)}
 .chip:hover{background:var(--card2);border-color:transparent}
 .chip.on{background:var(--accent-l);border-color:transparent}
@@ -276,7 +279,7 @@ nav#nav{top:52px}
 .panel{padding:18px 20px}
 .panel h3{font-size:14.5px;margin-bottom:10px}
 .panel h3 .i{display:none}
-.panel h3 .count{background:none;color:var(--muted);padding:0;font-size:14px;font-weight:500}
+.panel h3 .count{background:none;color:var(--muted);padding:0;font-size:14.5px;font-weight:400}
 .strip{padding:12px 16px}
 th{background:var(--card);color:var(--muted);border-bottom:1px solid var(--ink2);padding:11px 14px}
 td{padding:11px 14px}
@@ -288,7 +291,7 @@ a.icon-btn{text-decoration:none;justify-content:center}
 table.stops th:last-child,table.stops td:last-child{position:sticky;right:0;background:var(--card);box-shadow:-1px 0 0 var(--line);z-index:1}
 table.stops tr:hover td:last-child{background:var(--card2)}
 .stopacts{display:flex;gap:4px;align-items:center}
-.tick{height:32px;padding:0 10px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--ink2);font-size:14px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
+.tick{height:32px;padding:0 10px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--ink2);font-size:14.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
 .tick:hover{border-color:var(--green);color:var(--green)}
 .tick.on{background:var(--green-l);border-color:transparent;color:var(--green)}
 .phone-only{display:none!important}
@@ -299,7 +302,7 @@ table.stops tr:hover td:last-child{background:var(--card2)}
 @media(min-width:1024px){
   nav#nav{background:var(--nav);border-right:none;padding:14px 8px}
   nav#nav .nbrand{padding:2px 10px 16px;display:block}
-  nav#nav .nbrand b{color:#fff;font-size:18px;font-weight:800;letter-spacing:.08em}
+  nav#nav .nbrand b{color:#fff;font-size:18px;font-weight:700;letter-spacing:.08em}
   nav#nav .nbrand small{color:var(--nav-ink);display:block}
   nav#nav .tab{color:var(--nav-ink);border-radius:4px;height:40px;font-size:14.5px}
   nav#nav .tab:hover{background:rgba(255,255,255,.08);color:#fff}
@@ -320,23 +323,23 @@ table.stops tr:hover td:last-child{background:var(--card2)}
 .kpi .kic{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:var(--accent-l);color:var(--accent);flex-shrink:0}
 .kpi .kic .i{width:26px;height:26px}
 .kpi .kic.red{background:var(--red-l);color:var(--red)}.kpi .kic.green{background:var(--green-l);color:var(--green)}.kpi .kic.amber{background:var(--amber-l);color:var(--amber)}
-#home .kpi .lbl{font-size:16px}#home .kpi .val{font-size:32px;margin:4px 0}#home .kpi .foot{font-size:15.5px}
+#home .kpi .lbl{font-size:16px}#home .kpi .val{font-size:34px;margin:4px 0}#home .kpi .foot{font-size:16px}
 #home .grid2{gap:28px}
 #home .panel{border-radius:18px;padding:28px;margin-bottom:28px}
 #home .panel h3{font-size:18px;margin-bottom:22px}
 #home .panel h3 .i{display:inline-block;width:22px;height:22px;color:var(--accent)}
 #home .bar-row{gap:16px;margin-bottom:15px}
-#home .bar-row .name{width:190px;font-size:15.5px}
+#home .bar-row .name{width:190px;font-size:16px}
 #home .bar-track{height:32px;border-radius:10px}
-#home .bar-fill{border-radius:10px;font-size:15.5px;font-weight:700;padding-right:12px;color:var(--on-accent);min-width:50px}
+#home .bar-fill{border-radius:10px;font-size:16px;font-weight:700;padding-right:12px;color:var(--on-accent);min-width:50px}
 @media(max-width:1023px){#home .kpis{gap:12px}#home .kpi{padding:18px 16px;gap:12px}.kpi .kic{width:44px;height:44px}#home .kpi .lbl{font-size:14.5px}#home .kpi .val{font-size:26px}#home .bar-row .name{width:150px;font-size:14.5px}#home .grid2{gap:16px}#home .panel{padding:20px}}
 @media(max-width:767px){
   #home .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
   #home .kpi{flex-direction:column;gap:10px;padding:14px;border-radius:14px}
   .kpi .kic{width:42px;height:42px}.kpi .kic .i{width:21px;height:21px}
-  #home .kpi .lbl{font-size:14px}#home .kpi .val{font-size:26px}#home .kpi .foot{font-size:13px}
+  #home .kpi .lbl{font-size:14.5px}#home .kpi .val{font-size:26px}#home .kpi .foot{font-size:13px}
   #home .grid2{gap:0}#home .panel{padding:16px;margin-bottom:14px;border-radius:14px}#home .panel h3{font-size:16px;margin-bottom:14px}
-  #home .bar-row{gap:10px;margin-bottom:10px}#home .bar-row .name{width:104px;font-size:13.5px}#home .bar-track{height:26px}#home .bar-fill{font-size:14px;padding-right:8px;min-width:40px}
+  #home .bar-row{gap:10px;margin-bottom:10px}#home .bar-row .name{width:104px;font-size:14.5px}#home .bar-track{height:26px}#home .bar-fill{font-size:14.5px;padding-right:8px;min-width:40px}
 }
 /* home cover: glowing progress dial on a deep-blue panel (owner's reference picture 2026-11-26) */
 .hero{position:relative;overflow:hidden;display:flex;align-items:center;gap:36px;background:radial-gradient(circle at 18% 50%,#0f3a66 0,#0a213d 45%,#071528 100%);color:#e4f1fb;border:1px solid #16365a;border-radius:16px;padding:28px 36px;margin-bottom:22px}
@@ -349,13 +352,13 @@ table.stops tr:hover td:last-child{background:var(--card2)}
 .dial .ct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.2}
 .dial .ct small{font-size:13px;color:#c3dcf2}
 .dial .ct b{font-size:40px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 0 18px rgba(56,189,248,.45)}
-.dial .ct span{font-size:14px;color:#4ade80;font-weight:700}
+.dial .ct span{font-size:14.5px;color:#4ade80;font-weight:700}
 .dial .ct span.warn{color:#fbbf24}
 .hero-txt{flex:1;min-width:0}
 .hero-k{font-size:14.5px;color:#c3dcf2}
 .hero h2{font-size:26px;line-height:1.4;margin:2px 0 8px;color:#fff}
 .hero h2 b{color:#7dd3fc;font-size:34px;font-variant-numeric:tabular-nums}
-.hero p{font-size:15px;color:#c7dcef;margin-bottom:18px}
+.hero p{font-size:14.5px;color:#c7dcef;margin-bottom:18px}
 .hero p b{color:#fff}
 .btn.hero-btn{height:50px;padding:0 24px;font-size:16px;background:#38bdf8;border-color:#38bdf8;color:#03243a}
 .btn.hero-btn:hover{background:#7dd3fc;border-color:#7dd3fc}
@@ -363,6 +366,7 @@ table.stops tr:hover td:last-child{background:var(--card2)}
 .hero>*{position:relative;z-index:1}
 .dial .hd{fill:#e0f7ff;filter:drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px #38bdf8) drop-shadow(0 0 18px #38bdf8)}
 .dial .tk.on{filter:drop-shadow(0 0 3px #38bdf8)}
+.dial .gl{fill:none;stroke:rgba(56,189,248,.45);stroke-width:4;filter:drop-shadow(0 0 6px #38bdf8) drop-shadow(0 0 14px rgba(56,189,248,.55))} /* 0% or no plan: the ring still glows (owner request 2026-11-26) */
 .btn.hero-btn{box-shadow:0 0 0 1px rgba(125,211,252,.4),0 0 22px rgba(56,189,248,.45)}
 .btn.hero-btn:hover{box-shadow:0 0 0 1px #7dd3fc,0 0 30px rgba(56,189,248,.7)}
 .kpi .spark polyline{filter:drop-shadow(0 0 3px currentColor)}
@@ -390,13 +394,15 @@ table.stops tr:hover td:last-child{background:var(--card2)}
 @media(max-width:1023px){#home .kpi{padding:18px 16px 14px;min-height:150px}#home .kpi .val{font-size:26px}}
 .kpi .spark{display:block;width:100%;height:34px;margin-top:8px;color:var(--accent)}
 .kpi .spark.red{color:var(--red)}
-@media(max-width:767px){#home .kpi{padding:14px 14px 12px;min-height:0}#home .kpi .kic{top:12px;right:12px;width:34px;height:34px}#home .kpi .kic .i{width:17px;height:17px}#home .kpi .lbl{padding-right:38px}#home .kpi .val{font-size:26px}.hstats{margin:6px 0 14px}.hstat{padding:8px 6px}.hstat b{font-size:20px}#home .bar-track .z{line-height:26px}.hero{flex-direction:column;align-items:stretch;text-align:center;padding:22px 18px;gap:12px;margin-bottom:14px}.dial{width:160px;height:160px;align-self:center}.dial .ct b{font-size:32px}.hero h2{font-size:21px}.hero h2 b{font-size:26px}.hero p{font-size:14.5px;margin-bottom:14px}.btn.hero-btn{width:100%;justify-content:center}}
+@media(max-width:767px){#home .kpi{padding:14px 14px 12px;min-height:0}#home .kpi .kic{top:12px;right:12px;width:34px;height:34px}#home .kpi .kic .i{width:17px;height:17px}#home .kpi .lbl{padding-right:38px}#home .kpi .val{font-size:26px}.hstats{margin:6px 0 14px}.hstat{padding:8px 6px}.hstat b{font-size:22px}#home .bar-track .z{line-height:26px}.hero{flex-direction:column;align-items:stretch;text-align:center;padding:22px 18px;gap:12px;margin-bottom:14px}.dial{width:160px;height:160px;align-self:center}.dial .ct b{font-size:34px}.hero h2{font-size:22px}.hero h2 b{font-size:26px}.hero p{font-size:14.5px;margin-bottom:14px}.btn.hero-btn{width:100%;justify-content:center}}
 /* icon above label on every button that has an icon (owner's choice 2026-11-23) */
 .btn:has(>svg.i),.fbtn:has(>svg.i),.icon-btn:has(>svg.i){flex-direction:column;justify-content:center;height:auto;gap:3px;line-height:1.25;text-align:center}
 .btn:has(>svg.i){min-height:56px;padding:7px 14px}
 .btn.sm:has(>svg.i),.btn.ghost:has(>svg.i),.fbtn:has(>svg.i){min-height:52px;padding:6px 12px}
 .icon-btn:has(>svg.i){min-height:44px;padding:4px 8px;font-size:13px}
 .btn:has(>svg.i)>.i,.fbtn:has(>svg.i)>.i{width:18px;height:18px}
+.btn.sm.io:has(>svg.i),.btn.sm.io{flex-direction:row;min-height:0;height:38px;width:38px;padding:0;justify-content:center} /* icon-only button: same height as the field beside it */
+@media(max-width:767px){.btn.sm.io:has(>svg.i),.btn.sm.io{height:44px;width:44px}}
 /* ---- phone ---- */
 #bottomnav{display:none}
 @media(max-width:767px){
@@ -442,8 +448,8 @@ table.stops tr:hover td:last-child{background:var(--card2)}
   #planChips{justify-content:space-between} #planChips .spacer{display:none}
   #rxHint{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .strip{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;padding:10px 12px;margin-bottom:10px}
-  .strip b{font-size:15.5px}
-  .notice{padding:7px 10px;font-size:13.5px;margin-bottom:10px}
+  .strip b{font-size:16px}
+  .notice{padding:7px 10px;font-size:14.5px;margin-bottom:10px}
   .row{margin-bottom:10px}
   .icon-btn{white-space:normal;justify-content:center}
   table.cards,table.cards tbody{display:block}
@@ -454,7 +460,7 @@ table.stops tr:hover td:last-child{background:var(--card2)}
   table.cards td{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:3px 0;border:none;white-space:normal;text-align:right;min-height:24px;overflow-wrap:anywhere}
   table.cards td::before{content:attr(data-l);color:var(--muted);font-size:13px;text-align:left;flex-shrink:0;max-width:45%}
   table.cards td:empty,table.cards td.opt{display:none}
-  table.cards td.ttl{display:block;font-size:15.5px;text-align:left;padding-bottom:6px}
+  table.cards td.ttl{display:block;font-size:16px;text-align:left;padding-bottom:6px}
   table.cards td.act{display:block;padding-top:8px}
   table.cards td.full{display:block;text-align:center}
   table.cards td.ttl::before,table.cards td.act::before,table.cards td.full::before{display:none}
@@ -476,7 +482,7 @@ table.stops tr:hover td:last-child{background:var(--card2)}
 </head>
 <body>
 <noscript><p style="padding:24px;font-size:16px">ໜ້ານີ້ຕ້ອງເປີດ JavaScript ຈຶ່ງໃຊ້ງານໄດ້</p></noscript>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></symbol><symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol><symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="i-truck" viewBox="0 0 24 24"><path d="M14 18V6a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h1"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol><symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol><symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol><symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol><symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></symbol><symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol><symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></symbol><symbol id="i-receipt" viewBox="0 0 24 24"><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 3 2V2l-3 2-3-2-3 2-3-2-3 2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol><symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/><path d="M12 9v4M12 17h.01"/></symbol><symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5"/><path d="M17 14h.01"/></symbol><symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16V9M12 16V5M17 16v-4"/></symbol><symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"/></symbol><symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8Z"/><circle cx="7" cy="7" r="1.5"/></symbol><symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol><symbol id="i-hole" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol><symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></symbol></defs></svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></symbol><symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol><symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="i-truck" viewBox="0 0 24 24"><path d="M14 18V6a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h1"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol><symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol><symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol><symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></symbol><symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></symbol><symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol><symbol id="i-clipboard" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></symbol><symbol id="i-receipt" viewBox="0 0 24 24"><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 3 2V2l-3 2-3-2-3 2-3-2-3 2Z"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol><symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3Z"/><path d="M12 9v4M12 17h.01"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol><symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol><symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></symbol><symbol id="i-chev-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol><symbol id="i-chev-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-skip" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5 5.5 5.5 0 0 0 9.5 20H13"/></symbol><symbol id="i-note" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol><symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V5"/><path d="M17 14h.01"/></symbol><symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16V9M12 16V5M17 16v-4"/></symbol><symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.5 13 17 22l-5-3-5 3 1.5-9"/></symbol><symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8Z"/><circle cx="7" cy="7" r="1.5"/></symbol><symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9Z"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol><symbol id="i-hole" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol><symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></symbol></defs></svg>
 <header>
   <div class="logo">VARI</div>
   <div><h1 id="pageTitle">Vari ຂົນສົ່ງ</h1><div class="sub" id="pageSub">ແຜນສົ່ງ · ລູກຄ້າ · ຕິດຕາມ</div></div>
@@ -532,9 +538,9 @@ table.stops tr:hover td:last-child{background:var(--card2)}
   <section class="view" id="plan">
     <div class="row head">
       <div class="row" style="margin:0">
-        <button class="btn sm" onclick="planShift(-1)" aria-label="ວັນກ່ອນ">◀</button>
+        <button class="btn sm io" onclick="planShift(-1)" aria-label="ວັນກ່ອນ"><svg class=i aria-hidden=true><use href=#i-chev-left /></svg></button>
         <input type="date" id="planDate" onchange="renderPlan()" aria-label="ວັນທີ">
-        <button class="btn sm" onclick="planShift(1)" aria-label="ວັນຕໍ່ໄປ">▶</button>
+        <button class="btn sm io" onclick="planShift(1)" aria-label="ວັນຕໍ່ໄປ"><svg class=i aria-hidden=true><use href=#i-chev-right /></svg></button>
         <button class="btn sm" onclick="planShift(0)">ມື້ນີ້</button>
       </div>
       <div class="row" style="margin:0"><button class="btn sm" onclick="exportDayCSV()"><svg class=i aria-hidden=true><use href=#i-download /></svg> <span id="planExpTxt">ສົ່ງອອກແຜນ</span></button><button class="btn desk-only" onclick="document.getElementById('salesFile').click()"><svg class=i aria-hidden=true><use href=#i-upload /></svg> ນຳເຂົ້າຍອດຂາຍ</button></div>
@@ -592,6 +598,27 @@ table.stops tr:hover td:last-child{background:var(--card2)}
   </section>
 
   <!-- URGENT -->
+  <section class="view" id="plans">
+    <div class="row head">
+      <select id="plBranch" aria-label="ສາຂາ" onchange="renderPlans()"><option value="">ທຸກສາຂາ</option></select>
+      <input type="search" id="plQ" placeholder="ຄົ້ນຫາ ຊື່ແຜນ / ລົດ..." aria-label="ຄົ້ນຫາແຜນ" oninput="renderPlans()">
+      <div class="spacer"></div>
+      <button class="btn sm" onclick="exportAllPlans()"><svg class=i aria-hidden=true><use href=#i-download /></svg> ສົ່ງອອກແຜນທັງໝົດ</button>
+      <button class="btn sm" onclick="autoPlanOpen()"><svg class=i aria-hidden=true><use href=#i-pin /></svg> ຈັດແຜນສາຂາອັດຕະໂນມັດ</button>
+      <button class="btn" onclick="newPlan()">+ ແຜນໃໝ່</button>
+    </div>
+    <div class="panel"><h3>ລູກຄ້າແຕ່ລະສາຂາ</h3><div class="tbl-wrap"><table id="plBr"></table></div></div>
+    <div class="panel"><h3>ແຜນທັງໝົດ <span class="count" id="plN"></span></h3><div class="tbl-wrap"><table id="plTbl"></table></div></div>
+  </section>
+
+  <section class="view" id="vplan">
+    <div class="row head">
+      <div class="row" style="margin:0;gap:6px"><button class="btn sm io" onclick="vpShift(-7)" aria-label="ອາທິດກ່ອນ"><svg class=i aria-hidden=true><use href=#i-chev-left /></svg></button><input type="date" id="vpDate" aria-label="ອາທິດຂອງວັນທີ" onchange="renderVplan()"><button class="btn sm io" onclick="vpShift(7)" aria-label="ອາທິດຕໍ່ໄປ"><svg class=i aria-hidden=true><use href=#i-chev-right /></svg></button><button class="btn sm" onclick="vpShift(0)">ອາທິດນີ້</button></div>
+      <span class="hint" style="flex:1 1 100%">ກົດຊື່ແຜນ ເພື່ອຜູກ / ປ່ຽນລົດ · ລົດບໍ່ວ່າງ ຍ້າຍແຜນໄປລົດອື່ນສະເພາະວັນນັ້ນ</span>
+    </div>
+    <div class="panel"><div class="tbl-wrap"><table class="matrix" id="vpTbl"></table></div></div>
+  </section>
+
   <section class="view" id="urgent">
     <div class="row">
       <span id="urgChips" style="display:flex;gap:6px;flex-wrap:wrap"></span>
@@ -748,7 +775,7 @@ function normDB(d){ // returns usable data, or null when the data cannot be trus
   d.customers.forEach(c=>{c.id=String(c.id);c.name=String(c.name??c.id);});d.employees.forEach(e=>{e.id=String(e.id);e.name=String(e.name??e.id);});d.vehicles.forEach(v=>{v.id=String(v.id);});
   d.deliveries.forEach(x=>{x.items=x.items&&typeof x.items==='object'?x.items:{};x.amount=+x.amount||0;x.paid=+x.paid||0;});
   d.rates={...DEFAULT_RATES,...(d.rates&&typeof d.rates==='object'?d.rates:{})};
-  for(const k of ['plan','rxb','rxUnk','routeVeh','routeOwner','routeMeta','routeBranch','cfg','fu'])if(d[k]!==undefined&&(d[k]===null||typeof d[k]!=='object'||Array.isArray(d[k])))delete d[k];
+  for(const k of ['plan','rxb','rxUnk','routeVeh','routeOwner','routeMeta','routeBranch','cfg','fu','vout'])if(d[k]!==undefined&&(d[k]===null||typeof d[k]!=='object'||Array.isArray(d[k])))delete d[k];
   if(d.rxb)Object.keys(d.rxb).forEach(k=>{if(!Array.isArray(d.rxb[k]))delete d.rxb[k];});
   if(d.fu)Object.keys(d.fu).forEach(k=>{const f=d.fu[k];if(!f||typeof f!=='object')delete d.fu[k];else{f.n=String(f.n??'').slice(0,300);f.d=/^\d{4}-\d{2}-\d{2}$/.test(String(f.d??''))?String(f.d):'';}});
   d.customers.forEach(c=>{if(c.branch)c.branch=normBranch(c.branch);});
@@ -768,7 +795,7 @@ function save(){saveLocal();pushCloud();}
 
 /* ============ CLOUD SYNC (Firebase): every record is saved and merged on its own, so a tap sends a few bytes and two people never overwrite each other ============ */
 const CLOUD_KEY='vari_crm_cloud',PEND_KEY='vari_crm_pending';
-const FB_LISTS=['customers','deliveries','employees','vehicles'],FB_MAPS=['plan','rxb','rxUnk','routeVeh','routeOwner','routeMeta','routeBranch','rates','cfg','fu'];
+const FB_LISTS=['customers','deliveries','employees','vehicles'],FB_MAPS=['plan','rxb','rxUnk','routeVeh','routeOwner','routeMeta','routeBranch','rates','cfg','fu','vout'];
 let cloud={on:false,ready:false,ref:null,link:null,last:{},pending:{},gen:0,timer:0,snap:null,snapT:0,choosing:false,online:false,retry:0};
 function setCloudStatus(state,txt){const b=document.getElementById('cloudBtn');const d=document.getElementById('cloudDot');
   b.classList.remove('on','syncing');if(state)b.classList.add(state);d.textContent=txt;}
@@ -878,7 +905,7 @@ const FB_RULES=`{
 function newSpace(){const a=new Uint8Array(20);crypto.getRandomValues(a);return [...a].map(x=>x.toString(16).padStart(2,'0')).join('');}
 function linkCode(l){return 'VARI1.'+btoa(unescape(encodeURIComponent(JSON.stringify({c:l.c,s:l.s}))));}
 function openCloud(){const link=getCloudCfg(),isOn=cloud.ready;
-  showModal('ຖານຂໍ້ມູນກາງ (ໃຊ້ຮ່ວມກັນຫຼາຍເຄື່ອງ)',(link?`<div class="calc-box" style="margin:0 0 14px">ສະຖານະ <b style="color:${isOn?'var(--green)':'var(--muted)'}">${isOn?'● ເຊື່ອມຕໍ່ຢູ່':'○ ຍັງບໍ່ເຊື່ອມຕໍ່'}</b></div>
+  showModal('ຖານຂໍ້ມູນກາງ (ໃຊ້ຮ່ວມກັນຫຼາຍເຄື່ອງ)',(link?`<div class="calc-box" style="margin:0 0 14px">ສະຖານະ <b style="color:${isOn?'var(--green)':'var(--muted)'}">${isOn?ico('check-circle')+' ເຊື່ອມຕໍ່ຢູ່':ico('hole')+' ຍັງບໍ່ເຊື່ອມຕໍ່'}</b></div>
     <div class="field"><label>ລະຫັດເຊື່ອມຕໍ່ສຳລັບເຄື່ອງອື່ນ</label><button type="button" class="btn sm" onclick="copyText(linkCode(getCloudCfg()),'ຄັດລອກລະຫັດແລ້ວ — ສົ່ງໃຫ້ສະເພາະຄົນໃນທີມ')">ຄັດລອກລະຫັດເຊື່ອມຕໍ່</button><div class="hint">ລະຫັດນີ້ເໝືອນລະຫັດຜ່ານ: ໃຜມີລະຫັດ ເຂົ້າເຖິງຂໍ້ມູນລູກຄ້າໄດ້ ຫ້າມໂພສໃນກຸ່ມສາທາລະນະ</div></div>`:`
     <div class="steps"><b>ຕັ້ງຄ່າຄັ້ງທຳອິດ (ຜູ້ດູແລເຮັດຄັ້ງດຽວ):</b><ol style="margin:6px 0 0 0;padding-left:16px">
       <li>ເຂົ້າ <a href="https://console.firebase.google.com" target="_blank" rel="noopener noreferrer">console.firebase.google.com</a> → ສ້າງໂປຣເຈັກ</li>
@@ -903,7 +930,7 @@ function uid(p){return p+Date.now().toString(36)+Math.floor(Math.random()*99);}
 /* ============ NAV: 5 main tabs; sub-tabs hold the rest ============ */
 const NAV=[
  {id:'home',ic:'home',t:'ໜ້າຫຼັກ',subs:[['home','ໜ້າຫຼັກ']]},
- {id:'plan',ic:'calendar',t:'ແຜນສົ່ງ',subs:[['plan','ແຜນລາຍວັນ'],['planner','ຈັດແຜນ'],['urgent','ຕ້ອງຕາມ']]},
+ {id:'plan',ic:'calendar',t:'ແຜນສົ່ງ',subs:[['plan','ແຜນລາຍວັນ'],['planner','ຈັດແຜນ'],['plans','ແຜນລວມ'],['vplan','ລົດ · ແຜນ'],['urgent','ຕ້ອງຕາມ']]},
  {id:'customers',ic:'users',t:'ລູກຄ້າ',subs:[['customers','ລູກຄ້າ']]},
  {id:'deliveries',ic:'truck',t:'ການຈັດສົ່ງ',subs:[['deliveries','ບັນທຶກ'],['payments','ໜີ້ຄ້າງ'],['summary','ສະຫຼຸບ']]},
  {id:'settings',ic:'sliders',t:'ຕັ້ງຄ່າ',subs:[['setGeneral','ທົ່ວໄປ'],['setBranch','ສາຂາ'],['setPlans','ແຜນ'],['team','ທີມງານ ແລະ ລົດ'],['setCatalog','ສິນຄ້າ ແລະ ປະເພດ'],['setData','ຂໍ້ມູນ']]}];
@@ -933,7 +960,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('.menuwrap'))document
 function setFbtn(id,n){const b=document.getElementById(id);b.innerHTML=ico('sliders')+' ຕົວກອງ'+(n?` (${n})`:'');b.classList.toggle('has',n>0);}
 function clearSel(id){document.getElementById(id).value='';renderAll();}
 function activeChips(el,items){const on=items.filter(a=>val(a[1]));
-  document.getElementById(el).innerHTML=on.map(a=>`<button class="chip x" onclick="clearSel(${js(a[1])})" aria-label="ເອົາຕົວກອງ ${a[0]} ອອກ">${a[0]}: ${esc((s=>s&&s.selectedOptions&&s.selectedOptions[0]?s.selectedOptions[0].text:val(a[1]))(document.getElementById(a[1])))} ✕</button>`).join('');return on.length;}
+  document.getElementById(el).innerHTML=on.map(a=>`<button class="chip x" onclick="clearSel(${js(a[1])})" aria-label="ເອົາຕົວກອງ ${a[0]} ອອກ">${a[0]}: ${esc((s=>s&&s.selectedOptions&&s.selectedOptions[0]?s.selectedOptions[0].text:val(a[1]))(document.getElementById(a[1])))} <svg class=i aria-hidden=true><use href=#i-x /></svg></button>`).join('');return on.length;}
 function chipHtml(list,cur,fn){return list.filter(x=>x[2]>0||x[0]===cur||x[0]==='all'||x[0]==='').map(x=>`<button class="chip ${x[0]===cur?'on':''}" onclick="${fn}(${js(x[0])})">${x[1]}${x[2]>0?` <span class="n">${money(x[2])}</span>`:''}</button>`).join('');}
 function strip(a){return a.filter(Boolean).map(k=>`<span>${k[0]} <b class="${k[2]||''}">${k[1]}</b></span>`).join('');}
 
@@ -1015,9 +1042,9 @@ function renderHome(){
   const nz=new Set(rows.map(c=>c.zone).filter(Boolean)).size,T=(l,v,c='')=>`<div class="hstat ${c}"><small>${l}</small><b>${v}</b></div>`;
   document.getElementById('homeStats').innerHTML=rows.length&&!off?T('ສົ່ງແລ້ວ',money(done),done&&!todo?'ok':'')+T('ຖັງ',money(rows.reduce((x,c)=>x+(c.tank||0),0)))+T('ແຜນ',money(nz)):'';
   const cta=document.getElementById('homeCta'),noPlan=!DB.customers.some(hasDay);
-  cta.textContent=noPlan?'ນຳເຂົ້າແຜນສົ່ງ':'ເບິ່ງແຜນມື້ນີ້ →';cta.onclick=noPlan?()=>document.getElementById('planFile').click():()=>goToday();
+  cta.innerHTML=noPlan?'ນຳເຂົ້າແຜນສົ່ງ':'<span style="display:inline-flex;align-items:center;gap:8px;white-space:nowrap">ເບິ່ງແຜນມື້ນີ້ '+ico('arrow-right')+'</span>';cta.onclick=noPlan?()=>document.getElementById('planFile').click():()=>goToday();
   const R=78,C=2*Math.PI*R,tk=[];for(let i=0;i<60;i++){const a=i/60*2*Math.PI-Math.PI/2,c=Math.cos(a),n=Math.sin(a),l=i%5?6:11;tk.push(`<line class="tk${i/60*100<pct?' on':''}" x1="${(100+c*92).toFixed(1)}" y1="${(100+n*92).toFixed(1)}" x2="${(100+c*(92-l)).toFixed(1)}" y2="${(100+n*(92-l)).toFixed(1)}"/>`);}
-  document.getElementById('homeRing').innerHTML=`<svg viewBox="0 0 200 200" aria-hidden="true">${tk.join('')}<circle class="tr" cx="100" cy="100" r="${R}"/>${pct&&rows.length&&!off?`<circle class="pv" cx="100" cy="100" r="${R}" transform="rotate(-90 100 100)" stroke-dasharray="${(pct/100*C).toFixed(1)} ${C.toFixed(1)}"/><circle class="hd" r="6" cx="${(100+R*Math.sin(pct/100*2*Math.PI)).toFixed(1)}" cy="${(100-R*Math.cos(pct/100*2*Math.PI)).toFixed(1)}"/>`:''}</svg><div class="ct" role="img" aria-label="ສົ່ງແລ້ວ ${pct}%"><small>ສົ່ງແລ້ວມື້ນີ້</small><b>${off||!rows.length?'—':pct+'%'}</b>${off||!rows.length?'':todo?`<span class="warn">ຍັງເຫຼືອ ${money(todo)} ລາຍ</span>`:'<span>ສົ່ງຄົບແລ້ວ</span>'}</div>`;
+  document.getElementById('homeRing').innerHTML=`<svg viewBox="0 0 200 200" aria-hidden="true">${tk.join('')}<circle class="tr" cx="100" cy="100" r="${R}"/>${pct&&rows.length&&!off?`<circle class="pv" cx="100" cy="100" r="${R}" transform="rotate(-90 100 100)" stroke-dasharray="${(pct/100*C).toFixed(1)} ${C.toFixed(1)}"/><circle class="hd" r="6" cx="${(100+R*Math.sin(pct/100*2*Math.PI)).toFixed(1)}" cy="${(100-R*Math.cos(pct/100*2*Math.PI)).toFixed(1)}"/>`:`<circle class="gl" cx="100" cy="100" r="${R}"/>${rows.length&&!off?`<circle class="hd" r="6" cx="100" cy="${100-R}"/>`:''}`}</svg><div class="ct" role="img" aria-label="ສົ່ງແລ້ວ ${pct}%"><small>ສົ່ງແລ້ວມື້ນີ້</small><b>${off||!rows.length?'—':pct+'%'}</b>${off||!rows.length?'':todo?`<span class="warn">ຍັງເຫຼືອ ${money(todo)} ລາຍ</span>`:'<span>ສົ່ງຄົບແລ້ວ</span>'}</div>`;
   const K=(k,ic,cls,l,v,foot,sp='')=>`<button class="kpi" data-ui="content" onclick="kgo('${k}')"><div class="kic ${cls}">${ico(ic)}</div><div style="flex:1;min-width:0"><div class="lbl">${l}</div><div class="val ${v&&cls==='red'?'red':''}">${v}</div><div class="foot">${foot}</div>${sp}</div></button>`;
   const hs=homeTrend(),miss=hs.map(x=>x.due-x.done);
   document.getElementById('homeKpi').innerHTML=
@@ -1075,7 +1102,7 @@ function renderCustomers(){
   t.innerHTML=`<thead><tr><th>ຊື່ລູກຄ້າ</th><th>ປະເພດ</th><th>ແຜນ / ວັນ</th><th>ເບີ</th><th class="opt">ຜະລິດຕະພັນ</th><th class="opt">ລົດ</th><th class="num opt">ຖ້ຽວ</th><th class="num">ໜີ້ຄ້າງ</th><th></th></tr></thead><tbody>`+
    rows.map(c=>{
      const dn=DB.deliveries.filter(d=>d.customerId===c.id).length,owe=debtMap[c.id]||0;
-     const rb=showFu&&rxl[c.id],fu=showFu&&FU()[c.id];return `<tr><td>${cn(c)}${rb?` <span class="tag partial">ຊື້ ${rb.n} ຄັ້ງ · ລ່າສຸດ ${rb.last.slice(8)}/${rb.last.slice(5,7)}</span>`:''}${showFu?` <span class="tag ${FU_CLS[fuKey(c)]}">${FU_ST[fuKey(c)]}${fu&&fu.d?' · '+esc(String(fu.d).slice(8))+'/'+esc(String(fu.d).slice(5,7)):''}</span>`:''}${fu&&fu.n?`<div class="hint">📝 ${esc(fu.n)}</div>`:''}<div class="hint">${esc([c.branch,GRP_NAME[custGroup(c)]].filter(Boolean).join(' · '))}${showNew?' · ລົງທະບຽນ '+esc(regDateOf(c)):''}</div>${showIss?`<div style="margin-top:3px">${custIssues(c).map(i=>`<span class="tag partial" style="margin:1px 3px 1px 0">${i[1]}</span>`).join('')}</div>`:''}</td><td><span class="tag ${typeCls(c.type)}">${esc(typeName(c.type)||'-')}</span></td>
+     const rb=showFu&&rxl[c.id],fu=showFu&&FU()[c.id];return `<tr><td>${cn(c)}${rb?` <span class="tag partial">ຊື້ ${rb.n} ຄັ້ງ · ລ່າສຸດ ${rb.last.slice(8)}/${rb.last.slice(5,7)}</span>`:''}${showFu?` <span class="tag ${FU_CLS[fuKey(c)]}">${FU_ST[fuKey(c)]}${fu&&fu.d?' · '+esc(String(fu.d).slice(8))+'/'+esc(String(fu.d).slice(5,7)):''}</span>`:''}${fu&&fu.n?`<div class="hint"><svg class=i aria-hidden=true><use href=#i-note /></svg> ${esc(fu.n)}</div>`:''}<div class="hint">${esc([c.branch,GRP_NAME[custGroup(c)]].filter(Boolean).join(' · '))}${showNew?' · ລົງທະບຽນ '+esc(regDateOf(c)):''}</div>${showIss?`<div style="margin-top:3px">${custIssues(c).map(i=>`<span class="tag partial" style="margin:1px 3px 1px 0">${i[1]}</span>`).join('')}</div>`:''}</td><td><span class="tag ${typeCls(c.type)}">${esc(typeName(c.type)||'-')}</span></td>
        <td>${offDay(c)?'<span class="tag partial">ວັນພັກ — ຕ້ອງຍ້າຍວັນ</span>':hasDay(c)?esc(c.zone||'-')+' · '+c.day:c.mode?(c.mode==='special'?'ນັດພິເສດ':'ຮັບເອງ'):'<span class="tag unpaid">ຍັງບໍ່ເຂົ້າແຜນ</span>'}</td><td>${esc(c.phone)||'-'}</td><td class="opt">${esc(c.prod||'-')}</td><td class="opt">${esc(c.vehicle||RV()[c.zone]||'-')}</td>
        <td class="num opt">${dn}</td><td class="num" style="color:${owe>0?'var(--red)':'var(--muted)'};font-weight:${owe>0?700:400}">${money(owe)}</td>
        <td><div class="actions">${showFu?`<button class="icon-btn" onclick="openFollow(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-clipboard /></svg> ຕິດຕາມ</button>`:''}<button class="icon-btn" onclick="openCustomer(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-pencil /></svg> ${showNew?'ຈັດເຂົ້າແຜນ':showIss?'ເຕີມຂໍ້ມູນ':'ແກ້ໄຂ'}</button>
@@ -1218,7 +1245,7 @@ function openDelivery(id){
       <div class="field"><label>ລົດ</label><select id="f_veh"><option value="">-</option>${DB.vehicles.map(v=>`<option ${d.vehicle===v.id?'selected':''}>${esc(v.id)}</option>`).join('')}</select></div>
       <div class="field"><label>ຄົນຂັບ</label><input id="f_driver" value="${esc(d.driver)}"></div>
     </div>
-    <label style="font-size:13.5px;font-weight:600;color:var(--muted)">ຈຳນວນສິນຄ້າ</label>
+    <label style="font-size:14.5px;font-weight:600;color:var(--muted)">ຈຳນວນສິນຄ້າ</label>
     <div class="qty-grid" style="margin:6px 0 4px">
       ${PRODUCTS.map(p=>`<div class="field"><label>${p.name}</label><input type="number" min="0" id="q_${p.id}" value="${d.items[p.id]||0}" oninput="calcDel()"></div>`).join('')}
     </div>
@@ -1277,7 +1304,7 @@ function renderPayments(){
     (rows.length?'':`<tr><td colspan="7" class="empty">ຍັງບໍ່ມີຍອດຂາຍ ຈຶ່ງຍັງບໍ່ມີໜີ້ຄ້າງ<br><button class="btn sm" onclick="go('deliveries','deliveries')">ໄປບັນທຶກການຈັດສົ່ງ</button></td></tr>`)+rows.map(r=>{const st=r.owe<=0?'<span class="tag paid">ເຄລຍແລ້ວ</span>':r.paid>0?'<span class="tag partial">ບາງສ່ວນ</span>':'<span class="tag unpaid">ຄ້າງທັງໝົດ</span>';
       return `<tr><td><b>${esc(r.name)}</b></td><td class="num">${r.n}</td><td class="num">${money(r.amount)}</td>
       <td class="num">${money(r.paid)}</td><td class="num" style="color:${r.owe>0?'var(--red)':'var(--green)'};font-weight:700">${money(r.owe)}</td>
-      <td>${st}</td><td>${r.owe>0?`<button class="btn sm" onclick="clearDebt(${js(r.id)})">✓ ເຄລຍໜີ້</button>`:''}</td></tr>`;}).join('')+
+      <td>${st}</td><td>${r.owe>0?`<button class="btn sm" onclick="clearDebt(${js(r.id)})"><svg class=i aria-hidden=true><use href=#i-check /></svg> ເຄລຍໜີ້</button>`:''}</td></tr>`;}).join('')+
     `</tbody>`;
 }
 function clearDebt(cid){const c=custById(cid);if(!confirm(`ບັນທຶກວ່າ "${c?c.name:''}" ຊຳລະຄົບທຸກຖ້ຽວແລ້ວ?`))return;
@@ -1320,9 +1347,9 @@ function openVeh(id){const v=id?DB.vehicles.find(x=>x.id===id):{id:'',type:'',dr
      if(vid!==id&&DB.vehicles.some(x=>x.id===vid)){toast('ທະບຽນ '+vid+' ມີຢູ່ແລ້ວ');return false;}
      const cap={};for(const [k,el,mx] of [['capTank','f_ct',99999],['capCrate','f_cc',99999],['capPack','f_cp',99999],['trips','f_tr',20]]){const t=val(el).trim(),n=+t;if(t&&(!Number.isFinite(n)||n<0||n>mx)){toast('ຄວາມຈຸລົດ: ໃສ່ຕົວເລກ 0 ຫາ '+mx);return false;}cap[k]=t?n:0;}
      const o={id:vid,type:val('f_type'),driver:val('f_driver'),helper:val('f_helper'),...cap};
-     if(id&&vid!==id){Object.keys(RV()).forEach(z=>{if(RV()[z]===id)RV()[z]=vid;});DB.customers.forEach(c=>{if(c.vehicle===id)c.vehicle=vid;});DB.deliveries.forEach(d=>{if(d.vehicle===id)d.vehicle=vid;});}
+     if(id&&vid!==id){Object.keys(RV()).forEach(z=>{if(RV()[z]===id)RV()[z]=vid;});voVeh(id,vid);DB.customers.forEach(c=>{if(c.vehicle===id)c.vehicle=vid;});DB.deliveries.forEach(d=>{if(d.vehicle===id)d.vehicle=vid;});}
      if(id)Object.assign(DB.vehicles.find(x=>x.id===id),o);else DB.vehicles.push(o);save();renderAll();toast('ບັນທຶກແລ້ວ ✓');});}
-function delVeh(id){const n=Object.values(RV()).filter(v=>v===id).length;if(!confirm(`ລຶບລົດ ${id}?`+(n?` ມີ ${n} ແຜນໃຊ້ລົດຄັນນີ້ ແຜນເຫຼົ່ານັ້ນຈະບໍ່ມີລົດ`:'')))return;Object.keys(RV()).forEach(z=>{if(RV()[z]===id)delete RV()[z];});DB.vehicles=DB.vehicles.filter(x=>x.id!==id);save();renderAll();}
+function delVeh(id){const n=Object.values(RV()).filter(v=>v===id).length;if(!confirm(`ລຶບລົດ ${id}?`+(n?` ມີ ${n} ແຜນໃຊ້ລົດຄັນນີ້ ແຜນເຫຼົ່ານັ້ນຈະບໍ່ມີລົດ`:'')))return;Object.keys(RV()).forEach(z=>{if(RV()[z]===id)delete RV()[z];});voVeh(id,'');DB.vehicles=DB.vehicles.filter(x=>x.id!==id);save();renderAll();}
 function saveRates(){CF().prodNames=CF().prodNames||{};PRODUCTS.forEach(p=>{DB.rates[p.id]=+val('r_'+p.id)||0;const n=val('rn_'+p.id).trim();if(n)CF().prodNames[p.id]=n;});
   DB.deliveries.forEach(d=>{d.amount=calcAmount(d.items);if(d.pay==='paid')d.paid=d.amount;});save();renderAll();toast('ບັນທຶກເລດລາຄາ + ຄຳນວນລາຍຮັບໃໝ່ແລ້ວ ✓');}
 
@@ -1330,7 +1357,7 @@ function saveRates(){CF().prodNames=CF().prodNames||{};PRODUCTS.forEach(p=>{DB.r
 let saveCb=null,extraCb=null;
 function showModal(title,body,cb,extra){if(cloud.choosing&&title!=='ເລືອກຂໍ້ມູນທີ່ຈະໃຊ້'){toast('ເລືອກຂໍ້ມູນຖານກາງໃຫ້ແລ້ວກ່ອນ');return;}modalDirty=false;saveCb=cb;extraCb=extra?extra.extraFn:null;
   const extraBtn=extra?`<button class="btn danger" onclick="doExtra()">${extra.extra}</button><div style="flex:1"></div>`:'';
-  document.getElementById('modal').innerHTML=`<div class="modal-head"><h3>${title}</h3><button class="x" onclick="closeModal()">×</button></div>
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h3>${title}</h3><button class="x" aria-label="ປິດ" onclick="closeModal()"><svg class=i aria-hidden=true><use href=#i-x /></svg></button></div>
    <div class="modal-body">${body}</div>
    <div class="modal-foot">${extraBtn}<button class="btn ghost" onclick="closeModal()">ຍົກເລີກ</button><button class="btn" onclick="doSave()"><svg class=i aria-hidden=true><use href=#i-save /></svg> ບັນທຶກ</button></div>`;
   document.getElementById('overlay').classList.add('show');}
@@ -1345,7 +1372,7 @@ function val(id){const e=document.getElementById(id);return e?e.value:'';}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
 function js(s){return esc(JSON.stringify(String(s??'')));} // value for an inline onclick argument: JSON string, then HTML-escaped
 function today(){return ymd(new Date());} // local date (Laos UTC+7): toISOString gave yesterday before 07:00
-function toast(m,undo){const t=document.getElementById('toast');t.textContent=m;if(undo){const b=document.createElement('button');b.textContent='ຍ້ອນກັບ';b.onclick=()=>{undo();t.classList.remove('show');};t.appendChild(b);}t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),undo?7000:2400);}
+function toast(m,undo){const t=document.getElementById('toast');m=String(m??'');const ok=/\s*✓\s*$/.test(m),wr=/^\s*⚠\s*/.test(m);t.textContent=m.replace(/\s*✓\s*$/,'').replace(/^\s*⚠\s*/,'').replace(/⬇\s*/g,'');if(ok||wr)t.insertAdjacentHTML('afterbegin',ico(ok?'check':'alert')+' ');if(undo){const b=document.createElement('button');b.textContent='ຍ້ອນກັບ';b.onclick=()=>{undo();t.classList.remove('show');};t.appendChild(b);}t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),undo?7000:2400);}
 
 /* ============ IMPORT / EXPORT ============ */
 function exportJSON(){const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
@@ -1465,21 +1492,28 @@ function planShift(n){const el=document.getElementById('planDate');const m=val('
   renderPlan();}
 /* route -> vehicle binding (route names come from the plan file: "ລົດ N" = a planned slot, not a plate) */
 function RV(){return DB.routeVeh||(DB.routeVeh={});}
+function VO(){return DB.vout||(DB.vout={});}
+/* one-day swaps are stored flat as "YYYY-MM-DD|plan" -> truck, so each swap syncs as its own record and two devices saving different plans on the same day never overwrite each other */
+function voGet(d,z){const v=VO()[d+'|'+z];return typeof v==='string'&&v?v:undefined;}
+function voPlan(a,b){Object.keys(VO()).forEach(k=>{if(k.slice(11)===a){if(b)VO()[k.slice(0,11)+b]=VO()[k];delete VO()[k];}});} // plan renamed (b) or deleted: its one-day swaps follow
+function voVeh(id,to){Object.keys(VO()).forEach(k=>{if(VO()[k]===id){if(to)VO()[k]=to;else delete VO()[k];}});} // truck renamed (to) or deleted
+function vpAway(vid,d){return Object.keys(VO()).some(k=>k.slice(0,10)===d&&RV()[k.slice(11)]===vid&&voGet(d,k.slice(11))!==undefined&&VO()[k]!==vid);} // truck marked unavailable that day
+function effVeh(z,date){const v=date?voGet(date,z):undefined;return v!==undefined?v:RV()[z];} // the truck that really runs plan z on date (swap for that day, else the plan's own truck)
 function setRouteVeh(z,v){if(v)RV()[z]=v;else delete RV()[z];save();renderAll();}
 function vehDriver(p){const v=DB.vehicles.find(x=>x.id===p);return v?[v.driver,v.helper].filter(x=>x&&x!=='-').join(' / '):'';}
 function vehSel(z){const cur=RV()[z]||'';return `<select aria-label="ເລືອກລົດ" data-z="${esc(z)}" onclick="event.stopPropagation()" onchange="setRouteVeh(this.dataset.z,this.value)"><option value="">- ເລືອກລົດ -</option>${DB.vehicles.map(v=>`<option ${v.id===cur?'selected':''}>${esc(v.id)}</option>`).join('')}</select> <span class="hint">${esc(vehDriver(cur))}</span>`;}
 function capTxt(v){const a=[v.capTank&&'ຖັງ '+v.capTank,v.capCrate&&'ລັງ '+v.capCrate,v.capPack&&'ແພັກ '+v.capPack].filter(Boolean);return a.length?a.join(' · ')+(v.trips?' · '+v.trips+' ຮອບ/ວັນ':''):'-';}
 /* tanks a truck carries on a date, over every plan bound to it (cancelled / postponed stops left out) */
 function vehLoad(vid,date){const last=lastDone(),ds=deliverySet(date);let n=0;
-  DB.customers.forEach(c=>{if(c.zone&&RV()[c.zone]===vid&&dueOn(c,date,last)&&!['cancel','postpone'].includes(stOf(date,c,ds)))n+=+c.tank||0;});return n;}
-function capLine(z,date){const vid=RV()[z],v=vid&&DB.vehicles.find(x=>x.id===vid);if(!v)return '';
+  DB.customers.forEach(c=>{if(c.zone&&effVeh(c.zone,date)===vid&&dueOn(c,date,last)&&!['cancel','postpone'].includes(stOf(date,c,ds)))n+=+c.tank||0;});return n;}
+function capLine(z,date){const vid=effVeh(z,date),v=vid&&DB.vehicles.find(x=>x.id===vid);if(!v)return '';
   if(!v.capTank)return `<div class="hint">ລົດ ${esc(vid)} ຍັງບໍ່ໄດ້ໃສ່ຄວາມຈຸ — <a onclick="openVeh(${js(vid)})">ໃສ່ຄວາມຈຸ</a></div>`;
   const cap=v.capTank*(v.trips||1),n=vehLoad(vid,date),over=n-cap;
   return `<div class="hint">ລົດ ${esc(vid)} ມື້ນີ້ (ທຸກແຜນຂອງລົດຄັນນີ້): ຖັງ <b>${money(n)}</b> / ${money(cap)}${v.trips>1?` (${v.trips} ຮອບ)`:''}${over>0?` · <b style="color:var(--red)">ເກີນ ${money(over)} ຖັງ</b>`:''}</div>`;}
 /* plan's branch: set in plan settings, else the branch most of its customers belong to */
 function planBranch(z){if(RBr()[z])return RBr()[z];const n={};DB.customers.forEach(c=>{if(c.zone===z&&c.branch)n[c.branch]=(n[c.branch]||0)+1;});let b='',m=0;for(const k in n)if(n[k]>m){m=n[k];b=k;}return b;}
 function selfDelivered(z){const b=planBranch(z);return !!b&&b!==CF().hq;}
-function vehTxt(z){const v=RV()[z],o=empName(RO()[z]);return (v?'ລົດ '+v+(vehDriver(v)?' ('+vehDriver(v)+')':''):selfDelivered(z)?planBranch(z)+' ສົ່ງເອງ':'ຍັງບໍ່ມີລົດ')+(o?' · ຜູ້ຮັບຜິດຊອບ: '+o:'');}
+function vehTxt(z,date){const v=effVeh(z,date),o=empName(RO()[z]),sw=v&&v!==RV()[z];return (v?'ລົດ '+v+(vehDriver(v)?' ('+vehDriver(v)+')':'')+(sw?' · ແທນລົດ '+(RV()[z]||'-'):''):selfDelivered(z)?planBranch(z)+' ສົ່ງເອງ':'ຍັງບໍ່ມີລົດ')+(o?' · ຜູ້ຮັບຜິດຊອບ: '+o:'');}
 function pickRoute(r){document.getElementById('planRoute').value=r;renderPlan();}
 function restoreP(keys,before){return ()=>{keys.forEach((k,i)=>{if(before[i]===undefined)delete P()[k];else P()[k]=before[i];});save();renderAll();};}
 function setSt(id,s){const key=val('planDate')+'|'+id,old=P()[key],x=old&&(old.x||old.s==='extra')?1:0,undo=restoreP([key],[old?{...old}:undefined]);
@@ -1524,8 +1558,8 @@ function planDay(date,f,last,body,kpi){
   if(!n){body.innerHTML=`<div class="panel"><div class="empty">${isSun?'ມື້ນີ້ເປັນວັນພັກ ບໍ່ມີແຜນສົ່ງ':DB.customers.length?'ບໍ່ມີລູກຄ້າໃນແຜນວັນນີ້ (ອາດຍັງບໍ່ໄດ້ຈັດແຜນ ຫຼື ຕົວກອງແຄບເກີນໄປ)':'ຍັງບໍ່ມີລູກຄ້າ — ນຳເຂົ້າລາຍຊື່ແລະແຜນກ່ອນ'}<br>`+
     (val('planBranch')||val('planRoute')||val('planProd')?`<button class="btn sm" onclick="['planBranch','planRoute','planProd'].forEach(i=>document.getElementById(i).value='');renderPlan()">ລ້າງຕົວກອງ</button> `:'')+(DB.customers.length?`<button class="btn sm" onclick="go('plan','planner')">ໄປຈັດແຜນ</button>`:`<button class="btn sm" onclick="go('customers')">ໄປນຳເຂົ້າແຜນ CSV</button>`)+`</div></div>`+extra;return;}
   const g={};rows.forEach(c=>{const z=c.zone||NOZ,o=g[z]||(g[z]={n:0,d:0,s:0,t:0});o.n++;o.t+=c.tank||0;const st=stat(c);if(st==='done')o.d++;else if(st)o.s++;});
-  const use={};Object.keys(g).forEach(z=>{const p=RV()[z];if(p)use[p]=(use[p]||0)+1;}); // same plate on 2+ plans the same day = double-booked
-  const noVeh=Object.keys(g).filter(z=>!RV()[z]&&z!==NOZ&&!selfDelivered(z)).length;
+  const use={};Object.keys(g).forEach(z=>{const p=effVeh(z,date);if(p)use[p]=(use[p]||0)+1;}); // same plate on 2+ plans the same day = double-booked
+  const noVeh=Object.keys(g).filter(z=>!effVeh(z,date)&&z!==NOZ&&!selfDelivered(z)).length;
   // one truck often covers several zones a day: flag it only when its tanks exceed capacity × trips (no capacity entered: more plans than trips)
   let over=0,dup=0;Object.keys(use).forEach(p=>{const v=DB.vehicles.find(x=>x.id===p);if(v&&v.capTank){if(vehLoad(p,date)>v.capTank*(v.trips||1))over++;}else if(use[p]>((v&&v.trips)||1))dup++;});
   const warn=!val('planRoute')&&(noVeh||dup||over)?`<div class="notice"><svg class=i aria-hidden=true><use href=#i-alert /></svg> ${[noVeh&&noVeh+' ແຜນຍັງບໍ່ມີລົດ',over&&over+' ຄັນເກີນຄວາມຈຸ',dup&&dup+' ຄັນຖືກຈັດຫຼາຍແຜນກວ່າຈຳນວນຮອບ'].filter(Boolean).join(' · ')} <a onclick="go('plan','planner')">ໄປຈັດແຜນ</a></div>`:'';
@@ -1533,16 +1567,16 @@ function planDay(date,f,last,body,kpi){
   const carryNote=carry.length?`<div class="notice">ມື້ກ່ອນສົ່ງບໍ່ຄົບ ${money(carry.length)} ລາຍ <a onclick="carryOver()">ຍົກມາແຜນມື້ນີ້</a></div>`:'';
   if(!val('planRoute')){
     body.innerHTML=carryNote+warn+`<div class="tbl-wrap"><table><thead><tr><th>ແຜນ</th><th class="opt">ລົດ / ຜູ້ຮັບຜິດຊອບ</th><th class="num">ລູກຄ້າ</th><th>ຄວາມຄືບໜ້າ</th><th class="num">ຍັງບໍ່ສົ່ງ</th><th class="num opt">ຖັງ</th></tr></thead><tbody>`+
-      Object.entries(g).sort((a,b)=>b[1].n-a[1].n).map(([z,o])=>`<tr style="cursor:pointer" data-r="${esc(z)}" onclick="pickRoute(this.dataset.r)"><td><b>${esc(z)}</b></td><td class="opt">${esc(vehTxt(z))}${use[RV()[z]]>1?' <span class="tag unpaid"><svg class=i aria-hidden=true><use href=#i-alert /></svg> ຊ້ຳ</span>':''}</td><td class="num">${o.n}</td><td><div class="prog" title="ສົ່ງແລ້ວ ${o.d} ຈາກ ${o.n}"><div class="t"><i style="width:${o.n?Math.round(o.d/o.n*100):0}%"></i></div><span>${o.d}/${o.n}</span></div></td><td class="num" style="color:var(--red)">${o.n-o.d-o.s}</td><td class="num opt">${money(o.t)}</td></tr>`).join('')+`</tbody></table></div><div class="hint" style="margin-top:6px">ກົດແຖວເພື່ອເບິ່ງລາຍຊື່ລູກຄ້າຂອງແຜນນັ້ນ</div>`+extra;
+      Object.entries(g).sort((a,b)=>b[1].n-a[1].n).map(([z,o])=>`<tr style="cursor:pointer" data-r="${esc(z)}" onclick="pickRoute(this.dataset.r)"><td><b>${esc(z)}</b></td><td class="opt">${esc(vehTxt(z,date))}${use[effVeh(z,date)]>1?' <span class="tag unpaid"><svg class=i aria-hidden=true><use href=#i-alert /></svg> ຊ້ຳ</span>':''}</td><td class="num">${o.n}</td><td><div class="prog" title="ສົ່ງແລ້ວ ${o.d} ຈາກ ${o.n}"><div class="t"><i style="width:${o.n?Math.round(o.d/o.n*100):0}%"></i></div><span>${o.d}/${o.n}</span></div></td><td class="num" style="color:var(--red)">${o.n-o.d-o.s}</td><td class="num opt">${money(o.t)}</td></tr>`).join('')+`</tbody></table></div><div class="hint" style="margin-top:6px">ກົດແຖວເພື່ອເບິ່ງລາຍຊື່ລູກຄ້າຂອງແຜນນັ້ນ</div>`+extra;
     return;}
   rows.sort((a,b)=>(a.seq||0)-(b.seq||0));
   const z=val('planRoute');
   const tag=s=>s?`<span class="tag ${s==='done'?'paid':s==='postpone'?'partial':'unpaid'}">${ST_NAME[s]}</span>`:'';
-  body.innerHTML=`<div class="row head"><div><button class="btn sm" onclick="pickRoute('')">← ທຸກແຜນ</button> <b style="margin-left:6px">${esc(z)}</b><div class="hint">${esc(vehTxt(z))}</div>${capLine(z,date)}</div>
-    <div class="row" style="margin:0"><button class="btn sm" onclick="copyPlan()">ຄັດລອກແຜນ</button><button class="btn sm desk-only" onclick="printPlanSheet()"><svg class=i aria-hidden=true><use href=#i-printer /></svg> ພິມໃບງານ</button><button class="btn sm" onclick="markAll()">✓ ສົ່ງແລ້ວທັງໝົດທີ່ຍັງບໍ່ສົ່ງ</button></div></div>
+  body.innerHTML=`<div class="row head"><div><button class="btn sm" onclick="pickRoute('')"><svg class=i aria-hidden=true><use href=#i-arrow-left /></svg> ທຸກແຜນ</button> <b style="margin-left:6px">${esc(z)}</b><div class="hint">${esc(vehTxt(z,date))}</div>${capLine(z,date)}</div>
+    <div class="row" style="margin:0"><button class="btn sm" onclick="copyPlan()">ຄັດລອກແຜນ</button><button class="btn sm desk-only" onclick="printPlanSheet()"><svg class=i aria-hidden=true><use href=#i-printer /></svg> ພິມໃບງານ</button><button class="btn sm" onclick="markAll()"><svg class=i aria-hidden=true><use href=#i-check /></svg> ສົ່ງແລ້ວທັງໝົດທີ່ຍັງບໍ່ສົ່ງ</button></div></div>
     <div class="tbl-wrap"><table class="stops"><thead><tr>${infoTh(INFO.slice(0,3))}<th>ສະຖານະ</th>${infoTh(INFO.slice(3))}<th></th></tr></thead><tbody>`+
     (rows.slice(0,300).map(c=>{const s=stat(c);return `<tr>${infoTd(c,0,INFO.slice(0,3))}<td>${tag(s)}${isExtra(date,c)?' <span class="tag org">ເພີ່ມພິເສດ</span>':''}${(RX()[date]||{})[c.id]?` <span class="hint">ບິນຂາຍ ${(RX()[date]||{})[c.id]}</span>`:''}</td>${infoTd(c,0,INFO.slice(3))}
-      <td><div class="actions stopacts"><button class="tick ${s==='done'?'on':''}" aria-pressed="${s==='done'}" onclick="setSt(${js(c.id)},'done')">✓ ${s==='done'?'ສົ່ງແລ້ວ':'ໝາຍສົ່ງແລ້ວ'}</button>${c.phone?`<a class="icon-btn phone-only" href="tel:${esc(telNo(c.phone))}">ໂທ</a>`:''}${c.lat?`<a class="icon-btn phone-only" href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}" target="_blank" rel="noopener noreferrer">ນຳທາງ</a>`:''}<button class="icon-btn" aria-label="ຕົວເລືອກເພີ່ມເຕີມ" onclick="rowMenu(event,${js(c.id)})">⋯</button></div></td></tr>`;}).join('')||`<tr><td colspan="20" class="empty">ບໍ່ມີລາຍການໃນຕົວເລືອກນີ້</td></tr>`)+
+      <td><div class="actions stopacts"><button class="tick ${s==='done'?'on':''}" aria-pressed="${s==='done'}" onclick="setSt(${js(c.id)},'done')"><svg class=i aria-hidden=true><use href=#i-check /></svg> ${s==='done'?'ສົ່ງແລ້ວ':'ໝາຍສົ່ງແລ້ວ'}</button>${c.phone?`<a class="icon-btn phone-only" href="tel:${esc(telNo(c.phone))}">ໂທ</a>`:''}${c.lat?`<a class="icon-btn phone-only" href="https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lng}" target="_blank" rel="noopener noreferrer">ນຳທາງ</a>`:''}<button class="icon-btn" aria-label="ຕົວເລືອກເພີ່ມເຕີມ" onclick="rowMenu(event,${js(c.id)})">⋯</button></div></td></tr>`;}).join('')||`<tr><td colspan="20" class="empty">ບໍ່ມີລາຍການໃນຕົວເລືອກນີ້</td></tr>`)+
     `</tbody></table></div>`+(rows.length>300?`<div class="hint">ສະແດງ 300 ຈາກ ${rows.length}</div>`:'')+extra;
 }
 function planWeek(date,f,last,body,kpi){
@@ -1554,7 +1588,7 @@ function planWeek(date,f,last,body,kpi){
   kpi.innerHTML=strip([['ອາທິດເລີ່ມ '+ds7[0].slice(5),tot+' ຄັ້ງ'],['ສົ່ງແລ້ວ',dn,'green'],['ຍັງບໍ່ສົ່ງ',tot-dn,tot-dn?'red':'']]);
   const ents=Object.entries(g).sort((a,b)=>b[1].reduce((s,x)=>s+x[0],0)-a[1].reduce((s,x)=>s+x[0],0));
   body.innerHTML=ents.length?`<div class="tbl-wrap"><table class="matrix"><thead><tr><th>ແຜນ</th><th>ລົດ</th>${ds7.map(d=>`<th class="num">${DOWN[(new Date(d).getUTCDay()+6)%7]} ${d.slice(8)}</th>`).join('')}<th class="num">ລວມ</th></tr></thead><tbody>`+
-    ents.map(([z,a])=>`<tr><td><b>${esc(z)}</b></td><td>${esc(RV()[z]||'-')}</td>${a.map(x=>`<td class="num">${x[0]?x[0]+(x[1]?` <span style="color:var(--green)">✓${x[1]}</span>`:''):''}</td>`).join('')}<td class="num"><b>${a.reduce((s,x)=>s+x[0],0)}</b></td></tr>`).join('')+`</tbody></table></div>`:'<div class="empty">ບໍ່ມີຂໍ້ມູນ</div>';
+    ents.map(([z,a])=>`<tr><td><b>${esc(z)}</b></td><td>${esc(RV()[z]||'-')}</td>${a.map(x=>`<td class="num">${x[0]?x[0]+(x[1]?` <span style="color:var(--green)"><svg class=i aria-hidden=true><use href=#i-check /></svg>${x[1]}</span>`:''):''}</td>`).join('')}<td class="num"><b>${a.reduce((s,x)=>s+x[0],0)}</b></td></tr>`).join('')+`</tbody></table></div>`:'<div class="empty">ບໍ່ມີຂໍ້ມູນ</div>';
 }
 function planMonth(date,f,body,kpi){
   const m=date.slice(0,7),dim=new Date(Date.UTC(+m.slice(0,4),+m.slice(5,7),0)).getUTCDate(),g={};
@@ -1567,7 +1601,7 @@ function planMonth(date,f,body,kpi){
   const ents=Object.entries(g).sort((a,b)=>b[1].exp-a[1].exp),T=ents.reduce((s,e)=>[s[0]+e[1].exp,s[1]+e[1].done],[0,0]);
   kpi.innerHTML=strip([['ແຜນເດືອນ '+m,Math.round(T[0])+' ຄັ້ງ (ຄາດ)'],['ສົ່ງແລ້ວ',T[1],'green'],['ບັນລຸ',T[0]?Math.round(T[1]/T[0]*100)+'%':'-']]);
   body.innerHTML=`<div class="tbl-wrap"><table><thead><tr><th>ສາຂາ</th><th class="num">ລູກຄ້າໃນແຜນ</th><th class="num">ຍັງບໍ່ເຂົ້າແຜນ</th><th class="num">ວັນພັກ · ຕ້ອງຍ້າຍວັນ</th><th class="num">ຮັບເອງ / ນັດພິເສດ</th><th class="num">ຄາດວ່າຈະສົ່ງ</th><th class="num">ສົ່ງແລ້ວ</th><th class="num">%</th></tr></thead><tbody>`+
-    ents.map(([b,o])=>`<tr><td><b>${esc(b)}</b></td><td class="num">${o.n}</td><td class="num" style="color:${o.nod?'var(--red)':'var(--muted)'}">${o.nod}</td><td class="num" style="color:${o.off?'var(--amber)':'var(--muted)'}">${o.off}</td><td class="num" style="color:var(--muted)">${o.self}</td><td class="num">${Math.round(o.exp)}</td><td class="num">${o.done}</td><td class="num">${o.exp?Math.round(o.done/o.exp*100):0}%</td></tr>`).join('')+`</tbody></table></div><div class="hint">"ສົ່ງແລ້ວ" ນັບຈາກທີ່ກົດ ✓ ແລະ ລາຍການຈັດສົ່ງທີ່ບັນທຶກ</div>`;
+    ents.map(([b,o])=>`<tr><td><b>${esc(b)}</b></td><td class="num">${o.n}</td><td class="num" style="color:${o.nod?'var(--red)':'var(--muted)'}">${o.nod}</td><td class="num" style="color:${o.off?'var(--amber)':'var(--muted)'}">${o.off}</td><td class="num" style="color:var(--muted)">${o.self}</td><td class="num">${Math.round(o.exp)}</td><td class="num">${o.done}</td><td class="num">${o.exp?Math.round(o.done/o.exp*100):0}%</td></tr>`).join('')+`</tbody></table></div><div class="hint">"ສົ່ງແລ້ວ" ນັບຈາກທີ່ກົດ <svg class=i aria-hidden=true><use href=#i-check /></svg> ແລະ ລາຍການຈັດສົ່ງທີ່ບັນທຶກ</div>`;
 }
 /* ---- urgent: customers that fell out of the plan ---- */
 var UGK='all';
@@ -1590,7 +1624,7 @@ function renderUrgent(){
   document.getElementById('urgChips').innerHTML=chipHtml([['all','ທັງໝົດ',u.total],['noDay','ຍັງບໍ່ເຂົ້າແຜນ',u.noDay.length],['offd','ວັນພັກ · ຕ້ອງຍ້າຍວັນ',u.offd.length],['over','ເກີນກຳນົດ',u.over.length],['post','ເລື່ອນແລ້ວ',u.post.length]],UGK,'setUg');
   document.getElementById('urgHint').textContent=`ບໍ່ນັບ ນັດພິເສດ/ຮັບເອງ ${u.off} ລາຍ (ບໍ່ມີຮອບປະຈຳ)`+(b?' · ສາຂາ: '+b:'');
   const cap=(a,n=200)=>a.slice(0,n),more=(a,n=200)=>a.length>n?`<div class="hint">ສະແດງ ${n} ຈາກ ${a.length} ລາຍ</div>`:'';
-  const btn=c=>`<div class="actions"><button class="icon-btn" onclick="addExtra(${js(c.id)})">＋ ເຂົ້າແຜນມື້ນີ້</button><button class="icon-btn" onclick="doneToday(${js(c.id)})">✓ ສົ່ງແລ້ວ</button><button class="icon-btn" onclick="openCustomer(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-pencil /></svg> ແກ້ໄຂ</button></div>`;
+  const btn=c=>`<div class="actions"><button class="icon-btn" onclick="addExtra(${js(c.id)})">＋ ເຂົ້າແຜນມື້ນີ້</button><button class="icon-btn" onclick="doneToday(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-check /></svg> ສົ່ງແລ້ວ</button><button class="icon-btn" onclick="openCustomer(${js(c.id)})"><svg class=i aria-hidden=true><use href=#i-pencil /></svg> ແກ້ໄຂ</button></div>`;
   const tbl=(title,color,head,rows,total)=>`<div class="panel"><h3 style="color:${color}">${title} <span class="count">${total}</span></h3><div class="tbl-wrap"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
   const sev=r=>r>=CF().sev2?'<span class="tag unpaid">ຫາຍ</span>':r>=CF().sev1?'<span class="tag partial">ຫາຍນານ</span>':'<span class="tag house">ເກີນກຳນົດ</span>';
   const show=k=>UGK==='all'||UGK===k;let h='';
@@ -1600,7 +1634,7 @@ function renderUrgent(){
       cap(u.offd).map(c=>`<tr><td>${cn(c)}</td><td>${esc(c.branch)||'-'}</td><td>${esc(c.village)||'-'}</td><td>${esc(c.phone)||'-'}</td><td>ວັນ${esc(c.day)} = ວັນພັກ</td><td>${btn(c)}</td></tr>`).join(''),u.offd.length)+more(u.offd);
   if(show('over')&&u.over.length)h+=tbl('<svg class=i aria-hidden=true><use href=#i-clock /></svg> ເກີນກຳນົດຮອບ / ຫາຍ','var(--red)',['ລູກຄ້າ','ສາຂາ','ແຜນ','ວັນສົ່ງ','ສົ່ງຄັ້ງລ່າສຸດ','ເກີນ (ມື້)','ລະດັບ',''],
       cap(u.over).map(o=>`<tr><td>${cn(o.c)}</td><td>${esc(o.c.branch)||'-'}</td><td>${esc(o.c.zone)||'-'}</td><td>${o.c.day}</td><td>${last[o.c.id]||'ບໍ່ມີບັນທຶກ'}</td><td class="num">${o.d}</td><td>${sev(o.r)}</td><td>${btn(o.c)}</td></tr>`).join(''),u.over.length)+more(u.over);
-  if(show('post')&&u.post.length)h+=tbl('↷ ເລື່ອນແລ້ວ ຍັງບໍ່ໄດ້ສົ່ງ','var(--amber)',['ລູກຄ້າ','ສາຂາ','ວັນທີ່ເລື່ອນ','ເບີ',''],
+  if(show('post')&&u.post.length)h+=tbl('<svg class=i aria-hidden=true><use href=#i-skip /></svg> ເລື່ອນແລ້ວ ຍັງບໍ່ໄດ້ສົ່ງ','var(--amber)',['ລູກຄ້າ','ສາຂາ','ວັນທີ່ເລື່ອນ','ເບີ',''],
       cap(u.post).map(x=>`<tr><td>${cn(x.c)}</td><td>${esc(x.c.branch)||'-'}</td><td>${x.date}</td><td>${esc(x.c.phone)||'-'}</td><td>${btn(x.c)}</td></tr>`).join(''),u.post.length)+more(u.post);
   document.getElementById('urgBody').innerHTML=h||`<div class="panel"><div class="empty"><svg class=i aria-hidden=true><use href=#i-check-circle /></svg> ບໍ່ມີລູກຄ້າຕົກຫຼົ່ນ ທຸກລາຍຢູ່ໃນແຜນ ແລະ ສົ່ງຕາມຮອບ<br><button class="btn sm" onclick="go('plan','plan')">ເບິ່ງແຜນລາຍວັນ</button></div></div>`;
 }
@@ -1618,12 +1652,59 @@ function infoTd(c,edit,cols=INFO){return cols.map(([h,f])=>{const v=f(c),k=ESS.i
   if(h==='ໜີ້ລະບົບຂາຍ')return `<td class="num ${k}" style="color:var(--red)">${v?money(v):''}</td>`;
   return `<td class="${k}">${h==='ຊື່ລູກຄ້າ'?cn(c):esc(String(v??''))}</td>`;}).join('');}
 function RBr(){return DB.routeBranch||(DB.routeBranch={});}
-function cn(c){return `<button type="button" class="cname" onclick="event.stopPropagation();openCustomer(${js(c.id)})">${esc(c.name||c.id)}</button>`;} // customer name that opens the customer's details
+document.addEventListener('click',e=>{if(e.target.closest('button,a,input,select,textarea,label,summary'))return;const tr=e.target.closest('main tr');if(!tr||tr.querySelector('input[type=checkbox]'))return;const b=tr.querySelector('.cname[data-cid]');if(b&&!getSelection().toString())b.click();});
+function cn(c){return `<button type="button" class="cname" data-ui="skip" data-cid="1" onclick="event.stopPropagation();openCustomer(${js(c.id)})">${esc(c.name||c.id)}</button>`;} // customer name that opens the customer's details
 function csvDownload(rows,name,extra=[]){
   const q=s=>{s=String(s??'');if(/^[=+\-@\t\r]/.test(s)&&!/^[+\-]?[\d.,\s]*$/.test(s))s="'"+s;return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
   const lines=[[...extra.map(e=>e[0]),'ແຜນ/ໂຊນ','ລົດ','ຜູ້ຮັບຜິດຊອບ','ສາຂາ','ວັນ','ຄວາມຖີ່/ອາທິດ',...INFO.map(i=>i[0])].map(q).join(',')];
   rows.forEach(c=>lines.push([...extra.map(e=>e[1](c)),c.zone,RV()[c.zone]||'',empName(RO()[c.zone]),c.branch,c.day,c.freq||'',...INFO.map(i=>i[1](c))].map(q).join(',')));
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+lines.join('\n')],{type:'text/csv'}));a.download=String(name).replace(/[\\/:*?"<>|]/g,'-')+'.csv';a.click();toast('ສົ່ງອອກ CSV ແລ້ວ ✓');}
+/* all plans: one row per plan, with how many customers of each branch are in a plan (owner request 2026-11-26) */
+function renderPlans(){if(!document.getElementById('plans').classList.contains('active'))return;fillBranchSel('plBranch');
+  const b=val('plBranch'),q=(val('plQ')||'').toLowerCase().trim(),br={},pl={};
+  DB.customers.forEach(c=>{if(b&&c.branch!==b)return;const k=c.branch||'-',o=br[k]||(br[k]={n:0,p:0,u:0,w:0,z:new Set()});o.n++;if(notPlanned(c))o.u++;else if(hasDay(c)&&!c.zone)o.w++;
+    if(hasDay(c)&&c.zone){o.p++;o.z.add(c.zone);const x=pl[c.zone]||(pl[c.zone]={n:0,t:0,d:{}});x.n++;x.t+=+c.tank||0;x.d[c.day]=(x.d[c.day]||0)+1;}}); // in plan = has a work day + frequency + plan name; not in plan = the app-wide notPlanned rule
+  const bs=Object.keys(br).sort((x,y)=>(x===CF().hq)-(y===CF().hq)||x.localeCompare(y)),T={n:0,p:0,u:0,w:0};bs.forEach(k=>{T.n+=br[k].n;T.p+=br[k].p;T.u+=br[k].u;T.w+=br[k].w;});
+  document.getElementById('plBr').innerHTML=bs.length?`<thead><tr><th>ສາຂາ</th><th class="num">ລູກຄ້າ</th><th class="num">ຢູ່ໃນແຜນ</th><th class="num">ມີວັນ ແຕ່ຍັງບໍ່ມີຊື່ແຜນ</th><th class="num">ຍັງບໍ່ເຂົ້າແຜນ</th><th class="num">ຮັບເອງ / ວັນພັກ</th><th class="num">ຈຳນວນແຜນ</th></tr></thead><tbody>`+
+    bs.map(k=>{const o=br[k];return `<tr><td><b>${esc(k)}</b></td><td class="num">${money(o.n)}</td><td class="num">${o.p?money(o.p):''}</td><td class="num">${o.w?money(o.w):''}</td><td class="num" style="color:${o.u?'var(--red)':'var(--muted)'}">${o.u?money(o.u):''}</td><td class="num">${o.n-o.p-o.w-o.u?money(o.n-o.p-o.w-o.u):''}</td><td class="num">${o.z.size||''}</td></tr>`;}).join('')+
+    (bs.length>1?`<tr><td><b>ລວມ</b></td><td class="num"><b>${money(T.n)}</b></td><td class="num"><b>${money(T.p)}</b></td><td class="num"><b>${T.w?money(T.w):''}</b></td><td class="num"><b>${T.u?money(T.u):''}</b></td><td class="num"><b>${T.n-T.p-T.w-T.u?money(T.n-T.p-T.w-T.u):''}</b></td><td class="num"><b>${Object.keys(pl).length}</b></td></tr>`:'')+'</tbody>'
+    :`<tbody><tr><td class="empty">ຍັງບໍ່ມີລູກຄ້າ<br><button class="btn sm" onclick="document.getElementById('planFile').click()">ນຳເຂົ້າລູກຄ້າ</button></td></tr></tbody>`;
+  Object.keys(RM()).forEach(z=>{if(!pl[z]&&!DB.customers.some(c=>c.zone===z&&hasDay(c))&&(!b||(RBr()[z]||(RM()[z]||{}).branch||planBranch(z))===b))pl[z]={n:0,t:0,d:{}};}); // plans created by hand that have no customers yet
+  const od=d=>{const i=WD().indexOf(d);return i<0?9:i;},pb={},md={};Object.keys(pl).forEach(z=>{pb[z]=RBr()[z]||planBranch(z)||(RM()[z]||{}).branch||'';const e=Object.entries(pl[z].d).sort((a,c)=>c[1]-a[1])[0];md[z]=e?e[0]:'';});
+  const zs=Object.keys(pl).filter(z=>!q||(z+' '+(RV()[z]||'')+' '+empName(RO()[z])).toLowerCase().includes(q)).sort((x,y)=>pb[x].localeCompare(pb[y])||od(md[x])-od(md[y])||x.localeCompare(y));
+  document.getElementById('plN').textContent=zs.length?money(zs.length):'';
+  document.getElementById('plTbl').innerHTML=zs.length?`<thead><tr><th>ຊື່ແຜນ</th><th>ສາຂາ</th><th>ວັນ</th><th class="num">ບ້ານ</th><th class="num opt">ຖັງ</th><th class="opt">ລົດ</th><th class="opt">ຜູ້ຮັບຜິດຊອບ</th><th></th></tr></thead><tbody>`+
+    zs.map(z=>{const x=pl[z],days=Object.entries(x.d).sort((a,c)=>od(a[0])-od(c[0]));return `<tr><td><b>${esc(z)}</b></td><td>${esc(pb[z]||'-')}</td><td>${!days.length?'<span class="tag partial">ຍັງບໍ່ມີລູກຄ້າ</span>':days.length===1?esc(days[0][0]):days.map(([d,n])=>esc(d)+' '+n).join(' · ')}</td><td class="num">${x.n?money(x.n):''}</td><td class="num opt">${x.t?money(x.t):''}</td><td class="opt">${esc(RV()[z]||'-')}</td><td class="opt">${esc(empName(RO()[z])||'-')}</td>
+      <td><div class="actions"><button class="icon-btn" data-z="${esc(z)}" data-d="${esc(md[z])}" onclick="plOpen(this.dataset.z,this.dataset.d)">${ico('calendar')} ເປີດ</button><button class="icon-btn" data-z="${esc(z)}" data-d="${esc(md[z])}" aria-label="ແກ້ໄຂ / ຕັ້ງຊື່ແຜນ ${esc(z)}" onclick="PL.day=this.dataset.d;PL.open=this.dataset.z;editPlan(this.dataset.z)">${ico('pencil')} ຕັ້ງຊື່ / ແກ້ໄຂ</button></div></td></tr>`;}).join('')+'</tbody>'
+    :`<tbody><tr><td class="empty">${q?'ບໍ່ພົບແຜນທີ່ຄົ້ນຫາ':'ຍັງບໍ່ມີແຜນ'}<br><button class="btn sm" onclick="${q?"document.getElementById('plQ').value='';renderPlans()":"go('plan','planner')"}">${q?'ລ້າງການຄົ້ນຫາ':'ໄປຈັດແຜນ'}</button></td></tr></tbody>`;}
+/* trucks × days: which plans each truck runs this week, tanks vs capacity, and one-day swaps when a truck is unavailable */
+function vpWeek(){const el=document.getElementById('vpDate');if(!el.value)el.value=ymd(new Date());const d=new Date(el.value);d.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));
+  return DOWN.map((n,i)=>{const x=new Date(d);x.setUTCDate(d.getUTCDate()+i);return {n,date:x.toISOString().slice(0,10)};}).filter(x=>isWork(x.n));}
+function vpShift(n){const el=document.getElementById('vpDate');if(!n)el.value=ymd(new Date());else{const d=new Date(el.value||ymd(new Date()));d.setUTCDate(d.getUTCDate()+n);el.value=d.toISOString().slice(0,10);}renderVplan();}
+function vpPlans(date,last){const m={},ds=deliverySet(date);last=last||lastDone();DB.customers.forEach(c=>{if(c.zone&&dueOn(c,date,last)&&!['cancel','postpone'].includes(stOf(date,c,ds))){const o=m[c.zone]||(m[c.zone]={n:0,t:0});o.n++;o.t+=+c.tank||0;}});return m;} // same stops as the daily plan of that date
+function renderVplan(){if(!document.getElementById('vplan').classList.contains('active'))return;const wk=vpWeek(),last=lastDone(),cols=wk.map(x=>({...x,pl:vpPlans(x.date,last)})),tot={};DB.customers.forEach(c=>{if(c.zone&&hasDay(c)){const k=c.zone+'|'+c.day;tot[k]=(tot[k]||0)+1;}});
+  const SELF='\u0000self',rows=DB.vehicles.map(v=>v.id).concat(['',SELF]),has=new Set(DB.vehicles.map(v=>v.id)),cap=vid=>{const v=DB.vehicles.find(x=>x.id===vid);return v&&v.capTank?v.capTank*(v.trips||1):0;};
+  const cell=(vid,c)=>{const zs=Object.keys(c.pl).filter(z=>{const e=effVeh(z,c.date)||'',k=has.has(e)?e:!e&&selfDelivered(z)?SELF:'';return k===vid;}).sort(); // a plan whose truck is no longer in the team list shows under "no truck" instead of vanishing
+    const real=vid&&vid!==SELF,away=real&&vpAway(vid,c.date),t=zs.reduce((s,z)=>s+c.pl[z].t,0),k=cap(vid);
+    return `<td style="vertical-align:top;min-width:150px">${away?'<span class="tag unpaid">ບໍ່ວ່າງ</span>':''}${zs.map(z=>{const sw=real&&RV()[z]!==vid;return `<div style="margin:2px 0"><button type="button" class="cname" data-z="${esc(z)}" data-d="${c.n}" onclick="PL.day=this.dataset.d;PL.open=this.dataset.z;editPlan(this.dataset.z)">${esc(z)}</button> <span class="hint">${c.pl[z].n} ບ້ານ${(tot[z+'|'+c.n]||0)>c.pl[z].n?' (ທັງໝົດ '+tot[z+'|'+c.n]+')':''}${sw?' · ແທນ '+esc(RV()[z]||'-'):''}</span></div>`;}).join('')||'<span class="hint">-</span>'}
+      ${real&&zs.length&&k&&t?`<div class="hint" style="color:${t>k?'var(--red)':'var(--muted)'}">${money(t)}/${money(k)} ຖັງ${t>k?' · ເກີນ':''}</div>`:''}</td>`;};
+  document.getElementById('vpTbl').innerHTML=DB.vehicles.length||cols.some(c=>Object.keys(c.pl).length)?`<thead><tr><th>ລົດ</th>${cols.map(c=>`<th>${c.n} ${c.date.slice(8)}/${c.date.slice(5,7)}</th>`).join('')}</tr></thead><tbody>`+
+    rows.map(vid=>`<tr><td style="vertical-align:top;min-width:120px"><b>${vid===SELF?'ສາຂາສົ່ງເອງ':vid?esc(vid):'ຍັງບໍ່ມີລົດ'}</b>${vid===SELF?'<div class="hint">ຍັງບໍ່ໄດ້ຜູກລົດ</div>':vid?`<div class="hint">${esc(vehDriver(vid))}</div><button class="icon-btn" style="margin-top:4px" data-v="${esc(vid)}" onclick="vpUnavail(this.dataset.v)">${ico('alert')} ລົດບໍ່ວ່າງ</button>`:''}</td>${cols.map(c=>cell(vid,c)).join('')}</tr>`).join('')+'</tbody>'
+    :`<tbody><tr><td class="empty">ຍັງບໍ່ມີລົດ ແລະ ແຜນ<br><button class="btn sm" onclick="openVeh()">+ ເພີ່ມລົດ</button></td></tr></tbody>`;}
+function vpUnavail(vid){const lim=new Date();lim.setUTCDate(lim.getUTCDate()-14);const L=lim.toISOString().slice(0,10),wk=vpWeek().filter(x=>x.date>=L),today=ymd(new Date());
+  if(!wk.length)return toast('ອາທິດນີ້ເກົ່າເກີນ 14 ມື້ — ເລືອກອາທິດປັດຈຸບັນ');const pick=wk.find(x=>x.date>=today)||wk[0];
+  const body=d=>{const pl=vpPlans(d),zs=Object.keys(pl).filter(z=>effVeh(z,d)===vid||(RV()[z]===vid&&voGet(d,z)!==undefined)).sort(),others=DB.vehicles.filter(v=>v.id!==vid&&!vpAway(v.id,d)),load=o=>Object.keys(pl).filter(z=>effVeh(z,d)===o).reduce((s,z)=>s+pl[z].t,0);
+    if(!zs.length)return '<p class="hint">ລົດຄັນນີ້ບໍ່ມີແຜນໃນວັນນັ້ນ</p>';
+    const best=others.slice().sort((a,b)=>load(a.id)-load(b.id))[0];
+    return zs.map(z=>{const cur=voGet(d,z);return `<div class="field"><label for="vu_${esc(z)}">${esc(z)} · ${pl[z].n} ບ້ານ · ${money(pl[z].t)} ຖັງ</label><select class="vu-sel" id="vu_${esc(z)}" data-z="${esc(z)}">${RV()[z]&&RV()[z]!==vid&&vpAway(RV()[z],d)?'':`<option value="">ໃຊ້ລົດເດີມຂອງແຜນ (${esc(RV()[z]||'-')})</option>`}${others.filter(o=>o.id!==RV()[z]).map(o=>{const k=o.capTank?o.capTank*(o.trips||1):0;return `<option value="${esc(o.id)}" ${(cur&&cur!==vid?cur===o.id:best&&best.id===o.id)?'selected':''}>${esc(o.id)} — ມີແລ້ວ ${money(load(o.id))}${k?'/'+money(k):''} ຖັງ</option>`;}).join('')}</select></div>`;}).join('');};
+  showModal('ລົດບໍ່ວ່າງ · '+esc(vid),`<div class="field"><label for="vu_date">ວັນທີທີ່ລົດບໍ່ວ່າງ</label><select id="vu_date" onchange="document.getElementById('vuBody').innerHTML=vpUnavailBody(this.value)">${wk.map(x=>`<option value="${x.date}" ${x.date===pick.date?'selected':''}>${x.n} ${x.date.slice(8)}/${x.date.slice(5,7)}</option>`).join('')}</select></div>
+    <div id="vuBody">${body(pick.date)}</div><div class="hint">ຍ້າຍສະເພາະວັນທີ່ເລືອກ · ວັນອື່ນຍັງໃຊ້ລົດເດີມ · ກົດ "ຍ້ອນກັບ" ໄດ້</div>`,
+  ()=>{const d=val('vu_date'),sels=[...document.querySelectorAll('.vu-sel')];if(!sels.length)return;const undo=snapAll();let n=0;
+    sels.forEach(x=>{const k=d+'|'+x.dataset.z;if(x.value&&x.value!==RV()[x.dataset.z]){VO()[k]=x.value;n++;}else delete VO()[k];});
+    Object.keys(VO()).forEach(k=>{if(k.slice(0,10)<L)delete VO()[k];}); // swaps older than 2 weeks are dropped
+    save();renderAll();toast(n?`ຍ້າຍ ${n} ແຜນ ຂອງລົດ ${vid} ວັນທີ ${d.slice(8)}/${d.slice(5,7)} ແລ້ວ`:'ໃຊ້ລົດເດີມແລ້ວ',undo);});
+  window.vpUnavailBody=body;const b=document.querySelector('#modal .modal-foot .btn:last-child');if(b)b.textContent='ບັນທຶກການຍ້າຍ';}
+function plOpen(z,d){if(d)PL.day=d;go('plan','planner');pnOpen(z);} // pnOpen picks a real day when the planner was on "all days" or the plan is empty
 function exportAllPlans(){const o=d=>{const i=DOWN.indexOf(d);return i<0?9:i;};
   const rows=DB.customers.filter(c=>c.day||c.zone).sort((a,b)=>o(a.day)-o(b.day)||(a.zone||'').localeCompare(b.zone||'')||(a.seq||0)-(b.seq||0));
   if(!rows.length){toast('ຍັງບໍ່ມີແຜນໃຫ້ສົ່ງອອກ');return;}csvDownload(rows,'plan-all-'+today());}
@@ -1640,7 +1721,7 @@ function editPlan(z){
     if(!n){toast('ໃສ່ຊື່ແຜນກ່ອນ');return false;}
     if(n!==z&&(DB.customers.some(c=>c.zone===n)||RM()[n])){toast('ຊື່ແຜນນີ້ມີແລ້ວ — ຖ້າຢາກລວມແຜນ ໃຫ້ຕິກລູກຄ້າແລ້ວກົດ "ຍ້າຍ" ໄປແຜນນັ້ນ');return false;}
     const undo=snapAll();
-    if(n!==z){DB.customers.forEach(c=>{if(c.zone===z)c.zone=n;});[RV(),RO(),RM(),RBr()].forEach(m=>{if(m[z]!==undefined){m[n]=m[z];delete m[z];}});if(PL.open===z)PL.open=n;}
+    if(n!==z){DB.customers.forEach(c=>{if(c.zone===z)c.zone=n;});[RV(),RO(),RM(),RBr()].forEach(m=>{if(m[z]!==undefined){m[n]=m[z];delete m[z];}});voPlan(z,n);if(PL.open===z)PL.open=n;}
     RBr()[n]=val('ep_br');
     if(val('ep_veh'))RV()[n]=val('ep_veh');else delete RV()[n];
     if(val('ep_own'))RO()[n]=val('ep_own');else delete RO()[n];
@@ -1648,7 +1729,7 @@ function editPlan(z){
     save();renderAll();toast('ບັນທຶກແຜນແລ້ວ ✓',undo);},
   {extra:'ລຶບແຜນ',extraFn:()=>{
     if(!confirm(`ລຶບແຜນ "${z}"? ລູກຄ້າ ${inZ.length} ລາຍ ຈະກັບໄປເປັນ "ຍັງບໍ່ເຂົ້າແຜນ" (ຍ້ອນກັບໄດ້)`))return;
-    const undo=snapAll();DB.customers.forEach(c=>{if(c.zone===z){c.day='';c.zone='';}});[RV(),RO(),RM(),RBr()].forEach(m=>delete m[z]);
+    const undo=snapAll();DB.customers.forEach(c=>{if(c.zone===z){c.day='';c.zone='';}});[RV(),RO(),RM(),RBr()].forEach(m=>delete m[z]);voPlan(z);
     if(PL.open===z)PL.open='';closeModal();save();renderAll();toast(`ລຶບແຜນ "${z}" ແລ້ວ`,undo);}});}
 function pnMoveDayGo(){const d=val('pnMoveDay'),ids=[...document.querySelectorAll('.pn-sel:checked')].map(x=>x.value);
   if(!d||!ids.length){toast('ຕິກເລືອກລູກຄ້າ ແລະ ເລືອກວັນປາຍທາງ');return;}
@@ -1694,11 +1775,15 @@ function apPlan(b,incl,skipFar){const all=DB.customers.filter(c=>c.branch===b&&!
 function apZone(b){const m={},used=new Set();DB.customers.forEach(c=>{if(!c.zone)return;used.add(c.zone);if(c.branch===b&&c.zone!=='ລູກຄ້າຮັບເອງ')m[c.zone]=(m[c.zone]||0)+1;});
   const e=Object.entries(m).filter(([z])=>planBranch(z)===b).sort((x,y)=>y[1]-x[1])[0]; // the branch's own main plan (mostly its customers) so truck/owner stay bound; never HQ's or another branch's plan
   return e?e[0]:used.has(b)&&planBranch(b)!==b?b+' · ອັດຕະໂນມັດ':b;}
+function apDayZones(b){ // per weekday: reuse the branch's own one-day plan (keeps names the team gave it), else "<branch> · <day>"
+  const taken=new Set(),short=b.replace(/^ສາຂາ/,'').trim()||b;return WD().map(d=>{const m={};DB.customers.forEach(c=>{if(c.branch===b&&c.day===d&&c.zone&&c.zone!=='ລູກຄ້າຮັບເອງ')m[c.zone]=(m[c.zone]||0)+1;});
+    const own=Object.entries(m).filter(([z])=>!taken.has(z)&&planBranch(z)===b&&DB.customers.every(c=>c.zone!==z||c.day===d)).sort((x,y)=>y[1]-x[1])[0];
+    let z=own?own[0]:short+' · '+d,i=2;if(!own)while(taken.has(z)||DB.customers.some(c=>c.zone===z&&(c.branch!==b||c.day!==d))||(RBr()[z]&&RBr()[z]!==b))z=short+' · '+d+' '+(i++);taken.add(z);return z;});}
 const AP={on:null,bs:[],res:[]};
 function apOpts(){return [document.getElementById('ap_inc').checked,document.getElementById('ap_far').checked];}
 function apRender(){const [inc,sk]=apOpts();AP.res=AP.bs.map(b=>apPlan(b,inc,sk));document.getElementById('apFarList').innerHTML='';
   document.getElementById('apTbl').innerHTML=`<thead><tr><th></th><th>ສາຂາ</th><th class="num">ຈະຈັດ</th><th class="num">ບໍ່ມີພິກັດ</th><th class="num">ໄກເກີນ ${AP_FAR} ກມ</th><th>ລູກຄ້າຕໍ່ວັນ</th></tr></thead><tbody>`+
-   AP.res.map((r,i)=>`<tr><td style="padding:0"><label style="display:inline-flex;padding:11px;cursor:pointer"><input type="checkbox" style="width:22px;height:22px;margin:0" class="ap-b" aria-label="ເລືອກ ${esc(r.b)}" data-i="${i}" ${AP.on.has(r.b)?'checked':''} ${r.n?'':'disabled'} onchange="AP.on[this.checked?'add':'delete'](AP.bs[this.dataset.i])"></label></td><td><b>${esc(r.b)}</b>${r.n?`<div class="hint">ແຜນ: ${esc(apZone(r.b))} · ເລີ່ມຈາກ${r.pin?'ຮ້ານ':'ກາງກຸ່ມລູກຄ້າ'}</div>`:''}${r.pin&&r.far.length*2>r.geo?`<div style="margin-top:4px"><span class="tag unpaid">ລູກຄ້າເກີນເຄິ່ງໄກຈາກຮ້ານ — ກວດພິກັດຮ້ານ</span></div>`:''}</td><td class="num">${money(r.n)}</td><td class="num">${r.nog?money(r.nog):''}</td><td class="num">${r.far.length?`<button class="btn ghost sm" data-i="${i}" aria-label="ເບິ່ງລູກຄ້າທີ່ໄກ ${esc(r.b)}" onclick="apFar(+this.dataset.i)">${money(r.far.length)}</button>`:''}</td>
+   AP.res.map((r,i)=>`<tr><td style="padding:0"><label style="display:inline-flex;padding:11px;cursor:pointer"><input type="checkbox" style="width:22px;height:22px;margin:0" class="ap-b" aria-label="ເລືອກ ${esc(r.b)}" data-i="${i}" ${AP.on.has(r.b)?'checked':''} ${r.n?'':'disabled'} onchange="AP.on[this.checked?'add':'delete'](AP.bs[this.dataset.i])"></label></td><td><b>${esc(r.b)}</b>${r.n?`<div class="hint">ແຜນ: ${esc(apDayZones(r.b).slice(0,2).join(', '))} … · ເລີ່ມຈາກ${r.pin?'ຮ້ານ':'ກາງກຸ່ມລູກຄ້າ'}</div>`:''}${r.pin&&r.far.length*2>r.geo?`<div style="margin-top:4px"><span class="tag unpaid">ລູກຄ້າເກີນເຄິ່ງໄກຈາກຮ້ານ — ກວດພິກັດຮ້ານ</span></div>`:''}</td><td class="num">${money(r.n)}</td><td class="num">${r.nog?money(r.nog):''}</td><td class="num">${r.far.length?`<button class="btn ghost sm" data-i="${i}" aria-label="ເບິ່ງລູກຄ້າທີ່ໄກ ${esc(r.b)}" onclick="apFar(+this.dataset.i)">${money(r.far.length)}</button>`:''}</td>
      <td class="hint" style="white-space:normal;min-width:200px">${r.by.map(([d,a])=>esc(d)+' '+a.length).join(' · ')||'-'}</td></tr>`).join('')+'</tbody>';}
 function apFar(i){const r=AP.res[i],el=document.getElementById('apFarList');
   el.innerHTML=`<h4 style="margin:12px 0 6px">${esc(r.b)} · ໄກເກີນ ${AP_FAR} ກມ ${money(r.far.length)} ລາຍ</h4><p class="hint" style="margin-bottom:6px">ສ່ວນຫຼາຍແມ່ນພິກັດຜິດ — ກວດແຜນທີ່ ແລ້ວແກ້ພິກັດທີ່ແທັບລູກຄ້າ</p><div class="tbl-wrap"><table><thead><tr><th>ລະຫັດ</th><th>ຊື່ລູກຄ້າ</th><th>ບ້ານ</th><th class="num">ກມ</th><th></th></tr></thead><tbody>`+
@@ -1713,9 +1798,13 @@ function autoPlanOpen(){const hq=CF().hq;AP.bs=branches().filter(b=>b!==hq&&DB.c
     <div class="tbl-wrap"><table id="apTbl"></table></div><div class="hint">ລູກຄ້າທີ່ບໍ່ມີພິກັດ ຫຼື ຮັບເອງ ບໍ່ຖືກປ່ຽນ · ໃສ່ພິກັດຮ້ານໄດ້ທີ່ ຕັ້ງຄ່າ › ສາຂາ</div><div id="apFarList"></div><div class="hint" id="ap_err" role="alert"></div>`,
    ()=>{const [inc,sk]=apOpts();AP.res=AP.bs.map(b=>apPlan(b,inc,sk));const res=AP.res.filter(r=>AP.on.has(r.b)&&r.n); // recompute: a cloud sync may have replaced customer objects while the window was open
     if(!res.length){document.getElementById('ap_err').textContent='ເລືອກຢ່າງໜ້ອຍ 1 ສາຂາ';return false;}
-     const undo=snapAll();let n=0;res.forEach(r=>{const z=apZone(r.b),done=new Set();r.by.forEach(([d,a])=>a.forEach((c,i)=>{c.zone=z;c.day=d;c.freq=c.freq>0?c.freq:1;c.seq=i+1;n++;done.add(c);}));
-       r.by.forEach(([d,a])=>{let k=a.length;DB.customers.filter(c=>c.zone===z&&c.day===d&&!done.has(c)).sort((x,y)=>(x.seq||0)-(y.seq||0)).forEach(c=>{c.seq=++k;});});}); // left-out stops (no pin / far) go after the new ones so numbers never repeat
-     PL.open='';save();renderAll();toast(`ຈັດແຜນ ${res.length} ສາຂາ · ${money(n)} ລາຍ ✓`,undo);});
+     const undo=snapAll();let n=0;res.forEach(r=>{const old=apZone(r.b),zs=apDayZones(r.b),done=new Set(),zOf=d=>zs[WD().indexOf(d)];
+       const fresh=new Set(zs.filter(z=>!DB.customers.some(c=>c.zone===z)&&!(z in RM())&&!(z in RBr())&&!(z in RV())&&!(z in RO()))); // brand-new day plans only: a truck the team removed is never put back
+       r.by.forEach(([d,a])=>{const z=zOf(d);a.forEach((c,i)=>{c.zone=z;c.day=d;c.freq=c.freq>0?c.freq:1;c.seq=i+1;n++;done.add(c);});
+         if(a.length){RBr()[z]=r.b;if(old&&old!==z&&fresh.has(z)){if(RV()[old])RV()[z]=RV()[old];if(RO()[old])RO()[z]=RO()[old];}}}); // new day plans inherit the branch plan's truck / owner
+       r.by.forEach(([d,a])=>{const z=zOf(d);let k=a.length;DB.customers.filter(c=>c.zone===z&&c.day===d&&!done.has(c)).sort((x,y)=>(x.seq||0)-(y.seq||0)).forEach(c=>{c.seq=++k;});}); // left-out stops (no pin / far) go after the new ones so numbers never repeat
+       if(old&&!zs.includes(old)&&!DB.customers.some(c=>c.zone===old)){[RV(),RO(),RM(),RBr()].forEach(m=>delete m[old]);voPlan(old);}});
+     PL.open='';save();go('plan','plans');toast(`ຈັດແຜນ ${res.length} ສາຂາ · ${money(n)} ລາຍ ✓`,undo);});
   document.querySelector('#modal .modal-foot .btn:last-child').textContent='ຈັດແຜນ';apRender();}
 function setSeq(id,v){const c=custById(id);if(c){c.seq=+v||0;save();renderPlanner();}}
 function zoneBranch(cs){const m={};cs.forEach(c=>{const k=c.branch||'-';m[k]=(m[k]||0)+1;});const e=Object.entries(m).sort((a,b)=>b[1]-a[1])[0];return e?e[0]:'-';}
@@ -1775,8 +1864,8 @@ function renderPlanner(){
 function pnDetail(z){
   const rows=DB.customers.filter(c=>c.day===PL.day&&zeq(c,z)).sort((a,b)=>(a.seq||0)-(b.seq||0));
   const others=[...new Set(Object.keys(RM()).concat(DB.customers.filter(c=>c.day===PL.day).map(c=>c.zone)))].filter(x=>x&&x!==z);
-  return `<div class="panel" id="pnDetail" style="margin-top:16px;scroll-margin-top:72px"><h3><button class="btn sm" onclick="pnBack()">← ທຸກແຜນ</button> <svg class=i aria-hidden=true><use href=#i-clipboard /></svg> ${esc(z)} · ວັນ${PL.day} <span class="count">${rows.length}</span><button class="btn sm" style="margin-left:auto;${z===NOZ?'display:none':''}" onclick="editPlan(PL.open)"><svg class=i aria-hidden=true><use href=#i-pencil /></svg> ແກ້ໄຂແຜນ</button></h3>
-   <div class="toolbar"><button class="btn ghost sm" onclick="pnRemove()">✕ ເອົາອອກຈາກແຜນ (ທີ່ເລືອກ)</button>
+  return `<div class="panel" id="pnDetail" style="margin-top:16px;scroll-margin-top:72px"><h3><button class="btn sm" onclick="pnBack()"><svg class=i aria-hidden=true><use href=#i-arrow-left /></svg> ທຸກແຜນ</button> <svg class=i aria-hidden=true><use href=#i-clipboard /></svg> ${esc(z)} · ວັນ${PL.day} <span class="count">${rows.length}</span><button class="btn sm" style="margin-left:auto;${z===NOZ?'display:none':''}" onclick="editPlan(PL.open)"><svg class=i aria-hidden=true><use href=#i-pencil /></svg> ແກ້ໄຂແຜນ</button></h3>
+   <div class="toolbar"><button class="btn ghost sm" onclick="pnRemove()"><svg class=i aria-hidden=true><use href=#i-x /></svg> ເອົາອອກຈາກແຜນ (ທີ່ເລືອກ)</button>
    <select id="pnMoveTo"><option value="">ຍ້າຍໄປແຜນ...</option>${others.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('')}</select>
    <button class="btn ghost sm" onclick="pnMove()">ຍ້າຍ</button>
    <select id="pnMoveDay" aria-label="ຍ້າຍໄປວັນ"><option value="">ຍ້າຍໄປວັນ...</option>${WD().filter(d=>d!==PL.day).map(d=>`<option>${d}</option>`).join('')}</select><button class="btn ghost sm" onclick="pnMoveDayGo()">ຍ້າຍວັນ</button><div class="spacer"></div>
@@ -1827,13 +1916,13 @@ function newPlan(){
   ()=>{const n=val('np_name').trim();if(!n){toast('ໃສ່ຊື່ແຜນ');return false;}
     if(DB.customers.some(c=>c.zone===n)||RM()[n]){toast('ມີຊື່ແຜນນີ້ແລ້ວ');return false;}
     RM()[n]={branch:val('np_br')};if(val('np_veh'))RV()[n]=val('np_veh');if(val('np_own'))RO()[n]=val('np_own');
-    save();renderAll();pnOpen(n);});}
+    save();renderAll();if(UI.sub==='plans')plOpen(n,'');else pnOpen(n);toast('ສ້າງແຜນແລ້ວ — ເພີ່ມລູກຄ້າເຂົ້າແຜນໄດ້ເລີຍ ✓');});}
 function clearPlanCard(z){const b=val('pnBranch'),cs=DB.customers.filter(c=>zeq(c,z)&&isWork(c.day)&&!c.mode&&(!b||c.branch===b)); // same customers the card counts on its day chips
   if(!cs.length){if(z===NOZ)return toast('ບໍ່ມີລູກຄ້າໃຫ້ເອົາອອກ');if(DB.customers.some(c=>c.zone===z))return toast('ແຜນນີ້ຍັງມີລູກຄ້າຂອງສາຂາອື່ນ — ລ້າງຕົວກອງສາຂາກ່ອນ');return delPlan(z);}
   if(!confirm(`ເອົາລູກຄ້າ ${money(cs.length)} ລາຍ (ທຸກວັນ${b?' · '+b:''}) ອອກຈາກແຜນ "${z===NOZ?'ບໍ່ມີແຜນ':z}"?\nລູກຄ້າຍັງຢູ່ ແຕ່ຈະເປັນ "ຍັງບໍ່ເຂົ້າແຜນ" (ກົດຍ້ອນກັບໄດ້)`))return;
-  const undo=snapAll();cs.forEach(c=>{c.day='';c.zone='';c.seq=0;});if(z!==NOZ&&!DB.customers.some(c=>c.zone===z))[RV(),RO(),RM(),RBr()].forEach(m=>delete m[z]);
+  const undo=snapAll();cs.forEach(c=>{c.day='';c.zone='';c.seq=0;});if(z!==NOZ&&!DB.customers.some(c=>c.zone===z)){[RV(),RO(),RM(),RBr()].forEach(m=>delete m[z]);voPlan(z);}
   if(PL.open===z)PL.open='';save();renderAll();toast(`ເອົາ ${money(cs.length)} ລາຍ ອອກຈາກແຜນແລ້ວ`,undo);}
-function delPlan(z){if(!confirm('ລຶບແຜນ "'+z+'"?'))return;delete RM()[z];delete RV()[z];delete RO()[z];if(PL.open===z)PL.open='';save();renderAll();}
+function delPlan(z){if(!confirm('ລຶບແຜນ "'+z+'"?'))return;delete RM()[z];delete RV()[z];delete RO()[z];voPlan(z);if(PL.open===z)PL.open='';save();renderAll();}
 /* ---- import plan CSV (upsert by customer code) ---- */
 function parseCSV(t){const rows=[];let r=[],f='',q=false;t=t.replace(/^﻿/,'');
   for(let i=0;i<t.length;i++){const ch=t[i];
@@ -1857,8 +1946,8 @@ function behFreq(v){return /2\s*ອາທິດ\s*\/\s*ຄັ້ງ|2\s*ຄັ�
 function pg(o,k){for(const a of PA[k]){const v=o[a];if(v!==undefined&&v!==null){const t=String(v).trim();if(t!==''&&t!=='-')return t;}}return '';}
 function empByName(n){return DB.employees.find(e=>e.nick===n||e.name===n);}
 function snapAll(){ // one in-memory snapshot of everything a plan import/edit can change -> powers the "undo" button
-  const s=JSON.stringify({cf:CF(),c:DB.customers,v:DB.routeVeh||{},o:DB.routeOwner||{},m:DB.routeMeta||{},b:DB.routeBranch||{},ve:DB.vehicles,ps:DB.planStart,fu:DB.fu||{},ru:DB.rxUnk||{}});
-  return ()=>{const x=JSON.parse(s);DB.cfg=x.cf;DB.customers=x.c;DB.routeVeh=x.v;DB.routeOwner=x.o;DB.routeMeta=x.m;DB.routeBranch=x.b;DB.vehicles=x.ve;DB.planStart=x.ps;DB.fu=x.fu;DB.rxUnk=x.ru;save();renderAll();};}
+  const s=JSON.stringify({cf:CF(),c:DB.customers,v:DB.routeVeh||{},o:DB.routeOwner||{},m:DB.routeMeta||{},b:DB.routeBranch||{},ve:DB.vehicles,ps:DB.planStart,fu:DB.fu||{},ru:DB.rxUnk||{},vo:DB.vout||{}});
+  return ()=>{const x=JSON.parse(s);DB.cfg=x.cf;DB.customers=x.c;DB.routeVeh=x.v;DB.routeOwner=x.o;DB.routeMeta=x.m;DB.routeBranch=x.b;DB.vehicles=x.ve;DB.planStart=x.ps;DB.fu=x.fu;DB.rxUnk=x.ru;DB.vout=x.vo;save();renderAll();};}
 function parsePlanItems(rows){
   if(!rows.length)throw new Error('ໄຟລ໌ວ່າງ');
   const hk=Object.keys(rows[0]),has=k=>PA[k].some(a=>hk.includes(a)),erpDay=hk.includes('ມື້ຈັດສົ່ງ'); // ERP export: an empty day cell means "not set", never "clear the plan day"
@@ -1903,7 +1992,7 @@ function parsePlanItems(rows){
   return {items,st};}
 function applyPlanItems(P,opt){
   const undo=snapAll(),byId=new Map(DB.customers.map(c=>[c.id,c]));let add=0,upd=0;const inFile=new Set(P.items.map(i=>i.o.id));
-  if(opt&&opt.replace){DB.customers.forEach(c=>{if(!inFile.has(c.id)){c.day='';c.zone='';}});DB.routeVeh={};DB.routeOwner={};DB.routeMeta={};DB.routeBranch={};}
+  if(opt&&opt.replace){DB.customers.forEach(c=>{if(!inFile.has(c.id)){c.day='';c.zone='';}});DB.routeVeh={};DB.routeOwner={};DB.routeMeta={};DB.routeBranch={};DB.vout={};}
   P.items.forEach(it=>{const o=it.o,e=byId.get(o.id);
     if(e){Object.assign(e,o);if(!(e.freq>0)&&isWork(e.day))e.freq=1;upd++;}
     else{const n={vehicle:'',driver:'',createdAt:today(),name:o.id,type:'house',zone:'',day:'',mode:'',freq:0,tank:0,seq:0,...o};if(!(n.freq>0)&&isWork(n.day))n.freq=1;DB.customers.push(n);byId.set(n.id,n);add++;}
@@ -1988,7 +2077,7 @@ function printPlanSheet(){const date=val('planDate'),z=val('planRoute'),f=planFi
   const due=DB.customers.filter(c=>f(c)&&dueOn(c,date,last)).sort((a,b)=>(a.seq||0)-(b.seq||0));
   const rows=due.filter(c=>!['cancel','postpone'].includes(stOf(date,c,ds))),off=due.length-rows.length;
   document.getElementById('printSheet').innerHTML=`<h1>ໃບງານຈັດສົ່ງ · ${esc(z||'ທຸກແຜນ')}</h1>
-    <div class="meta">ວັນ${DOWN[(new Date(date).getUTCDay()+6)%7]} ${date}${z?' · '+esc(vehTxt(z)):''} · ${rows.length} ຈຸດ · ${money(rows.reduce((x,c)=>x+(c.tank||0),0))} ຖັງ${off?` · ບໍ່ລວມ ${off} ລາຍທີ່ຍົກເລີກ/ເລື່ອນ`:''}</div>
+    <div class="meta">ວັນ${DOWN[(new Date(date).getUTCDay()+6)%7]} ${date}${z?' · '+esc(vehTxt(z,date)):''} · ${rows.length} ຈຸດ · ${money(rows.reduce((x,c)=>x+(c.tank||0),0))} ຖັງ${off?` · ບໍ່ລວມ ${off} ລາຍທີ່ຍົກເລີກ/ເລື່ອນ`:''}</div>
     <table><thead><tr><th>#</th><th>ລູກຄ້າ</th><th>ບ້ານ / ເມືອງ</th><th>ເບີ</th><th>ຖັງ</th><th>ເວລາ / ໝາຍເຫດ</th><th>ສົ່ງແລ້ວ</th></tr></thead><tbody>${rows.map((c,i)=>`<tr><td>${c.seq||i+1}</td><td>${esc(c.name)}</td><td>${esc(c.village||'')} ${esc(c.district||'')}</td><td>${esc(c.phone||'')}</td><td>${c.tank||''}</td><td>${esc([c.timeWin,c.note].filter(Boolean).join(' · '))}</td><td class="box"></td></tr>`).join('')}</tbody></table>`;
   document.body.classList.add('printing');window.print();}
 window.addEventListener('afterprint',()=>document.body.classList.remove('printing'));
@@ -2007,12 +2096,12 @@ document.addEventListener('keydown',e=>{
 function telNo(v){const d=String(v).replace(/\D/g,'');if(d.startsWith('856'))return '+'+d;if(d.startsWith('0'))return '+856'+d.slice(1);
   if(d.length===10&&d.startsWith('20'))return '+856'+d;if(d.length===9&&d.startsWith('30'))return '+856'+d;if(d.length===8)return d.startsWith('21')?'+856'+d:'+85620'+d;return d;}
 function rowMenu(e,id){e.stopPropagation();const m=document.getElementById('rowMenu'),r=e.currentTarget.getBoundingClientRect();
-  m.innerHTML=`<button role="menuitem" onclick="setSt(${js(id)},'postpone')">↷ ເລື່ອນ</button><button role="menuitem" onclick="setSt(${js(id)},'cancel')">✕ ຍົກເລີກ</button>`;
+  m.innerHTML=`<button role="menuitem" onclick="setSt(${js(id)},'postpone')"><svg class=i aria-hidden=true><use href=#i-skip /></svg> ເລື່ອນ</button><button role="menuitem" onclick="setSt(${js(id)},'cancel')"><svg class=i aria-hidden=true><use href=#i-x /></svg> ຍົກເລີກ</button>`;
   m.classList.add('open');m.style.top=Math.min(r.bottom+4,innerHeight-100)+'px';m.style.left=Math.max(8,Math.min(r.right,innerWidth-8)-m.offsetWidth)+'px';}
 document.addEventListener('click',()=>document.getElementById('rowMenu').classList.remove('open'));
 function planText(date,z){const f=planFilter(),last=lastDone(),ds=deliverySet(date);
   const rows=DB.customers.filter(c=>f(c)&&dueOn(c,date,last)&&!['done','cancel'].includes(stOf(date,c,ds))).sort((a,b)=>(a.seq||0)-(b.seq||0));
-  return [`ແຜນສົ່ງ ${z} · ວັນ${DOWN[(new Date(date).getUTCDay()+6)%7]} ${date}`,vehTxt(z),...rows.map((c,i)=>`${i+1}. ${c.name} · ${c.village||'-'} · ${c.phone||'-'}${c.tank?' · '+c.tank+' ຖັງ':''}`),`ລວມ ${rows.length} ຈຸດ · ${money(rows.reduce((x,c)=>x+(c.tank||0),0))} ຖັງ`].join('\n');}
+  return [`ແຜນສົ່ງ ${z} · ວັນ${DOWN[(new Date(date).getUTCDay()+6)%7]} ${date}`,vehTxt(z,date),...rows.map((c,i)=>`${i+1}. ${c.name} · ${c.village||'-'} · ${c.phone||'-'}${c.tank?' · '+c.tank+' ຖັງ':''}`),`ລວມ ${rows.length} ຈຸດ · ${money(rows.reduce((x,c)=>x+(c.tank||0),0))} ຖັງ`].join('\n');}
 async function copyPlan(){const t=planText(val('planDate'),val('planRoute'));
   try{await navigator.clipboard.writeText(t);toast('ຄັດລອກແຜນແລ້ວ — ວາງໃນ WhatsApp ໄດ້ເລີຍ');}
   catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();const ok=document.execCommand('copy');a.remove();toast(ok?'ຄັດລອກແຜນແລ້ວ — ວາງໃນ WhatsApp ໄດ້ເລີຍ':'ຄັດລອກບໍ່ໄດ້ — ລອງໃໝ່ອີກຄັ້ງ');}}
@@ -2212,7 +2301,7 @@ function labelTables(){document.querySelectorAll('main table').forEach(t=>{const
 new MutationObserver(()=>{cancelAnimationFrame(labelTables.r);labelTables.r=requestAnimationFrame(labelTables);}).observe(document.querySelector('main'),{childList:true,subtree:true});
 
 /* ============ RENDER ALL ============ */
-function renderAll(){_rxC=null;applyNames();renderSettings();renderHome();renderSummary();renderPlan();renderPlanner();renderUrgent();renderCustomers();renderDeliveries();renderPayments();renderTeam();renderNav();}
+function renderAll(){_rxC=null;applyNames();renderSettings();renderHome();renderSummary();renderPlan();renderPlanner();renderPlans();renderVplan();renderUrgent();renderCustomers();renderDeliveries();renderPayments();renderTeam();renderNav();}
 (function(){let u=null;try{u=JSON.parse(localStorage.getItem('vari_crm_ui')||'null');}catch(e){}go(u&&u.main!=='settings'?u.main:'home',u&&u.main!=='settings'?u.sub:'home');})();
 // auto-reconnect to cloud if configured before
 (function(){const cfg=getCloudCfg();if(cfg)connectCloud(cfg,true);})();
