@@ -1780,23 +1780,33 @@ function RM(){return DB.routeMeta||(DB.routeMeta={});}
 function empName(id){const e=DB.employees.find(x=>x.id===id);return e?(e.nick||e.name):'';}
 function ownerSel(z){const cur=RO()[z]||'';return `<select data-z="${esc(z)}" onchange="setRouteOwner(this.dataset.z,this.value)"><option value="">- ຜູ້ຮັບຜິດຊອບ -</option>${DB.employees.map(e=>`<option value="${e.id}" ${e.id===cur?'selected':''}>${esc(e.nick||e.name)} (${esc(e.role)})</option>`).join('')}</select>`;}
 function setRouteOwner(z,v){if(v)RO()[z]=v;else delete RO()[z];save();renderAll();}
-/* auto plan per branch (owner rules 2026-11-26): branch = the customer's ສາຂາ field, HQ never planned, the branch area is cut into one slice per work day by direction around the shop
-   (equal customer counts), every customer in it is replanned, stops ordered nearest-first from the shop pin (or the customers' middle point when the shop has no pin) */
+/* auto plan per branch, rule 2026-11-28 (owner: "ປັບແຜນອໍໂຕ້ເລີຍ" after the bill study): a customer's day comes from their own bills kept in the CRM (sales imports), not from cutting
+   the area by direction. Fixed-day, 2-day and regular-cycle buyers get their real day + frequency; call-order, 1–2-time and no-bill customers keep what they have (call-order can
+   optionally leave the regular plan as ນັດພິເສດ). Then every branch customer with a work day goes in "<branch> · <day>", stops nearest-first from the shop pin. HQ never planned. */
 function geoOk(c){return c.lat>=13.9&&c.lat<=22.6&&c.lng>=100&&c.lng<=107.8&&!(Math.abs(c.lat-18.11894)<1e-4&&Math.abs(c.lng-102.29022)<1e-4);} // 18.11894,102.29022 = filler point shared by many rows
-const AP_FAR=5; // km from the shop (or the customers' middle) shown as "far" in the auto-plan preview — usually a wrong pin
-function apPlan(b,incl,skipFar){const all=DB.customers.filter(c=>c.branch===b&&!c.mode&&c.zone!=='ລູກຄ້າຮັບເອງ'&&(incl||c.freq>0)),geo=all.filter(geoOk),days=WD(),n=days.length;
-  const r={b,n:0,geo:geo.length,nog:all.length-geo.length,far:[],by:[],pin:!!(CF().bpos||{})[b]};if(!geo.length||!n)return r;
-  const md=a=>a.slice().sort((x,y)=>x-y)[a.length>>1],pp=r.pin?CF().bpos[b].split(',').map(Number):null;
-  const o={lat:pp?pp[0]:md(geo.map(c=>c.lat)),lng:pp?pp[1]:md(geo.map(c=>c.lng))},k=Math.cos(o.lat*Math.PI/180),km=c=>Math.hypot(c.lat-o.lat,(c.lng-o.lng)*k)*111.32;
-  r.far=geo.map(c=>[c,km(c)]).filter(x=>x[1]>AP_FAR).sort((x,y)=>y[1]-x[1]);
-  const cs=skipFar?geo.filter(c=>km(c)<=AP_FAR):geo;r.n=cs.length;if(!cs.length)return r; // skipped far customers keep their old day, like customers without a pin
-  const s=cs.map(c=>[Math.atan2(c.lat-o.lat,(c.lng-o.lng)*k),c]).sort((x,y)=>x[0]-y[0]);
-  let gi=0,g=-1;s.forEach((x,i)=>{const d=i?x[0]-s[i-1][0]:x[0]+2*Math.PI-s[s.length-1][0];if(d>g){g=d;gi=i;}}); // start at the widest empty direction so no day straddles it
-  const ord=s.slice(gi).concat(s.slice(0,gi)).map(x=>x[1]);
-  r.by=days.map((d,i)=>{const left=ord.slice(Math.round(i*ord.length/n),Math.round((i+1)*ord.length/n)),out=[];let p=o;
-    while(left.length){let bi=0,bd=Infinity;left.forEach((c,j)=>{const dd=(c.lat-p.lat)**2+((c.lng-p.lng)*k)**2;if(dd<bd){bd=dd;bi=j;}});p=left.splice(bi,1)[0];out.push(p);}
-    return [d,out];});
-  return r;}
+const AP_N=4,AP_TOP=.6,AP_TOP2=.8; // shortcut: thresholds from the 2026-11-28 bill study (≥4 buy days, ≥60% one weekday, ≥80% two weekdays); owner has not confirmed them yet
+const AP_K={fix:'ວັນຄົງທີ່',fix2:'2 ວັນຄົງທີ່',cyc:'ຮອບຄົງທີ່',call:'ໂທສັ່ງ',few:'ຊື້ 1–2 ຄັ້ງ',none:'ບໍ່ມີບິນ'};
+function apHist(){const m={};Object.values(RXB()).forEach(([d,c,q])=>{if(q>0)(m[c]||(m[c]=new Set())).add(d);});for(const k in m)m[k]=[...m[k]].sort();return m;}
+const apDay=d=>DOWN[(new Date(d+'T00:00:00Z').getUTCDay()+6)%7],apGaps=ds=>ds.slice(1).map((d,i)=>(Date.parse(d)-Date.parse(ds[i]))/864e5);
+const apMed=a=>{const s=a.slice().sort((x,y)=>x-y),h=s.length>>1;return s.length%2?s[h]:(s[h-1]+s[h])/2;};
+const apFreq=g=>g<=10?1:g<=21?.5:.25; // median days between buys -> the app's per-week frequency
+function apClass(ds){const n=ds.length;if(!n)return {k:'none',n};if(n<3)return {k:'few',n};
+  const w={};ds.forEach(d=>{const x=apDay(d);w[x]=(w[x]||0)+1;});const top=Object.entries(w).sort((a,b)=>b[1]-a[1]),wk=top.filter(([d])=>isWork(d)),day=wk.length?wk[0][0]:'';
+  if(n>=AP_N&&day){const g=apGaps(ds),gm=apMed(g),on=ds.filter(d=>apDay(d)===day);
+    if(top[0][0]===day&&top[0][1]/n>=AP_TOP)return {k:'fix',n,day,freq:on.length>1?apFreq(apMed(apGaps(on))):1};
+    if(top[1]&&isWork(top[0][0])&&isWork(top[1][0])&&(top[0][1]+top[1][1])/n>=AP_TOP2)return {k:'fix2',n,day,freq:1};
+    if(gm>=5&&Math.max(...g)-Math.min(...g)<=gm)return {k:'cyc',n,day,freq:apFreq(gm)};}
+  return {k:'call',n};}
+function apPlan(b,offCall,H){const cs=DB.customers.filter(c=>c.branch===b&&!c.mode&&c.zone!=='ລູກຄ້າຮັບເອງ'),r={b,n:cs.length,cnt:{},pd:0,pdFix:0,set:[],call:[],moved:0,by:{}};
+  cs.forEach(c=>{const x=apClass(H[c.id]||[]);r.cnt[x.k]=(r.cnt[x.k]||0)+1;r.pd+=x.n;if(x.k==='fix'||x.k==='fix2')r.pdFix+=x.n;let d=hasDay(c)?c.day:'';
+    if(x.day){r.set.push([c,x]);if(c.day!==x.day||+c.freq!==x.freq)r.moved++;d=x.day;}else if(x.k==='call'&&offCall&&d){r.call.push(c);d='';}
+    if(d)r.by[d]=(r.by[d]||0)+1;});
+  r.share=r.pd?r.pdFix/r.pd:0;return r;}
+function apMode(r){return !r.pd?'ຍັງບໍ່ມີບິນ':r.share>=.6?'ສົ່ງຕາມແຜນໄດ້':r.share>=.3?'ປະສົມ':'ສ່ວນຫຼາຍໂທສັ່ງ';} // share of buy days that come from fixed-day customers
+function apSeq(b,a){const g=a.filter(geoOk),pin=(CF().bpos||{})[b],md=v=>v.slice().sort((x,y)=>x-y)[v.length>>1];let i=0;
+  if(g.length){let p=pin?(([la,ln])=>({lat:la,lng:ln}))(pin.split(',').map(Number)):{lat:md(g.map(c=>c.lat)),lng:md(g.map(c=>c.lng))};const k=Math.cos(p.lat*Math.PI/180),left=g.slice();
+    while(left.length){let bi=0,bd=Infinity;left.forEach((c,j)=>{const dd=(c.lat-p.lat)**2+((c.lng-p.lng)*k)**2;if(dd<bd){bd=dd;bi=j;}});p=left.splice(bi,1)[0];p.seq=++i;}}
+  a.filter(c=>!geoOk(c)).sort((x,y)=>(x.seq||0)-(y.seq||0)).forEach(c=>{c.seq=++i;});} // no pin: after the mapped stops, old order kept
 function apZone(b){const m={},used=new Set();DB.customers.forEach(c=>{if(!c.zone)return;used.add(c.zone);if(c.branch===b&&c.zone!=='ລູກຄ້າຮັບເອງ')m[c.zone]=(m[c.zone]||0)+1;});
   const e=Object.entries(m).filter(([z])=>planBranch(z)===b).sort((x,y)=>y[1]-x[1])[0]; // the branch's own main plan (mostly its customers) so truck/owner stay bound; never HQ's or another branch's plan
   return e?e[0]:used.has(b)&&planBranch(b)!==b?b+' · ອັດຕະໂນມັດ':b;}
@@ -1805,31 +1815,32 @@ function apDayZones(b){ // per weekday: reuse the branch's own one-day plan (kee
     const own=Object.entries(m).filter(([z])=>!taken.has(z)&&planBranch(z)===b&&DB.customers.every(c=>c.zone!==z||c.day===d)).sort((x,y)=>y[1]-x[1])[0];
     let z=own?own[0]:short+' · '+d,i=2;if(!own)while(taken.has(z)||DB.customers.some(c=>c.zone===z&&(c.branch!==b||c.day!==d))||(RBr()[z]&&RBr()[z]!==b))z=short+' · '+d+' '+(i++);taken.add(z);return z;});}
 const AP={on:null,bs:[],res:[]};
-function apOpts(){return [document.getElementById('ap_inc').checked,document.getElementById('ap_far').checked];}
-function apRender(){const [inc,sk]=apOpts();AP.res=AP.bs.map(b=>apPlan(b,inc,sk));document.getElementById('apFarList').innerHTML='';
-  document.getElementById('apTbl').innerHTML=`<thead><tr><th></th><th>ສາຂາ</th><th class="num">ຈະຈັດ</th><th class="num">ບໍ່ມີພິກັດ</th><th class="num">ໄກເກີນ ${AP_FAR} ກມ</th><th>ລູກຄ້າຕໍ່ວັນ</th></tr></thead><tbody>`+
-   AP.res.map((r,i)=>`<tr><td style="padding:0"><label style="display:inline-flex;padding:11px;cursor:pointer"><input type="checkbox" style="width:22px;height:22px;margin:0" class="ap-b" aria-label="ເລືອກ ${esc(r.b)}" data-i="${i}" ${AP.on.has(r.b)?'checked':''} ${r.n?'':'disabled'} onchange="AP.on[this.checked?'add':'delete'](AP.bs[this.dataset.i])"></label></td><td><b>${esc(r.b)}</b>${bClosed(r.b)?' <span class="tag unpaid">ປິດ</span>':''}${r.n?`<div class="hint">ແຜນ: ${esc(apDayZones(r.b).slice(0,2).join(', '))} … · ເລີ່ມຈາກ${r.pin?'ຮ້ານ':'ກາງກຸ່ມລູກຄ້າ'}</div>`:''}${r.pin&&r.far.length*2>r.geo?`<div style="margin-top:4px"><span class="tag unpaid">ລູກຄ້າເກີນເຄິ່ງໄກຈາກຮ້ານ — ກວດພິກັດຮ້ານ</span></div>`:''}</td><td class="num">${money(r.n)}</td><td class="num">${r.nog?money(r.nog):''}</td><td class="num">${r.far.length?`<button class="btn ghost sm" data-i="${i}" aria-label="ເບິ່ງລູກຄ້າທີ່ໄກ ${esc(r.b)}" onclick="apFar(+this.dataset.i)">${money(r.far.length)}</button>`:''}</td>
-     <td class="hint" style="white-space:normal;min-width:200px">${r.by.map(([d,a])=>esc(d)+' '+a.length).join(' · ')||'-'}</td></tr>`).join('')+'</tbody>';}
-function apFar(i){const r=AP.res[i],el=document.getElementById('apFarList');
-  el.innerHTML=`<h4 style="margin:12px 0 6px">${esc(r.b)} · ໄກເກີນ ${AP_FAR} ກມ ${money(r.far.length)} ລາຍ</h4><p class="hint" style="margin-bottom:6px">ສ່ວນຫຼາຍແມ່ນພິກັດຜິດ — ກວດແຜນທີ່ ແລ້ວແກ້ພິກັດທີ່ແທັບລູກຄ້າ</p><div class="tbl-wrap"><table><thead><tr><th>ລະຫັດ</th><th>ຊື່ລູກຄ້າ</th><th>ບ້ານ</th><th class="num">ກມ</th><th></th></tr></thead><tbody>`+
-   r.far.slice(0,100).map(([c,d])=>`<tr><td>${esc(c.id)}</td><td><b>${esc(c.name)}</b></td><td>${esc(c.village)||'-'}</td><td class="num">${d.toFixed(1)}</td><td><a href="https://www.google.com/maps?q=${+c.lat},${+c.lng}" target="_blank" rel="noopener noreferrer">ແຜນທີ່</a></td></tr>`).join('')+
-   `</tbody></table></div>${r.far.length>100?`<div class="hint">ສະແດງ 100 ລາຍທຳອິດ</div>`:''}`;el.scrollIntoView({block:'nearest'});}
+function apRun(){const oc=document.getElementById('ap_call').checked,H=apHist();return AP.bs.map(b=>apPlan(b,oc,H));}
+function apRender(){AP.res=apRun();const td=v=>`<td class="num">${v?money(v):''}</td>`;
+  document.getElementById('apTbl').innerHTML=`<thead><tr><th></th><th>ສາຂາ</th><th class="num">ລູກຄ້າ</th><th class="num">ວັນຄົງທີ່</th><th class="num">ຮອບຄົງທີ່</th><th class="num">ໂທສັ່ງ</th><th class="num">ຊື້ 1–2 ຄັ້ງ</th><th class="num">ບໍ່ມີບິນ</th><th class="num">ຈະປ່ຽນວັນ</th><th>ລູກຄ້າຕໍ່ວັນ ຫຼັງຈັດ</th></tr></thead><tbody>`+
+   AP.res.map((r,i)=>{const c=r.cnt;return `<tr><td style="padding:0"><label style="display:inline-flex;padding:11px;cursor:pointer"><input type="checkbox" style="width:22px;height:22px;margin:0" class="ap-b" aria-label="ເລືອກ ${esc(r.b)}" data-i="${i}" ${AP.on.has(r.b)?'checked':''} ${r.n?'':'disabled'} onchange="AP.on[this.checked?'add':'delete'](AP.bs[this.dataset.i])"></label></td>
+     <td><b>${esc(r.b)}</b>${bClosed(r.b)?' <span class="tag unpaid">ປິດ</span>':''}<div class="hint">${apMode(r)}${r.pd?' · ການຊື້ຈາກລູກຄ້າວັນຄົງທີ່ '+Math.round(r.share*100)+'%':''}</div></td>
+     ${td(r.n)}${td((c.fix||0)+(c.fix2||0))}${td(c.cyc)}${td(c.call)}${td(c.few)}${td(c.none)}${td(r.moved+r.call.length)}
+     <td class="hint" style="white-space:normal;min-width:180px">${WD().filter(d=>r.by[d]).map(d=>esc(d)+' '+r.by[d]).join(' · ')||'-'}</td></tr>`;}).join('')+'</tbody>';}
 function autoPlanOpen(){const hq=CF().hq;AP.bs=branches().filter(b=>b!==hq&&DB.customers.some(c=>c.branch===b));
   if(!AP.bs.length)return toast('ຍັງບໍ່ມີລູກຄ້າຂອງສາຂາ — ນຳເຂົ້າລູກຄ້າກ່ອນ');
-  AP.on=new Set(AP.bs.filter(b=>/^ສາຂາ/.test(b)&&!bClosed(b)));
-  showModal('ຈັດແຜນສາຂາອັດຕະໂນມັດ',`<p class="hint" style="margin-bottom:10px">ລູກຄ້າຂອງແຕ່ລະສາຂາ (ຕາມຊ່ອງສາຂາ) ຈະຖືກແບ່ງພື້ນທີ່ຕາມທິດອ້ອມຮ້ານ ເປັນ ${WD().length} ວັນ ວັນລະເທົ່າໆກັນ ແລະ ລຽງລຳດັບຈຸດສົ່ງຈາກໃກ້ໄປໄກ. ວັນ ແລະ ລຳດັບເດີມຈະຖືກແທນທີ່ (ກົດຍ້ອນກັບໄດ້). ${esc(hq)} ບໍ່ຖືກຈັດ.</p>
-    <label class="chip" style="cursor:pointer;margin-bottom:10px"><input type="checkbox" id="ap_inc" checked onchange="apRender()"> ລວມລູກຄ້າທີ່ບໍ່ມີຄວາມຖີ່ສົ່ງ (ຕັ້ງເປັນທຸກອາທິດ)</label>
-    <label class="chip" style="cursor:pointer;margin-bottom:10px"><input type="checkbox" id="ap_far" onchange="apRender()"> ບໍ່ຈັດລູກຄ້າທີ່ໄກເກີນ ${AP_FAR} ກມ (ຄົງວັນເດີມໄວ້)</label>
-    <div class="tbl-wrap"><table id="apTbl"></table></div><div class="hint">ລູກຄ້າທີ່ບໍ່ມີພິກັດ ຫຼື ຮັບເອງ ບໍ່ຖືກປ່ຽນ · ໃສ່ພິກັດຮ້ານໄດ້ທີ່ ຕັ້ງຄ່າ › ສາຂາ</div><div id="apFarList"></div><div class="hint" id="ap_err" role="alert"></div>`,
-   ()=>{const [inc,sk]=apOpts();AP.res=AP.bs.map(b=>apPlan(b,inc,sk));const res=AP.res.filter(r=>AP.on.has(r.b)&&r.n); // recompute: a cloud sync may have replaced customer objects while the window was open
+  const ds=Object.keys(RX()).sort(),from=ds[0],to=ds[ds.length-1];
+  if(!ds.length)return toast('ຍັງບໍ່ມີບິນຂາຍໃນລະບົບ — ນຳເຂົ້າຍອດຂາຍລາຍວັນກ່ອນ ແລ້ວຈຶ່ງຈັດແຜນ');
+  showModal('ຈັດແຜນສາຂາອັດຕະໂນມັດ',`<p class="hint" style="margin-bottom:10px">ວັນສົ່ງມາຈາກບິນທີ່ລູກຄ້າຊື້ຈິງ (${esc(from)} → ${esc(to)}, ${ds.length} ວັນມີບິນ): ລູກຄ້າທີ່ຊື້ວັນເດີມ ຫຼື ເປັນຮອບ ໄດ້ວັນ ແລະ ຄວາມຖີ່ຕາມທີ່ຊື້ຈິງ. ລູກຄ້າໂທສັ່ງ, ຊື້ 1–2 ຄັ້ງ ແລະ ບໍ່ມີບິນ ຄົງວັນເດີມໄວ້.
+    ຈາກນັ້ນລູກຄ້າທີ່ມີວັນສົ່ງ ເຂົ້າແຜນ "ສາຂາ · ວັນ" ແລະ ລຽງຈຸດສົ່ງຈາກໃກ້ຮ້ານໄປໄກ (ກົດຍ້ອນກັບໄດ້). ${esc(hq)} ບໍ່ຖືກຈັດ.</p>
+    <label class="chip" style="cursor:pointer;margin-bottom:10px"><input type="checkbox" id="ap_call" onchange="apRender()"> ເອົາລູກຄ້າໂທສັ່ງອອກຈາກແຜນປະຈຳ (ຕັ້ງເປັນນັດພິເສດ)</label>
+    <div class="tbl-wrap"><table id="apTbl"></table></div><div class="hint">ຮັບເອງ ແລະ ນັດພິເສດ ບໍ່ຖືກປ່ຽນ · ບິນເກັບໄວ້ ${CF().keep} ວັນ · ສາຂາທີ່ບັນທຶກບິນລວມທີດຽວ ວັນໃນບິນອາດບໍ່ແມ່ນວັນສົ່ງແທ້</div><div class="hint" id="ap_err" role="alert"></div>`,
+   ()=>{AP.res=apRun();const res=AP.res.filter(r=>AP.on.has(r.b)&&r.n); // recompute: a cloud sync may have replaced customer objects while the window was open
     if(!res.length){document.getElementById('ap_err').textContent='ເລືອກຢ່າງໜ້ອຍ 1 ສາຂາ';return false;}
-     const undo=snapAll();let n=0;res.forEach(r=>{const old=apZone(r.b),zs=apDayZones(r.b),done=new Set(),zOf=d=>zs[WD().indexOf(d)];
+     const undo=snapAll();let n=0,m=0;res.forEach(r=>{const old=apZone(r.b),zs=apDayZones(r.b);
        const fresh=new Set(zs.filter(z=>!DB.customers.some(c=>c.zone===z)&&!(z in RM())&&!(z in RBr())&&!(z in RV())&&!(z in RO()))); // brand-new day plans only: a truck the team removed is never put back
-       r.by.forEach(([d,a])=>{const z=zOf(d);a.forEach((c,i)=>{c.zone=z;c.day=d;c.freq=c.freq>0?c.freq:1;c.seq=i+1;n++;done.add(c);});
-         if(a.length){RBr()[z]=r.b;if(old&&old!==z&&fresh.has(z)){if(RV()[old])RV()[z]=RV()[old];if(RO()[old])RO()[z]=RO()[old];}}}); // new day plans inherit the branch plan's truck / owner
-       r.by.forEach(([d,a])=>{const z=zOf(d);let k=a.length;DB.customers.filter(c=>c.zone===z&&c.day===d&&!done.has(c)).sort((x,y)=>(x.seq||0)-(y.seq||0)).forEach(c=>{c.seq=++k;});}); // left-out stops (no pin / far) go after the new ones so numbers never repeat
-       if(old&&!zs.includes(old)&&!DB.customers.some(c=>c.zone===old)){[RV(),RO(),RM(),RBr()].forEach(m=>delete m[old]);voPlan(old);}});
-     PL.open='';save();go('plan','plans');toast(`ຈັດແຜນ ${res.length} ສາຂາ · ${money(n)} ລາຍ ✓`,undo);});
+       r.set.forEach(([c,x])=>{if(c.day!==x.day||+c.freq!==x.freq)n++;c.day=x.day;c.freq=x.freq;});r.call.forEach(c=>{c.mode='special';c.freq=0;c.zone='';m++;});
+       WD().forEach((d,i)=>{const z=zs[i],a=DB.customers.filter(c=>c.branch===r.b&&!c.mode&&c.zone!=='ລູກຄ້າຮັບເອງ'&&c.day===d&&c.freq>0);if(!a.length)return;
+         a.forEach(c=>{c.zone=z;});apSeq(r.b,a);let k=a.length;DB.customers.filter(c=>c.zone===z&&c.day===d&&!a.includes(c)).sort((x,y)=>(x.seq||0)-(y.seq||0)).forEach(c=>{c.seq=++k;}); // other stops already in a reused plan go after, numbers never repeat
+        RBr()[z]=r.b;if(old&&old!==z&&fresh.has(z)){if(RV()[old])RV()[z]=RV()[old];if(RO()[old])RO()[z]=RO()[old];}}); // new day plans inherit the branch plan's truck / owner
+       if(old&&!zs.includes(old)&&!DB.customers.some(c=>c.zone===old)){[RV(),RO(),RM(),RBr()].forEach(o=>delete o[old]);voPlan(old);}});
+     PL.open='';save();go('plan','plans');toast(`ຈັດແຜນ ${res.length} ສາຂາ · ປ່ຽນວັນ ${money(n)} ລາຍ${m?' · ອອກຈາກແຜນ '+money(m):''} ✓`,undo);});
+  const H0=apHist();AP.on=new Set(AP.bs.filter(b=>/^ສາຂາ/.test(b)&&!bClosed(b)&&apPlan(b,false,H0).pd));
   document.querySelector('#modal .modal-foot .btn:last-child').textContent='ຈັດແຜນ';apRender();}
 function setSeq(id,v){const c=custById(id);if(c){c.seq=+v||0;save();renderPlanner();}}
 function zoneBranch(cs){const m={};cs.forEach(c=>{const k=c.branch||'-';m[k]=(m[k]||0)+1;});const e=Object.entries(m).sort((a,b)=>b[1]-a[1])[0];return e?e[0]:'-';}
